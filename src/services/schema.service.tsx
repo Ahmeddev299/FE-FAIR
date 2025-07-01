@@ -88,72 +88,10 @@ export const UpdatePasswordSchema = Yup.object().shape({
   newPassword: globalPasswordSchema,
 });
 
-// Add stakeholder schema
-export const StakeholderSchema = Yup.object().shape({
-  profile_picture: Yup.string(),
-  fullname: Yup.string().required("Required"),
-  department: Yup.string(),
-  designation: Yup.string(),
-  country: Yup.string(),
-  state: Yup.string(),
-  project: Yup.string(),
-  emails: Yup.array()
-  .of(Yup.string().email("Invalid email").matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, "Invalid email")),
-  phone_numbers: Yup.array()
-  .of(Yup.string()),
-  bio: Yup.string()
-    .min(20, "Bio should be contain at least 20 characters")
-    .max(1000, "Bio should contain at most 1000 characters"),
-});
-
-// Edit stakeholder schema
-export const EditStakeholderSchema = Yup.object().shape({
-  profile_picture: Yup.string(),
-  fullname: Yup.string(),
-  department: Yup.string(),
-  designation: Yup.string(),
-  country: Yup.string(),
-  state: Yup.string(),
-  project: Yup.string(),
-  emails: Yup.array()
-  .of(Yup.string().email("Invalid email").matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, "Invalid email")),
-  phone_numbers: Yup.array()
-  .of(Yup.string()),
-  bio: Yup.string()
-    .max(1000, "Bio should contain at most 1000 characters"),
-});
-
-// Add stakeholder employee schema
-export const StakeholderEmployeeSchema = Yup.object().shape({
-  fullname: Yup.string().required(),
-  department: Yup.string(),
-  designation: Yup.string(),
-  emails: Yup.array()
-  .of(Yup.string().email("Invalid email").matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, "Invalid email")),
-  phone_numbers: Yup.array()
-  .of(Yup.string()),
-});
-
-// Add Notes & Touch points schema
-export const NotesTouchPointsSchema = Yup.object().shape({
-  content: Yup.string()
-    .required("Required")
-    .min(20, "Should be contain at least 20 characters")
-    .max(1000, "Should contain at most 1000 characters"),
-});
-
-// Add Feedback schema
-export const FeedbackSchema = Yup.object().shape({
-  feedback: Yup.string()
-    .required("Required")
-    .min(20, "Should be contain at least 20 characters")
-    .max(1000, "Should contain at most 1000 characters"),
-});
-
 // Add Email schema
 export const EmailSchema = Yup.object().shape({
   email: Yup.string()
-  .email("Invalid email")
-  .matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, "Invalid email")
-  .required("Required"),
+    .email("Invalid email")
+    .matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, "Invalid email")
+    .required("Required"),
 });
