@@ -1,1 +1,1 @@
-export const BeforeAuth = ["/", "/404"];
+export const BeforeAuth = ["/login", "Signup"];

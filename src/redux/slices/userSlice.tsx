@@ -99,10 +99,6 @@ export const userSlice = createSlice({
       })
       .addCase(userSignUpAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
-        ls?.set("access_token", action.payload.data.access_token, {
-          encrypt: true,
-        });
-        state.profile = action.payload.data.profile;
         state.signUpSuccess = true;
       })
       .addCase(userSignUpAsync.rejected, (state: any, action: any) => {
@@ -115,11 +111,10 @@ export const userSlice = createSlice({
       })
       .addCase(userSignInAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
-        ls?.set("access_token", action.payload.data.access_token, {
+        ls?.set("access_token", action.payload.access_token, {
           encrypt: true,
         });
-        state.profile = action.payload.data.profile;
-        window.location.href = "/home";
+        state.profile = action.payload.profile;
       })
       .addCase(userSignInAsync.rejected, (state: any, action: any) => {
         state.isLoading = false;

@@ -24,11 +24,17 @@ export class HttpService {
    * @param url Endpoint link
    * @return Promise
    */
-  protected get = (url: string, params: object): Promise<any> =>
-    axios.get(`${Config.API_ENDPOINT}/${url}`, {
-      params,
-      cancelToken: this.source.token,
-    });
+  protected get = async (url: string, params: object): Promise<any> => {
+    try {
+      const response = await axios.get(`${Config.API_ENDPOINT}/${url}`, {
+        params,
+        cancelToken: this.source.token,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  };
 
   /**
    * Write data over server
@@ -36,11 +42,19 @@ export class HttpService {
    * @param body Data to send over server
    * @return Promise
    */
-  protected post = (url: string, body: object, options = {}): Promise<any> =>
-    axios.post(`${Config.API_ENDPOINT}/${url}`, body, {
-      ...options,
-      cancelToken: this.source.token,
-    });
+  protected post = async (url: string, body: object, options = {}): Promise<any> => {
+    try {
+      const response = await axios.post(`${Config.API_ENDPOINT}/${url}`, body, {
+        ...options,
+        cancelToken: this.source.token,
+      });
+      return response; // Return only the data part
+    } catch (error: any) {
+      // Re-throw the error with the response data
+      throw error;
+    }
+  };
+
 
   protected custom_post = (
     url: string,
