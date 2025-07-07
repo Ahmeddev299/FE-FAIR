@@ -35,6 +35,7 @@ import {
 } from '../../components/ui/components';
 import { userSignUpAsync } from '@/services/auth/asyncThunk';
 import Toast from '@/components/Toast';
+import { AuthLayout } from '@/components/layouts';
 
 const SignUp = () => {
     const router = useRouter();
@@ -86,6 +87,7 @@ const SignUp = () => {
     );
 
     return (
+        <AuthLayout>
         <PageContainer>
             <Card>
                 <AuthHeader
@@ -179,6 +181,7 @@ const SignUp = () => {
                 </div>
             </Card>
         </PageContainer>
+        </AuthLayout>
     );
 };
 

@@ -35,6 +35,7 @@ import {
 } from '../../components/ui/components';
 import { userSignInAsync } from '@/services/auth/asyncThunk';
 import Toast from '@/components/Toast';
+import { AuthLayout } from '@/components/layouts';
 
 const Login = () => {
   const dispatch = useDispatch()
@@ -85,7 +86,7 @@ const Login = () => {
     }
 
     // Redirect to home page
-    router.push('/');
+    router.push('/dashboard');
   };
   // Error callback
   const handleLoginError = (error, formikActions) => {
@@ -101,6 +102,7 @@ const Login = () => {
   );
 
   return (
+    <AuthLayout>
     <PageContainer>
       <Card>
         <AuthHeader
@@ -185,6 +187,7 @@ const Login = () => {
         </div>
       </Card>
     </PageContainer>
+    </AuthLayout>
   );
 };
 

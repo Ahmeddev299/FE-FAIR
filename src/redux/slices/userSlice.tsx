@@ -83,7 +83,7 @@ export const userSlice = createSlice({
       })
       .addCase(userAuthAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
-        state.profile = action.payload.data;
+        state.profile = action.payload;
         state.signUpSuccess = true;
       })
       .addCase(userAuthAsync.rejected, (state: any, action: any) => {
@@ -111,7 +111,8 @@ export const userSlice = createSlice({
       })
       .addCase(userSignInAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
-        ls?.set("access_token", action.payload.access_token, {
+        console.log("payload", action.payload)
+        ls?.set("access_token", action.payload[0].data.access_token, {
           encrypt: true,
         });
         state.profile = action.payload.profile;
