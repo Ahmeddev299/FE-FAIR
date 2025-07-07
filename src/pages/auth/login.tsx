@@ -103,90 +103,91 @@ const Login = () => {
 
   return (
     <AuthLayout>
-    <PageContainer>
-      <Card>
-        <AuthHeader
-          title="Welcome Back"
-          subtitle="Sign in to your account"
-        />
-
-        {authError && (
-          <Alert
-            type="error"
-            message={authError}
-            className="mb-6"
+      <PageContainer
+        backgroundImage='/Frame.png'
+      >
+        <Card>
+          <AuthHeader
+            title="Sign In"
           />
-        )}
 
-        <SocialAuthButton
-          provider="google"
-          onClick={handleGoogleAuth}
-          icon={GoogleIcon}
-          className="mb-6"
-        >
-          Sign in with Google
-        </SocialAuthButton>
-
-        <Divider text="or continue with email" />
-
-        <Formik
-          initialValues={authInitialValues.login}
-          validationSchema={LoginSchema}
-          onSubmit={handleSubmit}
-        >
-          {({ isSubmitting }) => (
-            <Form className="space-y-4">
-              <FormikInput
-                label="Email Address"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-              />
-
-              <FormikPasswordInput
-                label="Password"
-                name="password"
-                placeholder="Enter your password"
-                showPassword={showPassword}
-                onTogglePassword={togglePasswordVisibility}
-              />
-
-
-              <div className="text-right mb-4">
-                <Link
-                  href="/auth/resetpassword"
-                  className="text-sm md:text-base text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-
-              <FormikCheckbox
-                label="Keep me signed in"
-                name="agreeToTerms"
-                className="mb-6"
-              />
-
-              <FormikSubmitButton
-                isSubmitting={isSubmitting}
-                loadingText="Signing In..."
-              >
-                Login
-              </FormikSubmitButton>
-            </Form>
+          {authError && (
+            <Alert
+              type="error"
+              message={authError}
+              className="mb-6"
+            />
           )}
-        </Formik>
 
-        <div className="text-center mt-6 md:mt-8">
-          <p className="text-gray-600 text-sm md:text-base">
-            Don't have an account?{' '}
-            <AuthLink onClick={() => router.push('/auth/signup')}>
-              Sign Up
-            </AuthLink>
-          </p>
-        </div>
-      </Card>
-    </PageContainer>
+          <SocialAuthButton
+            provider="google"
+            onClick={handleGoogleAuth}
+            icon={GoogleIcon}
+            className="mb-6"
+          >
+            Sign in with Google
+          </SocialAuthButton>
+
+          <Divider text="or continue with email" />
+
+          <Formik
+            initialValues={authInitialValues.login}
+            validationSchema={LoginSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ isSubmitting }) => (
+              <Form className="space-y-4">
+                <FormikInput
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                />
+
+                <FormikPasswordInput
+                  label="Password"
+                  name="password"
+                  placeholder="Enter your password"
+                  showPassword={showPassword}
+                  onTogglePassword={togglePasswordVisibility}
+                />
+
+
+                <div className="text-right mb-4">
+                  <Link
+                    href="/auth/resetpassword"
+                    className="text-sm md:text-base text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+
+                <FormikCheckbox
+                  label="Keep me signed in"
+                  name="agreeToTerms"
+                  className="mb-6"
+                />
+
+                <FormikSubmitButton
+                  isSubmitting={isSubmitting}
+                  loadingText="Signing In..."
+                >
+                  Login
+                </FormikSubmitButton>
+              </Form>
+            )}
+          </Formik>
+
+          <div className="text-center mt-6 md:mt-8">
+            <p className="text-gray-600 text-sm md:text-base">
+              Don't have an account?{' '}
+              <AuthLink onClick={() => router.push('/auth/signup')}>
+                Sign Up
+              </AuthLink>
+            </p>
+          </div>
+        </Card>
+      </PageContainer>
     </AuthLayout>
   );
 };

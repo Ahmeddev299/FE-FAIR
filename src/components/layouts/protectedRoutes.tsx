@@ -48,16 +48,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Show loading spinner while checking authentication
   if (isChecking || isLoading) {
+
+    console.log("this state is runnig")
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
-  }
-
-  // If no profile after auth check, don't render children
-  if (!profile?.id) {
-    return null;
   }
 
   return <>{children}</>;

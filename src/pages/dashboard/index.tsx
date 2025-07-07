@@ -1,6 +1,7 @@
 import { DashboardLayout } from '@/components/layouts';
 
 export default function Dashboard() {
+    console.log("runnig")
   return (
     <DashboardLayout>
       <div className="px-4 py-6 sm:px-0">

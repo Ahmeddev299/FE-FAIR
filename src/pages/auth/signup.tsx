@@ -88,99 +88,99 @@ const SignUp = () => {
 
     return (
         <AuthLayout>
-        <PageContainer>
-            <Card>
-                <AuthHeader
-                    title="Create Your Account"
-                    subtitle="Start your journey with FAIR"
-                />
+            <PageContainer
+                backgroundImage='/Frame.png'
+            >
+                <Card>
+                    <AuthHeader
+                        title="Sign Up"
+                    />
+                    {authError && <Alert type="error" message={authError} className="mb-6" />}
 
-                {authError && <Alert type="error" message={authError} className="mb-6" />}
+                    <SocialAuthButton
+                        provider="google"
+                        onClick={handleGoogleAuth}
+                        icon={GoogleIcon}
+                        className="mb-6"
+                    >
+                        Sign up with Google
+                    </SocialAuthButton>
 
-                <SocialAuthButton
-                    provider="google"
-                    onClick={handleGoogleAuth}
-                    icon={GoogleIcon}
-                    className="mb-6"
-                >
-                    Sign up with Google
-                </SocialAuthButton>
+                    <Divider text="or sign up with email" />
 
-                <Divider text="or sign up with email" />
+                    <Formik
+                        initialValues={authInitialValues.signup}
+                        validationSchema={SignupSchema}
+                        onSubmit={handleSubmit}
+                    >
+                        {({ isSubmitting }) => (
+                            <Form className="space-y-4">
+                                <FormikInput
+                                    label="First Name"
+                                    name="firstName"
+                                    placeholder="John"
+                                />
 
-                <Formik
-                    initialValues={authInitialValues.signup}
-                    validationSchema={SignupSchema}
-                    onSubmit={handleSubmit}
-                >
-                    {({ isSubmitting }) => (
-                        <Form className="space-y-4">
-                            <FormikInput
-                                label="First Name"
-                                name="firstName"
-                                placeholder="John"
-                            />
+                                <FormikInput
+                                    label="Last Name"
+                                    name="lastName"
+                                    placeholder="Doe"
+                                />
 
-                            <FormikInput
-                                label="Last Name"
-                                name="lastName"
-                                placeholder="Doe"
-                            />
+                                <FormikInput
+                                    label="Email Address"
+                                    name="email"
+                                    type="email"
+                                    placeholder="you@example.com"
+                                />
 
-                            <FormikInput
-                                label="Email Address"
-                                name="email"
-                                type="email"
-                                placeholder="you@example.com"
-                            />
+                                <FormikSelect
+                                    label="Role"
+                                    name="role"
+                                    options={roles.map(role => ({ label: role, value: role }))}
+                                />
 
-                            <FormikSelect
-                                label="Role"
-                                name="role"
-                                options={roles.map(role => ({ label: role, value: role }))}
-                            />
+                                <FormikPasswordInput
+                                    label="Password"
+                                    name="password"
+                                    placeholder="••••••••"
+                                    showPassword={showPassword}
+                                    onTogglePassword={() => setShowPassword(!showPassword)}
+                                />
 
-                            <FormikPasswordInput
-                                label="Password"
-                                name="password"
-                                placeholder="••••••••"
-                                showPassword={showPassword}
-                                onTogglePassword={() => setShowPassword(!showPassword)}
-                            />
+                                <FormikPasswordInput
+                                    label="Confirm Password"
+                                    name="confirmPassword"
+                                    placeholder="••••••••"
+                                    showPassword={showConfirmPassword}
+                                    onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
+                                />
 
-                            <FormikPasswordInput
-                                label="Confirm Password"
-                                name="confirmPassword"
-                                placeholder="••••••••"
-                                showPassword={showConfirmPassword}
-                                onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
-                            />
+                                <FormikCheckbox
+                                    label="I accept the Terms & Conditions and Privacy Policy"
+                                    name="conditions"
+                                />
 
-                            <FormikCheckbox
-                                label="I accept the Terms & Conditions and Privacy Policy"
-                                name="conditions"
-                            />
+                                <FormikSubmitButton
+                                    isSubmitting={isSubmitting}
+                                    loadingText="Signing Up..."
+                                >
+                                    Sign Up
+                                </FormikSubmitButton>
+                            </Form>
+                        )}
+                    </Formik>
 
-                            <FormikSubmitButton
-                                isSubmitting={isSubmitting}
-                                loadingText="Signing Up..."
-                            >
-                                Sign Up
-                            </FormikSubmitButton>
-                        </Form>
-                    )}
-                </Formik>
-
-                <div className="text-center mt-6 md:mt-8">
-                    <p className="text-gray-600 text-sm md:text-base">
-                        Already have an account?{' '}
-                        <AuthLink onClick={() => router.push('/auth/login')}>
-                            Sign In
-                        </AuthLink>
-                    </p>
-                </div>
-            </Card>
-        </PageContainer>
+                    <div className="text-center mt-6 md:mt-8">
+                        <p className="text-gray-600 text-sm md:text-base">
+                            Already have an account?{' '}
+                            <AuthLink onClick={() => router.push('/auth/login')}>
+                                Sign In
+                            </AuthLink>
+                        </p>
+                    </div>
+                </Card>
+            </PageContainer>
         </AuthLayout>
     );
 };

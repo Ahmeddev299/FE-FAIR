@@ -36,13 +36,13 @@ interface SocialAuthButtonProps {
   [key: string]: any;
 }
 
-export const SocialAuthButton: React.FC<SocialAuthButtonProps> = ({ 
-  provider, 
-  onClick, 
-  children, 
+export const SocialAuthButton: React.FC<SocialAuthButtonProps> = ({
+  provider,
+  onClick,
+  children,
   icon: Icon,
   className = "",
-  ...props 
+  ...props
 }) => (
   <button
     onClick={onClick}
@@ -80,13 +80,13 @@ interface CardProps {
   [key: string]: any;
 }
 
-export const Card: React.FC<CardProps> = ({ 
-  children, 
+export const Card: React.FC<CardProps> = ({
+  children,
   className = "",
   padding = "p-6 md:p-8",
-  ...props 
+  ...props
 }) => (
-  <div 
+  <div
     className={`bg-white shadow-2xl ${padding} ${className}`}
     {...props}
   >
@@ -97,25 +97,32 @@ export const Card: React.FC<CardProps> = ({
 interface PageContainerProps {
   children: React.ReactNode;
   className?: string;
-  background?: string;
+  backgroundImage?: string;
   [key: string]: any;
 }
 
-export const PageContainer: React.FC<PageContainerProps> = ({ 
-  children, 
+export const PageContainer: React.FC<PageContainerProps> = ({
+  children,
   className = "",
-  background = "bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800",
-  ...props 
-}) => (
-  <div 
-    className={`min-h-screen ${background} flex items-center justify-center p-4 ${className}`}
-    {...props}
-  >
-    <div className="w-full max-w-md mx-auto">
-      {children}
+  backgroundImage,
+  ...props
+}) => {  
+  return (
+    <div
+      className={`min-h-screen flex items-center justify-center p-4 bg-no-repeat bg-cover ${className}`}
+      style={backgroundImage ? { 
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundPosition: 'top left',
+        backgroundSize: 'cover'
+      } : {}}
+      {...props}
+    >
+      <div className="w-full max-w-md mx-auto">
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface AuthHeaderProps {
   title: string;
@@ -124,11 +131,11 @@ interface AuthHeaderProps {
   [key: string]: any;
 }
 
-export const AuthHeader: React.FC<AuthHeaderProps> = ({ 
-  title, 
-  subtitle, 
+export const AuthHeader: React.FC<AuthHeaderProps> = ({
+  title,
+  subtitle,
   className = "",
-  ...props 
+  ...props
 }) => (
   <div className={`text-center mb-6 md:mb-8 ${className}`} {...props}>
     <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
@@ -150,12 +157,12 @@ interface AuthLinkProps {
   [key: string]: any;
 }
 
-export const AuthLink: React.FC<AuthLinkProps> = ({ 
-  children, 
-  onClick, 
-  href, 
+export const AuthLink: React.FC<AuthLinkProps> = ({
+  children,
+  onClick,
+  href,
   className = "",
-  ...props 
+  ...props
 }) => (
   <button
     onClick={onClick}
@@ -172,7 +179,7 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
+export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = "h-5 w-5",
   color = "border-white",
   className = ""
@@ -188,11 +195,11 @@ interface AlertProps {
   [key: string]: any;
 }
 
-export const Alert: React.FC<AlertProps> = ({ 
-  type = "info", 
-  message, 
+export const Alert: React.FC<AlertProps> = ({
+  type = "info",
+  message,
   className = "",
-  ...props 
+  ...props
 }) => {
   const baseClasses = "p-4 rounded-lg mb-4 text-sm md:text-base";
   const typeClasses = {
@@ -203,7 +210,7 @@ export const Alert: React.FC<AlertProps> = ({
   };
 
   return (
-    <div 
+    <div
       className={`${baseClasses} ${typeClasses[type]} ${className}`}
       {...props}
     >
