@@ -85,7 +85,6 @@ const Login = () => {
       formikActions.resetForm();
     }
 
-    // Redirect to home page
     router.push('/dashboard');
   };
   // Error callback
