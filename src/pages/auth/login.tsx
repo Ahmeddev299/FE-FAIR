@@ -50,10 +50,8 @@ const Login = () => {
   const handleGoogleAuth = async () => {
     try {
       console.log('Google authentication clicked');
-      // Add your Google OAuth logic here
-      // Example: await signInWithGoogle();
     } catch (error) {
-      console.error('Google auth error:', error);
+      console.error('Google auth error:', error);[]
       setAuthError('Google authentication failed. Please try again.');
     }
   };
@@ -85,7 +83,7 @@ const Login = () => {
       formikActions.resetForm();
     }
 
-    router.push('/dashboard');
+    router.push('/dashboard/pages/mainpage');
   };
   // Error callback
   const handleLoginError = (error, formikActions) => {

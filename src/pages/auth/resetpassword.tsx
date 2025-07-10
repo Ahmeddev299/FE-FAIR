@@ -16,13 +16,6 @@ const resetPassword = () => {
         agreeToTerms: false
     });
 
-    const roles = [
-        'Lawyer',
-        'Property Manager',
-        'Broker',
-        'Other'
-    ];
-
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
