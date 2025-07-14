@@ -778,7 +778,6 @@ const CreateLoiForm = () => {
       </div>
     </div>
   </DashboardLayout>
-);
+); 
 }
-
 export default CreateLoiForm;

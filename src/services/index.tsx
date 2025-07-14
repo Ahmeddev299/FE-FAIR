@@ -48,7 +48,7 @@ export class HttpService {
         ...options,
         cancelToken: this.source.token,
       });
-      return response; // Return only the data part
+      return response.data; // Return only the data part
     } catch (error: any) {
       // Re-throw the error with the response data
       throw error;

@@ -57,8 +57,13 @@ const SignUp = () => {
 
     const registerUser = async (userData) => {
         console.log("userData 57", userData)
+        const formData = {
+            fullName: `${userData.firstName} ${userData.lastName}`,
+            ...userData
+        };
+
         try {
-            const result = await dispatch(userSignUpAsync(userData)).unwrap();
+            const result = await dispatch(userSignUpAsync(formData)).unwrap();
             return result;
         } catch (error) {
             throw error;

@@ -58,7 +58,7 @@ export const userSlice = createSlice({
     userLogout: (state: any) => {
       state.profile = {};
       ls.remove("access_token");
-      window.location.href = "/login";
+      window.location.href = "/auth/login";
     },
 
     setLoading: (state: any, action: any) => {
@@ -78,22 +78,6 @@ export const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(userAuthAsync.pending, (state: any) => {
-        state.isLoading = true;
-      })
-      .addCase(userAuthAsync.fulfilled, (state: any, action: any) => {
-        state.isLoading = false;
-        state.profile = action.payload;
-        state.signUpSuccess = true;
-      })
-      .addCase(userAuthAsync.rejected, (state: any, action: any) => {
-        state.isLoading = false;
-        state.authError = action.payload;
-        Toast.fire({ icon: "error", title: "Session Timeout" });
-        state.profile = {};
-        ls.remove("access_token");
-        window.location.href = "/login";
-      })
       .addCase(userSignUpAsync.pending, (state: any) => {
         state.isLoading = true;
       })
@@ -112,7 +96,7 @@ export const userSlice = createSlice({
       .addCase(userSignInAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
         console.log("payload", action.payload)
-        ls?.set("access_token", action.payload[0].data.access_token, {
+        ls?.set("access_token", action.payload.access_token, {
           encrypt: true,
         });
         state.profile = action.payload.profile;
@@ -127,7 +111,7 @@ export const userSlice = createSlice({
       })
       .addCase(socialSignInAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
-        ls?.set("access_token", action.payload.data.access_token, {
+        ls?.set("access_token", action.payload.access_token, {
           encrypt: true,
         });
         state.profile = action.payload.data.profile;

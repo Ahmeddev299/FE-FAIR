@@ -23,18 +23,19 @@ export const userSignUpAsync = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await authBaseService.signUp(data);
-      console.log("response.data[0].success", response.data[0].success)
+      console.log("response 26",response)
+      // console.log("response.data[0].success", response.sucess[0].success)
 
       // Additional check for API-level errors
-      if (response.data[0].success === false) {
-        return rejectWithValue(response.data[0].message);
+      if (response.success == false && response.status == 400) {
+        return rejectWithValue(response.message);
       }
 
       return response.data;
     } catch (error: any) {
       // Handle different error scenarios
-      if (error.response?.data?.message) {
-        return rejectWithValue(error.response.data.message);
+      if (error.response?.message) {
+        return rejectWithValue(error.response.message);
       } else if (error.message) {
         return rejectWithValue(error.message);
       } else {

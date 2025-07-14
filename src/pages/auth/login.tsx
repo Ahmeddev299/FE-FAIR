@@ -68,13 +68,12 @@ const Login = () => {
 
   // Success callback
   const handleLoginSuccess = (response, formikActions) => {
-    console.log('Login successful:', response[0]?.data?.user?.firstName);
 
     // Show success toast
     Toast.fire({
       icon: "success",
-      title: response[0].message,
-      text: `Welcome back, ${response[0]?.data?.user?.firstName || 'User'}!`
+      title: response.message,
+      text: 'Welcome back User'
     });
 
     // Optional: Reset form if using Formik
@@ -85,6 +84,7 @@ const Login = () => {
 
     router.push('/dashboard/pages/mainpage');
   };
+  
   // Error callback
   const handleLoginError = (error, formikActions) => {
     console.error('Login error:', error);
