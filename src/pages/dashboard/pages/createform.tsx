@@ -4,9 +4,49 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { DashboardLayout } from '@/components/layouts';
 
-// Mock DashboardLayout component
+interface FormValues {
+  // Basic Information
+  loiTitle: string;
+  propertyAddress: string;
+  landlordName: string;
+  landlordEmail: string;
+  tenantName: string;
+  tenantEmail: string;
 
-const CreateLoiForm = () => {
+  // Lease Terms
+  rentAmount: string;
+  securityDeposit: string;
+  propertyType: string;
+  leaseDuration: string;
+  startDate: string;
+
+  // Property Details
+  propertySize: string;
+  intendedUse: string;
+  parkingSpaces: string;
+
+  // Additional Terms
+  renewalOption: boolean;
+  improvementAllowance: string;
+  specialConditions: string;
+  financingApproval: boolean;
+  environmentalAssessment: boolean;
+  zoningCompliance: boolean;
+  permitsLicenses: boolean;
+  propertyInspection: boolean;
+  insuranceApproval: boolean;
+
+  // Review & Submit
+  terms: boolean;
+}
+
+type ValidationSchemas = {
+  [key: number]: Yup.ObjectSchema<any>;
+};
+
+
+
+const CreateLoiForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
@@ -17,7 +57,7 @@ const CreateLoiForm = () => {
     { id: 5, title: 'Review & Submit', subtitle: 'Final review' }
   ];
 
-  const initialValues = {
+ const initialValues: FormValues = {
     // Basic Information
     loiTitle: '',
     propertyAddress: '',
@@ -53,7 +93,7 @@ const CreateLoiForm = () => {
     terms: false
   };
 
-  const validationSchemas = {
+  const validationSchemas : ValidationSchemas = {
     1: Yup.object({
       loiTitle: Yup.string().required('LOI Title is required'),
       propertyAddress: Yup.string().required('Property Address is required'),
@@ -82,17 +122,17 @@ const CreateLoiForm = () => {
     }),
   };
 
-const isStepComplete = (stepId: string, values: unknown) => {
-  const schema = validationSchemas[stepId];
-  if (!schema) return false;
-  
-  try {
-    schema.validateSync(values, { abortEarly: false });
-    return true;
-  } catch {
-    return false;
-  }
-};
+  const isStepComplete = (stepId: number, values: FormValues): boolean => {
+    const schema = validationSchemas[stepId];
+    if (!schema) return false;
+    
+    try {
+      schema.validateSync(values, { abortEarly: false });
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const nextStep = () => {
     if (currentStep < steps.length) {
@@ -106,7 +146,7 @@ const isStepComplete = (stepId: string, values: unknown) => {
     }
   };
 
-  const handleSubmit = (values) => {
+  const handleSubmit = (values: FormValues) => {
     if (currentStep === steps.length) {
       alert('LOI Submitted Successfully!');
       console.log('Form Values:', values);
@@ -115,7 +155,7 @@ const isStepComplete = (stepId: string, values: unknown) => {
     }
   };
 
-  const renderStepContent = (values) => {
+  const renderStepContent = (values: FormValues) => {
     switch (currentStep) {
       case 1:
         return (
