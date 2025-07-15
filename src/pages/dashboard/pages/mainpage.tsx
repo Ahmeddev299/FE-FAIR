@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, User, MapPin, Calendar, Building, Clock, Eye } from 'lucide-react';
+import {MapPin, Calendar, Eye } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 
 function MainPage() {
@@ -122,31 +122,11 @@ function MainPage() {
                         <div className="flex items-center justify-between h-28">
                             <div className="items-center space-x-4">
                                 <h1 className="text-2xl font-bold text-gray-900">Welcome back, John!</h1>
-                                <p className="text-lg text-gray-500">Here's what's happening with your leases and lots today</p>
+                                <p className="text-lg text-gray-500">Here is what is happening with your leases and lots today</p>
                             </div>
                         </div>
                     </div>
                 </header>
-
-                {/* Navigation Tabs */}
-                {/* <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <button className="py-4 px-2 border-b-2 border-blue-500 text-blue-600 font-medium text-sm">
-              All Events
-            </button>
-            <button className="py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm">
-              All Leases
-            </button>
-            <button className="py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm">
-              All Listings
-            </button>
-            <button className="py-4 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm">
-              All Types
-            </button>
-          </div>
-        </div>
-      </nav> */}
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8">

@@ -1,20 +1,41 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Edit, MessageSquare, Check, AlertTriangle, Clock, Eye, FileText, ChevronDown, X, Download, History } from 'lucide-react';
+import { ArrowLeft, Edit, MessageSquare, Check, AlertTriangle, Clock, Eye, FileText, ChevronDown } from 'lucide-react';
 import ClauseDetailsModel from '@/components/models/clauseDetailsModel';
 import { DashboardLayout } from '@/components/layouts';
-import DocumentPreviewModal from '@/components/models/clauseDetailsModel';
+import { DocumentPreviewModal} from '@/components/models/documentPreviewModel'; // or correct path
 
-const ClauseManagement = () => {
-    const [selectedStatus, setSelectedStatus] = useState('All Status');
-    const [selectedRisk, setSelectedRisk] = useState('All Risk Levels');
-    const [selectedCategory, setSelectedCategory] = useState('Category');
-    const [showDocumentPreview, setShowDocumentPreview] = useState(false);
-    const [showClauseDetail, setShowClauseDetail] = useState(false);
-    const [selectedClause, setSelectedClause] = useState(null);
-    const [newComment, setNewComment] = useState('');
+// Type definitions
+type ClauseStatus = 'Edited' | 'AI Suggested' | 'Approved' | 'Needs Review';
+type RiskLevel = 'High' | 'Medium' | 'Low';
+type Category = 'Financial' | 'Legal' | 'Operational';
 
+interface Clause {
+    id: number;
+    name: string;
+    description: string;
+    status: ClauseStatus;
+    risk: RiskLevel;
+    lastEdited: string;
+    editor: string;
+    comments: number;
+    unresolved: boolean;
+}
 
-    const clauses = [
+// Filter types
+type StatusFilter = 'All Status' | ClauseStatus;
+type RiskFilter = 'All Risk Levels' | RiskLevel;
+type CategoryFilter = 'Category' | Category;
+
+const ClauseManagement: React.FC = () => {
+    const [selectedStatus, setSelectedStatus] = useState<StatusFilter>('All Status');
+    const [selectedRisk, setSelectedRisk] = useState<RiskFilter>('All Risk Levels');
+    const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('Category');
+    const [showDocumentPreview, setShowDocumentPreview] = useState<boolean>(false);
+    const [showClauseDetail, setShowClauseDetail] = useState<boolean>(false);
+    const [selectedClause, setSelectedClause] = useState<Clause | null>(null);
+    const [newComment, setNewComment] = useState<string>('');
+
+    const clauses: Clause[] = [
         {
             id: 1,
             name: 'Common Area Maintenance',
@@ -61,7 +82,7 @@ const ClauseManagement = () => {
         }
     ];
 
-    const getStatusColor = (status) => {
+    const getStatusColor = (status: ClauseStatus): string => {
         switch (status) {
             case 'Edited': return 'bg-purple-100 text-purple-700';
             case 'AI Suggested': return 'bg-blue-100 text-blue-700';
@@ -71,7 +92,7 @@ const ClauseManagement = () => {
         }
     };
 
-    const getRiskColor = (risk) => {
+    const getRiskColor = (risk: RiskLevel): string => {
         switch (risk) {
             case 'High': return 'text-red-600';
             case 'Medium': return 'text-yellow-600';
@@ -80,25 +101,47 @@ const ClauseManagement = () => {
         }
     };
 
-    const handleClauseClick = (clause) => {
-        setSelectedClause(clause);
-        setShowClauseDetail(true);
-    };
-
-    const handleAddComment = () => {
+    const handleAddComment = (): void => {
         if (newComment.trim()) {
             // Add comment logic here
             setNewComment('');
         }
     };
 
-    const getRiskIcon = (risk) => {
-        switch (risk) {
-            case 'High': return <AlertTriangle className="h-4 w-4" />;
-            case 'Medium': return <Clock className="h-4 w-4" />;
-            case 'Low': return <Check className="h-4 w-4" />;
-            default: return null;
-        }
+   const getRiskIcon = (risk: RiskLevel): React.ReactElement | null => {
+  switch (risk) {
+    case 'High': return <AlertTriangle className="h-4 w-4" />;
+    case 'Medium': return <Clock className="h-4 w-4" />;
+    case 'Low': return <Check className="h-4 w-4" />;
+    default: return null;
+  }
+};
+
+
+    const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+        setSelectedStatus(event.target.value as StatusFilter);
+    };
+
+    const handleRiskChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+        setSelectedRisk(event.target.value as RiskFilter);
+    };
+
+    const handleCategoryChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+        setSelectedCategory(event.target.value as CategoryFilter);
+    };
+
+    const handleEditClause = (clause: Clause): void => {
+        setSelectedClause(clause);
+        setShowClauseDetail(true);
+    };
+
+    const handleCloseClauseDetail = (): void => {
+        setShowClauseDetail(false);
+        setSelectedClause(null);
+    };
+
+    const handleCloseDocumentPreview = (): void => {
+        setShowDocumentPreview(false);
     };
 
     return (
@@ -151,13 +194,13 @@ const ClauseManagement = () => {
                                                 <select
                                                     className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     value={selectedStatus}
-                                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                                    onChange={handleStatusChange}
                                                 >
-                                                    <option>All Status</option>
-                                                    <option>Edited</option>
-                                                    <option>AI Suggested</option>
-                                                    <option>Approved</option>
-                                                    <option>Needs Review</option>
+                                                    <option value="All Status">All Status</option>
+                                                    <option value="Edited">Edited</option>
+                                                    <option value="AI Suggested">AI Suggested</option>
+                                                    <option value="Approved">Approved</option>
+                                                    <option value="Needs Review">Needs Review</option>
                                                 </select>
                                                 <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                             </div>
@@ -165,12 +208,12 @@ const ClauseManagement = () => {
                                                 <select
                                                     className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     value={selectedRisk}
-                                                    onChange={(e) => setSelectedRisk(e.target.value)}
+                                                    onChange={handleRiskChange}
                                                 >
-                                                    <option>All Risk Levels</option>
-                                                    <option>High</option>
-                                                    <option>Medium</option>
-                                                    <option>Low</option>
+                                                    <option value="All Risk Levels">All Risk Levels</option>
+                                                    <option value="High">High</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="Low">Low</option>
                                                 </select>
                                                 <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                             </div>
@@ -178,12 +221,12 @@ const ClauseManagement = () => {
                                                 <select
                                                     className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     value={selectedCategory}
-                                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                                    onChange={handleCategoryChange}
                                                 >
-                                                    <option>Category</option>
-                                                    <option>Financial</option>
-                                                    <option>Legal</option>
-                                                    <option>Operational</option>
+                                                    <option value="Category">Category</option>
+                                                    <option value="Financial">Financial</option>
+                                                    <option value="Legal">Legal</option>
+                                                    <option value="Operational">Operational</option>
                                                 </select>
                                                 <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                             </div>
@@ -260,10 +303,7 @@ const ClauseManagement = () => {
                                                         )}
                                                         <button
                                                             className="p-1 text-gray-400 hover:text-gray-600"
-                                                            onClick={() => {
-                                                                setSelectedClause(clause); // optional, if you want to pass data
-                                                                setShowClauseDetail(true);
-                                                            }}
+                                                            onClick={() => handleEditClause(clause)}
                                                         >
                                                             <Edit className="h-4 w-4" />
                                                         </button>
@@ -368,18 +408,16 @@ const ClauseManagement = () => {
                 </div>
             </div>
             {showDocumentPreview && (
-                <DocumentPreviewModal onClose={() => setShowDocumentPreview(false)} />
+                <DocumentPreviewModal onClose={handleCloseDocumentPreview} />
             )}
-
-
 
             {showClauseDetail && (
                 <ClauseDetailsModel
                     handleAddComment={handleAddComment}
                     newComment={newComment}
                     setNewComment={setNewComment}
-                    onClose={() => setShowClauseDetail(false)}
-                    clause={selectedClause} // optional
+                    onClose={handleCloseClauseDetail}
+                    clause={selectedClause}
                 />
             )}
         </DashboardLayout>

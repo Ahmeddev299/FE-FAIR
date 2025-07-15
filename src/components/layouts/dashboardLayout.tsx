@@ -2,6 +2,7 @@ import { ProtectedRoute } from '../layouts/protectedRoutes';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser, userLogout } from '../../redux/slices/userSlice';
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 
 interface DashboardLayoutProps {
@@ -39,7 +40,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         {/* Sidebar for desktop */}
         <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
           <div className="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
-            <img src={backgroundImage} className="h-20 w-auto" />
+            <Image alt="Logo" src={backgroundImage} className="h-20 w-auto" />
             <div className="mt-5 flex-grow flex flex-col">
               <nav className="flex-1 px-2 pb-4 space-y-1">
                 {navigation.map((item) => (
@@ -51,7 +52,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
-                    <img src={item.icon} alt={item.name} className="w-6 h-6 mr-3" />
+                    <Image src={item.icon} alt={item.name} className="w-6 h-6 mr-3" />
                     {item.name}
                   </a>
                 ))}
@@ -65,7 +66,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                         } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                     >
-                      <img src={item.icon} alt={item.name} className="w-6 h-6 mr-3" />
+                      <Image src={item.icon} alt={item.name} className="w-6 h-6 mr-3" />
                       {item.name}
                     </a>
                   ))}

@@ -82,17 +82,17 @@ const CreateLoiForm = () => {
     }),
   };
 
-  const isStepComplete = (stepId, values, errors) => {
-    const schema = validationSchemas[stepId];
-    if (!schema) return false;
-    
-    try {
-      schema.validateSync(values, { abortEarly: false });
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
+const isStepComplete = (stepId: string, values: unknown) => {
+  const schema = validationSchemas[stepId];
+  if (!schema) return false;
+  
+  try {
+    schema.validateSync(values, { abortEarly: false });
+    return true;
+  } catch {
+    return false;
+  }
+};
 
   const nextStep = () => {
     if (currentStep < steps.length) {
@@ -115,13 +115,13 @@ const CreateLoiForm = () => {
     }
   };
 
-  const renderStepContent = (values, setFieldValue, errors, touched) => {
+  const renderStepContent = (values) => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-            <p>Let's start with the essential details about your LOI and the parties involved.</p>
+            <p>Lets start with the essential details about your LOI and the parties involved.</p>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column - LOI & Property Details */}
@@ -630,7 +630,7 @@ const CreateLoiForm = () => {
               <h4 className="font-semibold text-blue-900 mb-2">Next Steps</h4>
               <ol className="text-sm text-blue-800 space-y-1">
                 <li>1. LOI will be sent to the landlord for review</li>
-                <li>2. You'll receive notifications about the status</li>
+                <li>2. You will receive notifications about the status</li>
                 <li>3. Negotiate terms and proceed to lease agreement</li>
               </ol>
             </div>

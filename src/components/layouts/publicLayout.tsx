@@ -1,6 +1,7 @@
 interface PublicLayoutProps {
   children: React.ReactNode;
 }
+import Link from 'next/link';
 
 export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   return (
@@ -15,18 +16,18 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <a
+              <Link
                 href="/auth/login"
                 className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
                 Login
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/auth/signup"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 Sign Up
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -4,6 +4,27 @@ import { authBaseService } from "./endpoints"; // Import your authService
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 
+interface LoginUserData {
+  email: string;
+  password: string;
+  // add other properties as needed
+}
+
+interface UserData {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  fullName?: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: string;
+  isVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+
 export const userAuthAsync = createAsyncThunk(
   "/auth",
   async (data, { rejectWithValue }) => {
@@ -20,7 +41,7 @@ export const userAuthAsync = createAsyncThunk(
 
 export const userSignUpAsync = createAsyncThunk(
   "/auth/sign-Up",
-  async (data, { rejectWithValue }) => {
+  async (data : UserData, { rejectWithValue }) => {
     try {
       const response = await authBaseService.signUp(data);
       console.log("response 26",response)
@@ -47,7 +68,7 @@ export const userSignUpAsync = createAsyncThunk(
 
 export const userSignInAsync = createAsyncThunk(
   "/auth/sign-in",
-  async (data, { rejectWithValue }) => {
+  async (data : LoginUserData, { rejectWithValue }) => {
     try {
       const response = await authBaseService.signIn(data);
       return response.data;

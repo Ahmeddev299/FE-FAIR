@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Formik, Form } from 'formik';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch } from '@/hooks/hooks';
+import { FormikHelpers } from 'formik';
 
 // Import validation schemas
 import { SignupSchema } from '../../validations/schemas';
@@ -37,9 +36,50 @@ import { userSignUpAsync } from '@/services/auth/asyncThunk';
 import Toast from '@/components/Toast';
 import { AuthLayout } from '@/components/layouts';
 
+interface SignUpUserData extends Record<string, unknown> {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: string;
+    conditions: boolean;
+}
+
+interface SignUpFormData extends Record<string, unknown> {
+    fullName: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: string;
+}
+
+interface UserData {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+    role?: string;
+    isVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+interface SignUpResponse {
+    message: string;
+    success: boolean;
+    data?: {
+        user: UserData;
+        token?: string;
+        refreshToken?: string;
+    };
+}
+
 const SignUp = () => {
     const router = useRouter();
-    const dispatch = useDispatch()
+    const dispatch = useAppDispatch();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [authError, setAuthError] = useState('');
@@ -55,11 +95,17 @@ const SignUp = () => {
         console.log('Google Auth clicked');
     };
 
-    const registerUser = async (userData) => {
-        console.log("userData 57", userData)
-        const formData = {
+    const registerUser = async (userData: Partial<SignUpUserData>) => {
+        console.log("userData 57", userData);
+        
+        const formData: SignUpFormData = {
             fullName: `${userData.firstName} ${userData.lastName}`,
-            ...userData
+            firstName: userData.firstName as string,
+            lastName: userData.lastName as string,
+            email: userData.email as string,
+            password: userData.password as string,
+            confirmPassword: userData.confirmPassword as string,
+            role: userData.role as string,
         };
 
         try {
@@ -70,25 +116,41 @@ const SignUp = () => {
         }
     };
 
-    const handleSuccess = (response) => {
-        console.log("response", response)
+    const handleSuccess = (response: unknown, formikActions: FormikHelpers<SignUpUserData>) => {
+        console.log("response", response);
+        
+        const signUpResponse = response as SignUpResponse;
+        
         Toast.fire({
             icon: "success",
-            title: response.message,
-            text: `Regestration Success, ${response?.data?.user?.firstName || 'User'}!`
-        }); router.push('/auth/login');
+            title: signUpResponse.message || 'Registration successful',
+            text: `Registration Success, ${signUpResponse?.data?.user?.firstName || 'User'}!`
+        });
+        
+        // Reset form
+        formikActions.setSubmitting(false);
+        formikActions.resetForm();
+        
+        router.push('/auth/login');
     };
 
-    const handleError = (error) => {
+    const handleError = (error: unknown, formikActions: FormikHelpers<SignUpUserData>) => {
         console.error('Signup error:', error);
-        setAuthError(error.message || 'Signup failed. Try again.');
+        
+        if (error && typeof error === 'object' && 'message' in error) {
+            setAuthError((error as { message: string }).message);
+        } else {
+            setAuthError('Signup failed. Try again.');
+        }
+        
+        formikActions.setSubmitting(false);
     };
 
-    const handleSubmit = createFormSubmissionHandler(
+    const handleSubmit = createFormSubmissionHandler<SignUpUserData>(
         registerUser,
         handleSuccess,
         handleError,
-        { formatData: true, excludeFields: ['agreeToTerms'] }
+        { formatData: true, excludeFields: ['conditions'] }
     );
 
     return (
@@ -103,7 +165,7 @@ const SignUp = () => {
                     {authError && <Alert type="error" message={authError} className="mb-6" />}
 
                     <SocialAuthButton
-                        provider="google"
+                    
                         onClick={handleGoogleAuth}
                         icon={GoogleIcon}
                         className="mb-6"

@@ -1,31 +1,90 @@
-// formik/utils.js
+import { FormikHelpers } from 'formik';
 
-// Common initial values for forms
-export const authInitialValues = {
+export interface AuthInitialValues {
   login: {
-    email: '',
-    password: '',
-    agreeToTerms: false
-  },
+    email: string;
+    password: string;
+    agreeToTerms: boolean;
+  };
+  signup: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: string;
+    conditions: boolean;
+  };
+  resetRequest: {
+    email: string;
+  };
+  changePassword: {
+    password: string;
+    confirm_password: string;
+  };
+}
+
+export interface ProfileInitialValues {
+  setup: {
+    title: string;
+    org: string;
+    years_exp: string;
+    area_interest: string[];
+    legislation: string[];
+    bio: string;
+    campaign_type: string[];
+    strategy_goal: string[];
+    region: string[];
+    stakeholders: string[];
+    com_channel: string[];
+    collab_initiatives: boolean;
+    network: string[];
+  };
+  edit: {
+    fullname: string;
+    avatar: string;
+    only_avatar: boolean;
+    role: string;
+    country: string;
+    sector: string[];
+    objective: string;
+    bio: string;
+  };
+  updatePassword: {
+    currentPassword: string;
+    newPassword: string;
+  };
+  email: {
+    email: string;
+  };
+}
+
+export interface FormikErrorResponse {
+  response?: {
+    data?: {
+      errors?: Record<string, string[]>;
+      message?: string;
+    };
+  };
+}
+
+// --- Initial Values ---
+export const authInitialValues: AuthInitialValues = {
+  login: { email: '', password: '', agreeToTerms: false },
   signup: {
     firstName: '',
-    lastName:'',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
     role: '',
     conditions: false,
   },
-  resetRequest: {
-    email: ''
-  },
-  changePassword: {
-    password: '',
-    confirm_password: ''
-  }
+  resetRequest: { email: '' },
+  changePassword: { password: '', confirm_password: '' },
 };
 
-export const profileInitialValues = {
+export const profileInitialValues: ProfileInitialValues = {
   setup: {
     title: '',
     org: '',
@@ -39,7 +98,7 @@ export const profileInitialValues = {
     stakeholders: [],
     com_channel: [],
     collab_initiatives: false,
-    network: []
+    network: [],
   },
   edit: {
     fullname: '',
@@ -49,44 +108,38 @@ export const profileInitialValues = {
     country: '',
     sector: [],
     objective: '',
-    bio: ''
+    bio: '',
   },
-  updatePassword: {
-    currentPassword: '',
-    newPassword: ''
-  },
-  email: {
-    email: ''
-  }
+  updatePassword: { currentPassword: '', newPassword: '' },
+  email: { email: '' },
 };
 
-// Helper functions for form handling
-export const handleFormError = (error, setFieldError) => {
+// --- Error Handler ---
+export const handleFormError = (
+  error: FormikErrorResponse,
+  setFieldError: (field: string, message: string) => void
+): void => {
   if (error.response?.data?.errors) {
-    // Handle validation errors from API
-    Object.keys(error.response.data.errors).forEach(field => {
-      setFieldError(field, error.response.data.errors[field][0]);
+    Object.entries(error.response.data.errors).forEach(([field, messages]) => {
+      setFieldError(field, messages[0]);
     });
   } else if (error.response?.data?.message) {
-    // Handle general error messages
     setFieldError('general', error.response.data.message);
   } else {
-    // Handle unknown errors
     setFieldError('general', 'An unexpected error occurred');
   }
 };
 
-export const formatFormData = (values, excludeFields = []) => {
+// --- Format Data ---
+export const formatFormData = <T extends Record<string, unknown>>(
+  values: T,
+  excludeFields: string[] = []
+): Partial<T> => {
   const formData = { ...values };
+  excludeFields.forEach(field => delete formData[field]);
 
-  // Remove excluded fields
-  excludeFields.forEach(field => {
-    delete formData[field];
-  });
-
-  // Remove empty strings and null values
   Object.keys(formData).forEach(key => {
-    if (formData[key] === '' || formData[key] === null) {
+    if (formData[key] === '' || formData[key] == null) {
       delete formData[key];
     }
   });
@@ -95,81 +148,73 @@ export const formatFormData = (values, excludeFields = []) => {
 };
 
 // Form validation helpers
-export const validatePasswordMatch = (password, confirmPassword) => {
-  return password === confirmPassword;
-};
+// --- Validations ---
+export const validatePasswordMatch = (password: string, confirmPassword: string): boolean =>
+  password === confirmPassword;
 
-export const validateEmailFormat = (email) => {
+export const validateEmailFormat = (email: string): boolean => {
   const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
   return emailRegex.test(email);
 };
 
-// Async validation function
-export const validateEmailExists = async (email) => {
+export const validateEmailExists = async (): Promise<boolean> => {
   try {
-    // Replace with your actual API call
-    // const response = await checkEmailExists(email);
-    // return response.exists;
-    return false; // Placeholder
+    return false; // Replace with real logic
   } catch (error) {
     console.error('Email validation error:', error);
     return false;
   }
 };
 
+// --- Submission Handler ---
+interface FormOptions<T> {
+  formatData?: boolean;
+  excludeFields?: (keyof T)[];
+}
+
 // Form submission helpers
-export const createFormSubmissionHandler = (
-  apiCall,
-  successCallback,
-  errorCallback,
-  options = {}
-) => {
-  return async (values, formikActions) => {
+export function createFormSubmissionHandler<T extends Record<string, unknown>>(
+  apiCall: (data: Partial<T>) => Promise<unknown>,
+  successCallback?: (response: unknown, actions: FormikHelpers<T>) => void,
+  errorCallback?: (error: unknown, actions: FormikHelpers<T>) => void,
+  options: FormOptions<T> = {}
+) {
+  return async (values: T, formikActions: FormikHelpers<T>) => {
     const { setSubmitting, setFieldError, setStatus } = formikActions;
 
-    console.log("values 129", values)
     try {
-      setStatus(null);
+      setStatus?.(null);
 
-      // Format form data if needed
-      const formData = options.formatData ?
-        formatFormData(values, options.excludeFields) :
-        values;
+      const formData = options.formatData
+        ? formatFormData(values, options.excludeFields as string[])
+        : values;
 
-      // Make API call
       const response = await apiCall(formData);
 
-      // Handle success
-      if (successCallback) {
-        successCallback(response, formikActions);
-      }
-
+      successCallback?.(response, formikActions);
     } catch (error) {
       console.error('Form submission error:', error);
-
-      // Handle errors
       if (errorCallback) {
         errorCallback(error, formikActions);
       } else {
-        handleFormError(error, setFieldError);
+        handleFormError(error as FormikErrorResponse, setFieldError);
       }
     } finally {
       setSubmitting(false);
     }
   };
-};
+}
 
 // Form reset helpers
-export const resetFormWithDelay = (resetForm, delay = 3000) => {
-  setTimeout(() => {
-    resetForm();
-  }, delay);
+export const resetFormWithDelay = (resetForm: () => void, delay = 3000) => {
+  setTimeout(resetForm, delay);
 };
 
-// Field value transformers
+// --- Transformers ---
 export const transformers = {
-  email: (value) => value.toLowerCase().trim(),
-  phone: (value) => value.replace(/\D/g, ''),
-  name: (value) => value.trim().replace(/\s+/g, ' '),
-  capitalize: (value) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+  email: (value: string) => value.toLowerCase().trim(),
+  phone: (value: string) => value.replace(/\D/g, ''),
+  name: (value: string) => value.trim().replace(/\s+/g, ' '),
+  capitalize: (value: string) =>
+    value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),
 };

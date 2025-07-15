@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Toast from "@/components/Toast";
 import {
-  userAuthAsync,
   userForgetRequestAsync,
   userResetPasswordAsync,
   userSignInAsync,
@@ -81,7 +80,7 @@ export const userSlice = createSlice({
       .addCase(userSignUpAsync.pending, (state: any) => {
         state.isLoading = true;
       })
-      .addCase(userSignUpAsync.fulfilled, (state: any, action: any) => {
+      .addCase(userSignUpAsync.fulfilled, (state: any, ) => {
         state.isLoading = false;
         state.signUpSuccess = true;
       })

@@ -1,16 +1,17 @@
 // formik/components.tsx
 import React from 'react';
+import type { InputHTMLAttributes } from 'react';
+import type { SelectHTMLAttributes } from 'react';
 import { Field, ErrorMessage } from 'formik';
 import { Eye, EyeOff } from 'lucide-react';
 
 // Types
-interface BaseFieldProps {
+interface BaseFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'name'> {
   label: string;
   name: string;
   placeholder?: string;
   className?: string;
   labelClassName?: string;
-  [key: string]: any;
 }
 
 interface PasswordFieldProps extends BaseFieldProps {
@@ -23,26 +24,35 @@ interface SelectOption {
   label: string;
 }
 
-interface SelectFieldProps extends BaseFieldProps {
+interface SelectFieldProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'name'> {
+  label: string;
+  name: string;
+  placeholder?: string;
   options: (SelectOption | string)[];
+  className?: string;
 }
 
-interface SubmitButtonProps {
+interface FormikTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'name'> {
+  label: string;
+  name: string;
+  rows?: number;
+}
+
+interface SubmitButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
   children: React.ReactNode;
   isSubmitting: boolean;
   loadingText?: string;
   className?: string;
-  [key: string]: any;
 }
 
-export const FormikInput: React.FC<BaseFieldProps> = ({ 
-  label, 
-  name, 
-  type = "text", 
-  placeholder, 
+export const FormikInput: React.FC<BaseFieldProps> = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
   className = "",
   labelClassName = "",
-  ...props 
+  ...props
 }) => {
   return (
     <div className="mb-4">
@@ -54,23 +64,23 @@ export const FormikInput: React.FC<BaseFieldProps> = ({
         className={`w-full px-3 py-2.5 text-[18px] font-bold border border-2  border-gray-200 focus:outline-none text-[#BABABA] ${className}`}
         {...props}
       />
-      <ErrorMessage 
-        name={name} 
-        component="div" 
-        className="text-red-500 text-xs md:text-sm mt-1 font-medium" 
+      <ErrorMessage
+        name={name}
+        component="div"
+        className="text-red-500 text-xs md:text-sm mt-1 font-medium"
       />
     </div>
   );
 };
-                        
-export const FormikPasswordInput: React.FC<PasswordFieldProps> = ({ 
-  label, 
-  name, 
-  placeholder, 
-  showPassword, 
+
+export const FormikPasswordInput: React.FC<PasswordFieldProps> = ({
+  label,
+  name,
+  placeholder,
+  showPassword,
   onTogglePassword,
   className = "",
-  ...props 
+  ...props
 }) => {
   return (
     <div className="mb-4">
@@ -91,21 +101,21 @@ export const FormikPasswordInput: React.FC<PasswordFieldProps> = ({
           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
         </button>
       </div>
-      <ErrorMessage 
-        name={name} 
-        component="div" 
-        className="text-red-500 text-xs md:text-sm mt-1 font-medium" 
+      <ErrorMessage
+        name={name}
+        component="div"
+        className="text-red-500 text-xs md:text-sm mt-1 font-medium"
       />
     </div>
   );
 };
 
-export const FormikCheckbox: React.FC<BaseFieldProps> = ({ 
-  label, 
-  name, 
+export const FormikCheckbox: React.FC<BaseFieldProps> = ({
+  label,
+  name,
   className = "",
   labelClassName = "",
-  ...props 
+  ...props
 }) => {
   return (
     <div className="mb-4">
@@ -120,33 +130,37 @@ export const FormikCheckbox: React.FC<BaseFieldProps> = ({
           {label}
         </label>
       </div>
-      <ErrorMessage 
-        name={name} 
-        component="div" 
-        className="text-red-500 text-xs md:text-sm mt-1 font-medium" 
+      <ErrorMessage
+        name={name}
+        component="div"
+        className="text-red-500 text-xs md:text-sm mt-1 font-medium"
       />
     </div>
   );
 };
 
-export const FormikSelect: React.FC<SelectFieldProps> = ({ 
-  label, 
-  name, 
-  options = [], 
+export const FormikSelect: React.FC<SelectFieldProps> = ({
+  label,
+  name,
+  options = [],
   placeholder = "Select an option",
   className = "",
-  ...props 
+  ...props
 }) => {
   return (
     <div className="mb-4">
-      <label className="block text-sm md:text-base font-semibold text-gray-700 mb-2">{label}</label>
+      <label className="block text-sm md:text-base font-semibold text-gray-700 mb-2">
+        {label}
+      </label>
       <Field
         as="select"
         name={name}
-        className={`w-full px-3 py-2.5 md:py-3 text-sm md:text-base border-2 border-gray-200  focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${className}`}
+        className={`w-full px-3 py-2.5 md:py-3 text-sm md:text-base border-2 border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 ${className}`}
         {...props}
       >
-        <option value="" disabled>{placeholder}</option>
+        <option value="" disabled>
+          {placeholder}
+        </option>
         {options.map((option, index) => (
           <option
             key={index}
@@ -156,22 +170,22 @@ export const FormikSelect: React.FC<SelectFieldProps> = ({
           </option>
         ))}
       </Field>
-      <ErrorMessage 
-        name={name} 
-        component="div" 
-        className="text-red-500 text-xs md:text-sm mt-1 font-medium" 
+      <ErrorMessage
+        name={name}
+        component="div"
+        className="text-red-500 text-xs md:text-sm mt-1 font-medium"
       />
     </div>
   );
 };
 
-export const FormikTextarea: React.FC<BaseFieldProps & { rows?: number }> = ({ 
-  label, 
-  name, 
-  placeholder, 
+export const FormikTextarea: React.FC<FormikTextareaProps> = ({
+  label,
+  name,
+  placeholder,
   rows = 4,
   className = "",
-  ...props 
+  ...props
 }) => {
   return (
     <div className="mb-4">
@@ -184,21 +198,21 @@ export const FormikTextarea: React.FC<BaseFieldProps & { rows?: number }> = ({
         className={`w-full px-3 py-2.5 md:py-3 text-sm md:text-base border-2 border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 placeholder-gray-400 resize-vertical ${className}`}
         {...props}
       />
-      <ErrorMessage 
-        name={name} 
-        component="div" 
-        className="text-red-500 text-xs md:text-sm mt-1 font-medium" 
+      <ErrorMessage
+        name={name}
+        component="div"
+        className="text-red-500 text-xs md:text-sm mt-1 font-medium"
       />
     </div>
   );
 };
 
-export const FormikSubmitButton: React.FC<SubmitButtonProps> = ({ 
-  children, 
-  isSubmitting, 
+export const FormikSubmitButton: React.FC<SubmitButtonProps> = ({
+  children,
+  isSubmitting,
   loadingText = "Loading...",
   className = "",
-  ...props 
+  ...props
 }) => {
   return (
     <button

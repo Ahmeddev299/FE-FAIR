@@ -1,9 +1,9 @@
-import React, { useReducer, useState } from 'react';
+import React, {  useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Upload, FileText, X, CheckCircle, AlertCircle, Bell, HelpCircle } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -156,7 +156,7 @@ function UploadLeaseForm() {
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ setFieldValue, values, errors, touched, isSubmitting }) =>
+                        {({ setFieldValue, errors, touched, isSubmitting }) =>
                             <Form>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     {/* Left Column - Upload Section */}

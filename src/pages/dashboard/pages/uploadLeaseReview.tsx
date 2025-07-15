@@ -4,7 +4,6 @@ import {
   Download, 
   FileText, 
   Search, 
-  ChevronDown,
   CheckCircle,
   AlertTriangle,
   AlertCircle,
@@ -16,10 +15,7 @@ import {
   Scale,
   Bot,
   ExternalLink,
-  Star,
   Menu,
-  ChevronLeft,
-  ChevronRight
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 
@@ -338,7 +334,7 @@ function LeaseClauseReview() {
               
               <div className="bg-blue-50 p-4 rounded-lg mb-6">
                 <p className="text-sm text-blue-800">
-                  I'm analyzing your lease clauses and providing personalized recommendations based on commercial lease best practices.
+                  I am analyzing your lease clauses and providing personalized recommendations based on commercial lease best practices.
                 </p>
               </div>
 

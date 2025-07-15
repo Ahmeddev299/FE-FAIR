@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Formik, Form } from 'formik';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch } from '@/hooks/hooks';
+import { FormikHelpers } from 'formik';
 
 // Import validation schemas
 import { LoginSchema } from '../../validations/schemas';
@@ -37,8 +38,37 @@ import { userSignInAsync } from '@/services/auth/asyncThunk';
 import Toast from '@/components/Toast';
 import { AuthLayout } from '@/components/layouts';
 
+interface LoginUserData extends Record<string, unknown> {
+  email: string;
+  password: string;
+  agreeToTerms: boolean;
+}
+
+interface UserData {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  avatar?: string;
+  isVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface LoginResponse {
+  message: string;
+  success: boolean;
+  data?: {
+    user: UserData;
+    token?: string;
+    refreshToken?: string;
+    expiresIn?: number;
+  };
+}
+
 const Login = () => {
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -51,15 +81,18 @@ const Login = () => {
     try {
       console.log('Google authentication clicked');
     } catch (error) {
-      console.error('Google auth error:', error);[]
+      console.error('Google auth error:', error)
       setAuthError('Google authentication failed. Please try again.');
     }
   };
 
-  const loginUser = async (userData) => {
-    console.log("userData 57", userData)
+  const loginUser = async (userData: Partial<LoginUserData>) => {
+    if (!userData.email || !userData.password) {
+      throw new Error("Email and password are required");
+    }
+
     try {
-      const result = await dispatch(userSignInAsync(userData)).unwrap();
+      const result = await dispatch(userSignInAsync(userData as LoginUserData)).unwrap();
       return result;
     } catch (error) {
       throw error;
@@ -67,12 +100,14 @@ const Login = () => {
   };
 
   // Success callback
-  const handleLoginSuccess = (response, formikActions) => {
-
+  const handleLoginSuccess = (response: unknown, formikActions: FormikHelpers<LoginUserData>) => {
+    // Type guard to ensure response is LoginResponse
+    const loginResponse = response as LoginResponse;
+    
     // Show success toast
     Toast.fire({
       icon: "success",
-      title: response.message,
+      title: loginResponse.message || 'Login successful',
       text: 'Welcome back User'
     });
 
@@ -84,18 +119,22 @@ const Login = () => {
 
     router.push('/dashboard/pages/mainpage');
   };
-  
+
   // Error callback
-  const handleLoginError = (error, formikActions) => {
+  const handleLoginError = (error: unknown) => {
     console.error('Login error:', error);
-    setAuthError(error.message || 'Login failed. Please check your credentials.');
+
+    if (error && typeof error === 'object' && 'message' in error) {
+      setAuthError((error as { message: string }).message);
+    } else {
+      setAuthError('Login failed. Please check your credentials.');
+    }
   };
 
-  const handleSubmit = createFormSubmissionHandler(
+  const handleSubmit = createFormSubmissionHandler<LoginUserData>(
     loginUser,
     handleLoginSuccess,
     handleLoginError,
-    { formatData: true, excludeFields: ['agreeToTerms'] }
   );
 
   return (
@@ -117,7 +156,6 @@ const Login = () => {
           )}
 
           <SocialAuthButton
-            provider="google"
             onClick={handleGoogleAuth}
             icon={GoogleIcon}
             className="mb-6"
@@ -149,7 +187,6 @@ const Login = () => {
                   onTogglePassword={togglePasswordVisibility}
                 />
 
-
                 <div className="text-right mb-4">
                   <Link
                     href="/auth/resetpassword"
@@ -177,7 +214,7 @@ const Login = () => {
 
           <div className="text-center mt-6 md:mt-8">
             <p className="text-gray-600 text-sm md:text-base">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <AuthLink onClick={() => router.push('/auth/signup')}>
                 Sign Up
               </AuthLink>

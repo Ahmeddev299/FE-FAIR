@@ -1,7 +1,7 @@
 // components/ProtectedRoute.tsx
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import ls from 'localstorage-slim';
 import { userAuthAsync } from '@/services/auth/asyncThunk';
 import { selectUser } from '@/redux/slices/userSlice';
@@ -16,8 +16,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo = '/auth/login' 
 }) => {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { profile, isLoading } = useSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const { profile, isLoading } = useAppSelector(selectUser);
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
         // If we have a token but no profile, verify the token
         if (!profile?.id) {
-          await dispatch(userAuthAsync() as any);
+          await dispatch(userAuthAsync());
         }
       } catch (error) {
         console.error('Auth check failed:', error);

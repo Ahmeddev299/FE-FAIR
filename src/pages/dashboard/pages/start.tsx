@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, FileText, Clock, Users, HelpCircle, Zap, CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, FileText, HelpCircle, Zap, CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 
@@ -84,7 +84,7 @@ export default function LetterOfIntentDashboard() {
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4 h-52">
-                <h3 className="font-medium text-gray-900 mb-3">What you'll get:</h3>
+                <h3 className="font-medium text-gray-900 mb-3">What you will get:</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="flex items-center">
                     <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
