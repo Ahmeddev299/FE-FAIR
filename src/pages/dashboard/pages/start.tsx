@@ -3,11 +3,21 @@ import { Plus, FileText, HelpCircle, Zap, CheckCircle, Search, Filter, MoreHoriz
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 
+type LOIStatus = 'Draft' | 'Sent' | 'Approved';
+interface Letter {
+  id: number;
+  title: string;
+  propertyAddress: string;
+  lastEdited: string;
+  status: LOIStatus;
+  assignee: string;
+}
+
 export default function LetterOfIntentDashboard() {
   const [activeTab, setActiveTab] = useState('all');
   const router = useRouter();
 
-  const sampleLetters = [
+  const sampleLetters : Letter[] = [
     {
       id: 1,
       title: 'Downtown Office Space LOI',
@@ -34,7 +44,7 @@ export default function LetterOfIntentDashboard() {
     }
   ];
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: LOIStatus) => {
     switch (status) {
       case 'Draft': return 'bg-gray-100 text-gray-800';
       case 'Sent': return 'bg-blue-100 text-blue-800';

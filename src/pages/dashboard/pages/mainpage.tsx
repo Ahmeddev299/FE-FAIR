@@ -1,99 +1,124 @@
 import React from 'react';
-import {MapPin, Calendar, Eye } from 'lucide-react';
+import { MapPin, Calendar, Eye } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 
+type Status = 'available' | 'pending' | 'active' | 'in review' | 'terminated';
+type Priority = 'high' | 'urgent' | 'medium';
+
+type Listing = {
+    name: string;
+    address: string;
+    status: Status;
+    lastUpdate: string;
+    type: string;
+};
+
+type Lease = {
+    tenant: string;
+    address: string;
+    status: Status;
+    lastUpdate: string;
+};
+
+type Event = {
+  title: string;
+  date: string;
+  type: Priority;
+  location: string;
+};
+
 function MainPage() {
-    const listings = [
+    const listings: Listing[] = [
         {
             name: "Downtown Office Space",
             address: "123 Main St, Downtown",
-            status: "Available",
+            status: "available", // lowercase
             lastUpdate: "2 days ago",
             type: "Downtown Office Space"
         },
         {
             name: "Retail Space - Shopping Center",
             address: "456 Corporate Blvd, Midtown",
-            status: "Pending",
+            status: "pending",
             lastUpdate: "5 days ago",
             type: "Retail Space - Shopping Center"
         },
         {
             name: "Warehouse Facility",
             address: "789 Industrial Way, Eastside",
-            status: "Available",
+            status: "available",
             lastUpdate: "1 week ago",
             type: "Warehouse Facility"
         }
     ];
 
-    const leases = [
+    const leases: Lease[] = [
         {
             tenant: "Valley Tech",
             address: "890 Innovation Dr, Tech District",
-            status: "Active",
+            status: "active",
             lastUpdate: "1 day ago"
         },
         {
             tenant: "Office Labs - Tech Hub",
             address: "600 Innovation Dr, Tech District",
-            status: "Active",
+            status: "active",
             lastUpdate: "1 day ago"
         },
         {
             tenant: "Retail Space - Mall Location",
             address: "100 Shopping Center Blvd",
-            status: "Pending",
+            status: "pending",
             lastUpdate: "3 days ago"
         },
         {
             tenant: "Storage Facility",
             address: "200 Storage Lane, Industrial",
-            status: "In Review",
+            status: "in review",
             lastUpdate: "1 week ago"
         },
         {
             tenant: "Restaurant Space",
             address: "300 Food Court Ave",
-            status: "Terminated",
+            status: "terminated",
             lastUpdate: "2 weeks ago"
         }
     ];
 
-    const upcomingEvents = [
+    const upcomingEvents : Event[] = [
         {
             title: "Office Lease Renewal Due",
             date: "Jan 15, 2024",
-            type: "High",
+            type: "high",
             location: "123 Main St"
         },
         {
             title: "Lease Termination Notice",
             date: "Jan 20, 2024",
-            type: "Urgent",
+            type: "urgent",
             location: "Retail Space - Mall Location"
         },
         {
             title: "Document Review Required",
             date: "Jan 25, 2024",
-            type: "Medium",
+            type: "medium",
             location: "Various Properties"
         },
         {
             title: "Rent Payment Due",
             date: "Jan 30, 2024",
-            type: "High",
+            type: "high",
             location: "Warehouse Facility"
         },
         {
             title: "Rent Payment Due",
             date: "Jan 30, 2024",
-            type: "High",
+            type: "high",
             location: "Warehouse Facility"
         }
     ];
 
-    const getStatusColor = (status) => {
+    const getStatusColor = (status: Status) => {
         switch (status.toLowerCase()) {
             case 'available': return 'bg-green-100 text-green-800';
             case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -104,7 +129,7 @@ function MainPage() {
         }
     };
 
-    const getPriorityColor = (priority) => {
+    const getPriorityColor = (priority: Priority) => {
         switch (priority.toLowerCase()) {
             case 'high': return 'bg-orange-100 text-orange-800';
             case 'urgent': return 'bg-red-100 text-red-800';
@@ -141,7 +166,7 @@ function MainPage() {
                                 <div className="overflow-hidden">
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
-                                           <tr>
+                                            <tr>
                                                 <th className="px-6 py-3 text-left text-sm font-bold   ">
                                                     LOI Title
                                                 </th>
@@ -165,7 +190,7 @@ function MainPage() {
                                                     <td className="px-6 py-4">
                                                         <div>
                                                             <div className="text-sm font-medium text-black">{listing.name}</div>
-                                                        
+
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">

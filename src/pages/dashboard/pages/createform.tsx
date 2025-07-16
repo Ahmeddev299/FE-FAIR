@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Check, Info, RefreshCw, Wrench, FileText, AlertTriangle } from 'lucide-react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field, ErrorMessage  } from 'formik';
 import * as Yup from 'yup';
 import { DashboardLayout } from '@/components/layouts';
 
@@ -41,9 +41,8 @@ interface FormValues {
 }
 
 type ValidationSchemas = {
-  [key: number]: Yup.ObjectSchema<any>;
+  [key: number]: Yup.ObjectSchema<Partial<FormValues>>;
 };
-
 
 
 const CreateLoiForm: React.FC = () => {
@@ -93,34 +92,38 @@ const CreateLoiForm: React.FC = () => {
     terms: false
   };
 
-  const validationSchemas : ValidationSchemas = {
-    1: Yup.object({
-      loiTitle: Yup.string().required('LOI Title is required'),
-      propertyAddress: Yup.string().required('Property Address is required'),
-      landlordName: Yup.string().required('Landlord Name is required'),
-      landlordEmail: Yup.string().email('Invalid email').required('Landlord Email is required'),
-      tenantName: Yup.string().required('Tenant Name is required'),
-      tenantEmail: Yup.string().email('Invalid email').required('Tenant Email is required'),
-    }),
-    2: Yup.object({
-      rentAmount: Yup.number().positive('Rent amount must be positive').required('Monthly Rent is required'),
-      securityDeposit: Yup.number().positive('Security deposit must be positive').required('Security Deposit is required'),
-      propertyType: Yup.string().required('Property Type is required'),
-      leaseDuration: Yup.string().required('Lease Duration is required'),
-      startDate: Yup.date().required('Start Date is required'),
-    }),
-    3: Yup.object({
-      propertySize: Yup.number().positive('Property size must be positive').required('Property Size is required'),
-      intendedUse: Yup.string().required('Intended Use is required'),
-    }),
-    4: Yup.object({
-      improvementAllowance: Yup.number().min(0, 'Improvement allowance cannot be negative'),
-      specialConditions: Yup.string(),
-    }),
-    5: Yup.object({
-      terms: Yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
-    }),
-  };
+const validationSchemas: ValidationSchemas = {
+  1: Yup.object({
+    loiTitle: Yup.string().required('LOI Title is required'),
+    propertyAddress: Yup.string().required('Property Address is required'),
+    landlordName: Yup.string().required('Landlord Name is required'),
+    landlordEmail: Yup.string().email('Invalid email').required('Landlord Email is required'),
+    tenantName: Yup.string().required('Tenant Name is required'),
+    tenantEmail: Yup.string().email('Invalid email').required('Tenant Email is required'),
+  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+
+  2: Yup.object({
+    rentAmount: Yup.number().positive('Rent amount must be positive').required('Monthly Rent is required'),
+    securityDeposit: Yup.number().positive('Security deposit must be positive').required('Security Deposit is required'),
+    propertyType: Yup.string().required('Property Type is required'),
+    leaseDuration: Yup.string().required('Lease Duration is required'),
+    startDate: Yup.date().required('Start Date is required'),
+  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+
+  3: Yup.object({
+    propertySize: Yup.number().positive('Property size must be positive').required('Property Size is required'),
+    intendedUse: Yup.string().required('Intended Use is required'),
+  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+
+  4: Yup.object({
+    improvementAllowance: Yup.number().min(0, 'Improvement allowance cannot be negative'),
+    specialConditions: Yup.string(),
+  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+
+  5: Yup.object({
+    terms: Yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
+  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+};
 
   const isStepComplete = (stepId: number, values: FormValues): boolean => {
     const schema = validationSchemas[stepId];
@@ -734,7 +737,7 @@ const CreateLoiForm: React.FC = () => {
           validationSchema={validationSchemas[currentStep]}
           onSubmit={handleSubmit}
         >
-          {({ values, setFieldValue, errors, touched }) => (
+          {({ values }) => (
             <Form>
 
               {/* Stepper */}
@@ -771,7 +774,7 @@ const CreateLoiForm: React.FC = () => {
 
               {/* Form Content */}
               <div className="p-6 space-y-6">
-                {renderStepContent(values, setFieldValue, errors, touched)}
+                {renderStepContent(values)}
               </div>
 
               {/* Footer Navigation */}

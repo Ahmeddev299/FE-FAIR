@@ -1,9 +1,39 @@
-import React, {  useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import React, { useState } from 'react';
+import { Formik, Form, Field, ErrorMessage, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import { Upload, FileText, X, CheckCircle, AlertCircle, Bell, HelpCircle } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router';
+
+// Type definitions
+interface FormValues {
+    leaseTitle: string;
+    startDate: string;
+    endDate: string;
+    propertyAddress: string;
+    notes: string;
+    document: File | null;
+}
+
+interface FileData {
+    name: string;
+    size: string;
+    type: string;
+    file: File;
+}
+
+type SetFieldValue = (field: string, value: File | null) => void;
+
+
+interface CustomFieldProps {
+    name: keyof FormValues;
+    label: string;
+    type?: string;
+    placeholder?: string;
+    as?: 'input' | 'textarea';
+    rows?: number;
+    required?: boolean;
+}
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -24,24 +54,24 @@ const validationSchema = Yup.object({
         .required('Property address is required'),
     notes: Yup.string()
         .max(500, 'Notes must be less than 500 characters'),
-    document: Yup.mixed()
+    document: Yup.mixed<File>()
         .required('Please upload a lease document')
-        .test('fileSize', 'File size must be less than 10MB', (value) => {
+        .test('fileSize', 'File size must be less than 10MB', (value: File | undefined) => {
             if (!value) return false;
             return value.size <= 10 * 1024 * 1024; // 10MB
         })
-        .test('fileType', 'Only PDF and DOCX files are supported', (value) => {
+        .test('fileType', 'Only PDF and DOCX files are supported', (value: File | undefined) => {
             if (!value) return false;
             return ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'].includes(value.type);
         })
 });
 
-function UploadLeaseForm() {
-    const [uploadedFile, setUploadedFile] = useState(null);
-    const router = useRouter()
-    const [dragActive, setDragActive] = useState(false);
+const UploadLeaseForm :  React.FC = () => {
+    const [uploadedFile, setUploadedFile] = useState<FileData | null>(null);
+    const router = useRouter();
+    const [dragActive, setDragActive] = useState<boolean>(false);
 
-    const initialValues = {
+    const initialValues: FormValues = {
         leaseTitle: '',
         startDate: '',
         endDate: '',
@@ -50,9 +80,10 @@ function UploadLeaseForm() {
         document: null
     };
 
-    const handleFileUpload = (file, setFieldValue) => {
+   const handleFileUpload = (file: File, setFieldValue: (field: string, value: File) => void): void => {
+
         if (file) {
-            const fileData = {
+            const fileData: FileData = {
                 name: file.name,
                 size: (file.size / 1024).toFixed(2) + ' KB',
                 type: file.type,
@@ -63,12 +94,12 @@ function UploadLeaseForm() {
         }
     };
 
-    const removeFile = (setFieldValue) => {
+    const removeFile = (setFieldValue: (field: string, value: null) => void): void => {
         setUploadedFile(null);
         setFieldValue('document', null);
     };
 
-    const handleDrag = (e) => {
+    const handleDrag = (e: React.DragEvent<HTMLDivElement>): void => {
         e.preventDefault();
         e.stopPropagation();
         if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -78,7 +109,7 @@ function UploadLeaseForm() {
         }
     };
 
-    const handleDrop = (e, setFieldValue) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, setFieldValue:  SetFieldValue ) : void => {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
@@ -88,7 +119,7 @@ function UploadLeaseForm() {
         }
     };
 
-    const handleSubmit = (values, { setSubmitting }) => {
+    const handleSubmit = (values: FormValues, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }): void => {
         // Simulate API call
         setTimeout(() => {
             console.log('Form submitted with values:', values);
@@ -98,11 +129,19 @@ function UploadLeaseForm() {
         }, 2000);
     };
 
-    const handleStartNewLOI = () => {
+    const handleStartNewLOI = (): void => {
         router.push('/dashboard/pages/uploadLeaseReview');
     };
 
-    const CustomField = ({ name, label, type = 'text', placeholder, as = 'input', rows, required = false }) => (
+    const CustomField: React.FC<CustomFieldProps> = ({ 
+        name, 
+        label, 
+        type = 'text', 
+        placeholder, 
+        as = 'input', 
+        rows, 
+        required = false 
+    }) => (
         <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
                 {label}
@@ -156,7 +195,7 @@ function UploadLeaseForm() {
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ setFieldValue, errors, touched, isSubmitting }) =>
+                        {({ setFieldValue, errors, touched, isSubmitting }: FormikProps<FormValues>) => (
                             <Form>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     {/* Left Column - Upload Section */}
@@ -184,7 +223,12 @@ function UploadLeaseForm() {
                                                 <input
                                                     type="file"
                                                     accept=".pdf,.docx,.doc"
-                                                    onChange={(e) => handleFileUpload(e.target.files[0], setFieldValue)}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            handleFileUpload(file, setFieldValue);
+                                                        }
+                                                    }}
                                                     className="hidden"
                                                     id="file-upload"
                                                 />
@@ -195,24 +239,10 @@ function UploadLeaseForm() {
                                                     <p className="text-lg font-medium text-gray-900 mb-2">Drag and drop your lease documents</p>
                                                     <p className="text-gray-500 mb-4">or click to browse and select files</p>
                                                     <div>
-                                                        <label
-                                                            htmlFor="file-upload"
-                                                            className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block"
-                                                        >
+                                                        <span className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
                                                             Choose Files
-                                                        </label>
-                                                        <input
-                                                            id="file-upload"
-                                                            type="file"
-                                                            className="hidden"
-                                                            multiple
-                                                            onChange={(e) => {
-                                                                const files = e.target.files;
-                                                                console.log(files);
-                                                            }}
-                                                        />
+                                                        </span>
                                                     </div>
-
                                                 </label>
                                             </div>
 
@@ -255,7 +285,6 @@ function UploadLeaseForm() {
                                                 </div>
                                             </div>
                                         )}
-
                                     </div>
 
                                     {/* Right Column - Context Information */}
@@ -378,7 +407,7 @@ function UploadLeaseForm() {
                                     </button>
                                 </div>
                             </Form>
-                        }
+                        )}
                     </Formik>
                 </div>
             </div>
