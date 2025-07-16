@@ -21,10 +21,10 @@ type Lease = {
 };
 
 type Event = {
-  title: string;
-  date: string;
-  type: Priority;
-  location: string;
+    title: string;
+    date: string;
+    type: Priority;
+    location: string;
 };
 
 function MainPage() {
@@ -85,7 +85,7 @@ function MainPage() {
         }
     ];
 
-    const upcomingEvents : Event[] = [
+    const upcomingEvents: Event[] = [
         {
             title: "Office Lease Renewal Due",
             date: "Jan 15, 2024",
@@ -155,17 +155,17 @@ function MainPage() {
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
                         {/* Left Column - Listings and Leases */}
                         <div className="lg:col-span-2 space-y-8">
                             {/* My Lots Section */}
-                            <div className="bg-white rounded-lg shadow">
-                                <div className="px-6 py-4 border-b border-gray-200">
+                            <div className="bg-white rounded-lg shadow lg:w-[770px] lg:h-[350px]">
+                                <div className="px-6 py-4">
                                     <h2 className="text-lg font-bold text-gray-900">My LOIs</h2>
                                 </div>
                                 <div className="overflow-hidden">
                                     <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                        <thead className="bg-white">
                                             <tr>
                                                 <th className="px-6 py-3 text-left text-sm font-bold   ">
                                                     LOI Title
@@ -189,30 +189,32 @@ function MainPage() {
                                                 <tr key={index} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4">
                                                         <div>
-                                                            <div className="text-sm font-medium text-black">{listing.name}</div>
-
+                                                            <div className="text-sm w-[162px] h-[20px] font-medium text-black">{listing.name}</div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div>
-                                                            <div className="text-sm text-gray-500 flex items-center">
+                                                            <div className="text-sm w-[156px] h-[20px] text-gray-500 flex items-center">
                                                                 {listing.address}
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}`}>
+                                                        <span className={`inline-flex  w-[78px]  px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}`}>
                                                             {listing.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                                    <td className="px-6 py-4 w-[100px] h-[61px] text-sm text-gray-500">
                                                         {listing.lastUpdate}
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <button className="text-blue-600 hover:text-blue-900">
+                                                        <button className="w-[88px] h-[36px] flex items-center justify-center gap-2 border border-gray-300 rounded-md hover:bg-gray-100 text-black text-sm">
                                                             <Eye className="w-4 h-4" />
+                                                            <span>View</span>
                                                         </button>
                                                     </td>
+
+
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -221,13 +223,13 @@ function MainPage() {
                             </div>
 
                             {/* My Leases Section */}
-                            <div className="bg-white rounded-lg shadow">
-                                <div className="px-6 py-4 border-b border-gray-200">
+                            <div className="bg-white rounded-lg shadow lg:w-[770px] lg:h-[350px]">
+                                <div className="px-6 py-4">
                                     <h2 className="text-lg font-bold text-gray-900">My Leases</h2>
                                 </div>
                                 <div className="overflow-hidden">
                                     <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
+                                        <thead className="bg-white">
                                             <tr>
                                                 <th className="px-6 py-3 text-left text-sm font-bold   ">
                                                     Lease Title
@@ -266,8 +268,9 @@ function MainPage() {
                                                         {lease.lastUpdate}
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <button className="text-blue-600 hover:text-blue-900">
+                                                        <button className="w-[88px] h-[36px] flex items-center justify-center gap-2 border border-gray-300 rounded-md hover:bg-gray-100 text-black text-sm">
                                                             <Eye className="w-4 h-4" />
+                                                            <span>View</span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -279,7 +282,7 @@ function MainPage() {
                         </div>
 
                         {/* Right Column - Quick Actions and Upcoming Events */}
-                        <div className="space-y-6">
+                        <div className="space-y-12 lg:w-[310px] lg:h-[900px]">
                             {/* Quick Actions */}
                             <div className="bg-white rounded-lg shadow p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>

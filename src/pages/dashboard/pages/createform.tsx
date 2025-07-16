@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Check, Info, RefreshCw, Wrench, FileText, AlertTriangle } from 'lucide-react';
-import { Formik, Form, Field, ErrorMessage  } from 'formik';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { DashboardLayout } from '@/components/layouts';
 
@@ -56,7 +56,7 @@ const CreateLoiForm: React.FC = () => {
     { id: 5, title: 'Review & Submit', subtitle: 'Final review' }
   ];
 
- const initialValues: FormValues = {
+  const initialValues: FormValues = {
     // Basic Information
     loiTitle: '',
     propertyAddress: '',
@@ -92,43 +92,43 @@ const CreateLoiForm: React.FC = () => {
     terms: false
   };
 
-const validationSchemas: ValidationSchemas = {
-  1: Yup.object({
-    loiTitle: Yup.string().required('LOI Title is required'),
-    propertyAddress: Yup.string().required('Property Address is required'),
-    landlordName: Yup.string().required('Landlord Name is required'),
-    landlordEmail: Yup.string().email('Invalid email').required('Landlord Email is required'),
-    tenantName: Yup.string().required('Tenant Name is required'),
-    tenantEmail: Yup.string().email('Invalid email').required('Tenant Email is required'),
-  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+  const validationSchemas: ValidationSchemas = {
+    1: Yup.object({
+      loiTitle: Yup.string().required('LOI Title is required'),
+      propertyAddress: Yup.string().required('Property Address is required'),
+      landlordName: Yup.string().required('Landlord Name is required'),
+      landlordEmail: Yup.string().email('Invalid email').required('Landlord Email is required'),
+      tenantName: Yup.string().required('Tenant Name is required'),
+      tenantEmail: Yup.string().email('Invalid email').required('Tenant Email is required'),
+    }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
 
-  2: Yup.object({
-    rentAmount: Yup.number().positive('Rent amount must be positive').required('Monthly Rent is required'),
-    securityDeposit: Yup.number().positive('Security deposit must be positive').required('Security Deposit is required'),
-    propertyType: Yup.string().required('Property Type is required'),
-    leaseDuration: Yup.string().required('Lease Duration is required'),
-    startDate: Yup.date().required('Start Date is required'),
-  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+    2: Yup.object({
+      rentAmount: Yup.number().positive('Rent amount must be positive').required('Monthly Rent is required'),
+      securityDeposit: Yup.number().positive('Security deposit must be positive').required('Security Deposit is required'),
+      propertyType: Yup.string().required('Property Type is required'),
+      leaseDuration: Yup.string().required('Lease Duration is required'),
+      startDate: Yup.date().required('Start Date is required'),
+    }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
 
-  3: Yup.object({
-    propertySize: Yup.number().positive('Property size must be positive').required('Property Size is required'),
-    intendedUse: Yup.string().required('Intended Use is required'),
-  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+    3: Yup.object({
+      propertySize: Yup.number().positive('Property size must be positive').required('Property Size is required'),
+      intendedUse: Yup.string().required('Intended Use is required'),
+    }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
 
-  4: Yup.object({
-    improvementAllowance: Yup.number().min(0, 'Improvement allowance cannot be negative'),
-    specialConditions: Yup.string(),
-  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+    4: Yup.object({
+      improvementAllowance: Yup.number().min(0, 'Improvement allowance cannot be negative'),
+      specialConditions: Yup.string(),
+    }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
 
-  5: Yup.object({
-    terms: Yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
-  }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
-};
+    5: Yup.object({
+      terms: Yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
+    }) as unknown as Yup.ObjectSchema<Partial<FormValues>>,
+  };
 
   const isStepComplete = (stepId: number, values: FormValues): boolean => {
     const schema = validationSchemas[stepId];
     if (!schema) return false;
-    
+
     try {
       schema.validateSync(values, { abortEarly: false });
       return true;
@@ -165,7 +165,7 @@ const validationSchemas: ValidationSchemas = {
           <div className="space-y-6">
             <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
             <p>Lets start with the essential details about your LOI and the parties involved.</p>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column - LOI & Property Details */}
               <div className="space-y-6 border border-gray-300 rounded-lg p-6">
@@ -293,7 +293,7 @@ const validationSchemas: ValidationSchemas = {
               {/* Financial Terms */}
               <div className="space-y-6 border border-gray-300 rounded-lg p-6">
                 <h4 className="text-lg font-semibold mb-4">Financial Terms</h4>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-2">Monthly Rent *</label>
                   <div className="relative">
@@ -443,7 +443,7 @@ const validationSchemas: ValidationSchemas = {
                   <RefreshCw className="w-5 h-5 text-blue-500" />
                   <h4 className="text-lg font-semibold">Renewal Options</h4>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Field
                     name="renewalOption"
@@ -460,7 +460,7 @@ const validationSchemas: ValidationSchemas = {
                   <Wrench className="w-5 h-5 text-green-500" />
                   <h4 className="text-lg font-semibold">Tenant Improvements</h4>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-2">Improvement Allowance</label>
                   <div className="relative">
@@ -483,7 +483,7 @@ const validationSchemas: ValidationSchemas = {
                 <FileText className="w-5 h-5 text-purple-500" />
                 <h4 className="text-lg font-semibold">Special Conditions</h4>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2">Special Conditions or Requirements</label>
                 <Field
@@ -502,9 +502,9 @@ const validationSchemas: ValidationSchemas = {
                 <AlertTriangle className="w-5 h-5 text-yellow-500" />
                 <h4 className="text-lg font-semibold">Contingencies</h4>
               </div>
-              
+
               <p className="text-sm text-gray-600 mb-4">Select any conditions that must be met before the lease can be finalized:</p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
                   <Field
@@ -698,129 +698,125 @@ const validationSchemas: ValidationSchemas = {
     }
   };
 
- return (
-  <DashboardLayout>
-    <div className="max-w-7xl mx-auto">
-      <div className="bg-white rounded-lg shadow-sm">
-
+  return (
+    <DashboardLayout>
         {/* Header */}
-        <div className="flex items-center justify-between bg-white border-b border-gray-200 px-6 py-4">
-          {/* Left Section: Back Button and Title */}
-          <div className="flex items-center gap-6">
-            <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
-              <ChevronLeft className="w-4 h-4" />
-              Back to LOI Dashboard
-            </button>
-            <div className="w-px h-10 bg-gray-300" />
-            <div>
-              <h1 className="text-2xl font-bold">Create New LOI</h1>
-              <p className="text-sm text-gray-600">
-                Complete all steps to generate your Letter of Intent
-              </p>
+          <div className="max-w-10xl  flex items-center justify-between bg-white border-b border-gray-200 px-6 py-4">
+            {/* Left Section: Back Button and Title */}
+            <div className="flex items-center gap-6">
+              <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+                <ChevronLeft className="w-4 h-4" />
+                Back to LOI Dashboard
+              </button>
+              <div className="w-px h-10 bg-gray-300" />
+              <div>
+                <h1 className="text-2xl font-bold">Create New LOI</h1>
+                <p className="text-sm text-gray-600">
+                  Complete all steps to generate your Letter of Intent
+                </p>
+              </div>
+            </div>
+
+            {/* Right Section: Action Buttons */}
+            <div className="flex items-center gap-4">
+              <button className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
+                Save Draft
+              </button>
+              <button className="px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
+                AI Assistant
+              </button>
             </div>
           </div>
 
-          {/* Right Section: Action Buttons */}
-          <div className="flex items-center gap-4">
-            <button className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
-              Save Draft
-            </button>
-            <button className="px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
-              AI Assistant
-            </button>
-          </div>
-        </div>
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm">
+          {/* Formik Form */}
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchemas[currentStep]}
+            onSubmit={handleSubmit}
+          >
+            {({ values }) => (
+              <Form>
 
-        {/* Formik Form */}
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchemas[currentStep]}
-          onSubmit={handleSubmit}
-        >
-          {({ values }) => (
-            <Form>
-
-              {/* Stepper */}
-              <div className="border-b border-gray-200 px-6 py-4">
-                <div className="flex items-center justify-between">
-                  {steps.map((step, index) => (
-                    <div key={step.id} className="flex items-center">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                          currentStep === step.id
-                            ? 'bg-blue-500 text-white'
-                            : isStepComplete(step.id, values)
-                              ? 'bg-green-500 text-white'
-                              : 'bg-gray-200 text-gray-600'
-                        }`}>
-                          {isStepComplete(step.id, values) && currentStep > step.id ? (
-                            <Check className="w-5 h-5" />
-                          ) : (
-                            step.id
-                          )}
+                {/* Stepper */}
+                <div className="border-b border-gray-200 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    {steps.map((step, index) => (
+                      <div key={step.id} className="flex items-center">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step.id
+                              ? 'bg-blue-500 text-white'
+                              : isStepComplete(step.id, values)
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-200 text-gray-600'
+                            }`}>
+                            {isStepComplete(step.id, values) && currentStep > step.id ? (
+                              <Check className="w-5 h-5" />
+                            ) : (
+                              step.id
+                            )}
+                          </div>
+                          <div className="text-center mt-2">
+                            <div className="text-sm font-medium">{step.title}</div>
+                            <div className="text-xs text-gray-500">{step.subtitle}</div>
+                          </div>
                         </div>
-                        <div className="text-center mt-2">
-                          <div className="text-sm font-medium">{step.title}</div>
-                          <div className="text-xs text-gray-500">{step.subtitle}</div>
-                        </div>
+                        {index < steps.length - 1 && (
+                          <div className={`w-24 h-0.5 mx-4 ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}`} />
+                        )}
                       </div>
-                      {index < steps.length - 1 && (
-                        <div className={`w-24 h-0.5 mx-4 ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}`} />
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Form Content */}
-              <div className="p-6 space-y-6">
-                {renderStepContent(values)}
-              </div>
+                {/* Form Content */}
+                <div className="p-6 space-y-6">
+                  {renderStepContent(values)}
+                </div>
 
-              {/* Footer Navigation */}
-              <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 bg-gray-50">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  disabled={currentStep === 1}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-                    currentStep === 1
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
-                  }`}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Back
-                </button>
+                {/* Footer Navigation */}
+                <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 bg-gray-50">
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    disabled={currentStep === 1}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${currentStep === 1
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                      }`}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Back
+                  </button>
 
-                <button
-                  type="submit"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-                    isStepComplete(currentStep, values)
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  }`}
-                  disabled={!isStepComplete(currentStep, values)}
-                >
-                  {currentStep === steps.length ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Submit
-                    </>
-                  ) : (
-                    <>
-                      Next
-                      <ChevronRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
+                  <button
+                    type="submit"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${isStepComplete(currentStep, values)
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      }`}
+                    disabled={!isStepComplete(currentStep, values)}
+                  >
+                    {currentStep === steps.length ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Submit
+                      </>
+                    ) : (
+                      <>
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
       </div>
-    </div>
-  </DashboardLayout>
-); 
+    </DashboardLayout>
+  );
 }
 export default CreateLoiForm;

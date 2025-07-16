@@ -19,7 +19,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const handleLogout = () => {
     dispatch(userLogout());
   };
-  
+
   const navigation = [
     { name: 'Dashboard', href: '/dashboard/pages/mainpage', icon: '/mage_dashboard-2.png', current: router.pathname === '/dashboard' },
     { name: 'Start LOI', href: '/dashboard/pages/start', icon: '/f7_doc-text.png', current: router.pathname === '/profile' },
@@ -40,8 +40,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         {/* Sidebar for desktop */}
         <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
           <div className="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
-            <Image alt="Logo" src={backgroundImage} className="h-20 w-auto" />
-            <div className="mt-5 flex-grow flex flex-col">
+            <Image
+              alt="Logo"
+              src={backgroundImage}
+              width={200} // Example width
+              height={100} // Example height
+            />            <div className="mt-5 flex-grow flex flex-col">
               <nav className="flex-1 px-2 pb-4 space-y-1">
                 {navigation.map((item) => (
                   <a
@@ -52,7 +56,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
-                    <Image src={item.icon} alt={item.name} className="w-6 h-6 mr-3" />
+                    <Image src={item.icon} alt={item.name} width={30} height={30} className="mr-3" />
                     {item.name}
                   </a>
                 ))}
@@ -66,7 +70,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                         } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                     >
-                      <Image src={item.icon} alt={item.name} className="w-6 h-6 mr-3" />
+                      <Image src={item.icon} alt={item.name} width={30} height={30} className="mr-3" />
                       {item.name}
                     </a>
                   ))}
