@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, Info, RefreshCw, Wrench, FileText, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Save, Bot, Info, RefreshCw, Wrench, FileText, AlertTriangle } from 'lucide-react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { DashboardLayout } from '@/components/layouts';
@@ -274,7 +274,7 @@ const CreateLoiForm: React.FC = () => {
                 <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-medium text-blue-900">Pro Tip</h4>
-                  <p className="text-sm text-blue-700 mt-1">
+                  <p className="text-sm font-semibold text-blue-700 mt-1">
                     Use a descriptive LOI title that includes the property type and location. This will help you easily identify this LOI later in your dashboard.
                   </p>
                 </div>
@@ -372,6 +372,18 @@ const CreateLoiForm: React.FC = () => {
                 </div>
               </div>
             </div>
+            {/* Pro Tip */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-blue-900">Lease Type Guide</h4>
+                  <p className="text-sm font-semibold text-blue-700 mt-1">
+                    There are four main types of lease guide. Triple Net (NNN), Gross Lease, Modified Gross and Percentage Lease.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -424,6 +436,83 @@ const CreateLoiForm: React.FC = () => {
                     placeholder="10"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Utilities & Services Included */}
+            <div className="border border-gray-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-yellow-500">⚡</span>
+                <h4 className="text-sm font-semibold">Utilities & Services Included</h4>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 text-sm text-gray-800">
+                <label className="flex items-center gap-2">
+                  <Field
+                    name="utilities.electricity"
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Electricity
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <Field
+                    name="utilities.waterSewer"
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Water/Sewer
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <Field
+                    name="utilities.naturalGas"
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Natural Gas
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <Field
+                    name="utilities.internetCable"
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Internet/Cable
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <Field
+                    name="utilities.hvac"
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  HVAC
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <Field
+                    name="utilities.securitySystem"
+                    type="checkbox"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Security System
+                </label>
+              </div>
+            </div>
+
+
+            <div className="bg-[#F0FDF4] border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-[#34A853] mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-[#34A853]">Lease Type Guide</h4>
+                  <p className="text-sm font-bold text-[#34A853] mt-1">
+                    There are four main types of lease guide. Triple Net (NNN), Gross Lease, Modified Gross and Percentage Lease.
+                  </p>
                 </div>
               </div>
             </div>
@@ -700,121 +789,121 @@ const CreateLoiForm: React.FC = () => {
 
   return (
     <DashboardLayout>
-        {/* Header */}
-          <div className="max-w-10xl  flex items-center justify-between bg-white border-b border-gray-200 px-6 py-4">
-            {/* Left Section: Back Button and Title */}
-            <div className="flex items-center gap-6">
-              <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
-                <ChevronLeft className="w-4 h-4" />
-                Back to LOI Dashboard
-              </button>
-              <div className="w-px h-10 bg-gray-300" />
-              <div>
-                <h1 className="text-2xl font-bold">Create New LOI</h1>
-                <p className="text-sm text-gray-600">
-                  Complete all steps to generate your Letter of Intent
-                </p>
-              </div>
-            </div>
-
-            {/* Right Section: Action Buttons */}
-            <div className="flex items-center gap-4">
-              <button className="px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
-                Save Draft
-              </button>
-              <button className="px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
-                AI Assistant
-              </button>
-            </div>
+      {/* Header */}
+      <div className="max-w-6xl rounded mx-auto flex items-center justify-between bg-white border-b border-gray-200 px-6 py-4">
+        {/* Left Section: Back Button and Title */}
+        <div className="flex items-center gap-6">
+          <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+            <ChevronLeft className="w-4 h-4" />
+            Back to LOI Dashboard
+          </button>
+          <div className="w-px h-10 bg-gray-300" />
+          <div>
+            <h1 className="text-2xl font-bold">Create New LOI</h1>
+            <p className="text-sm text-gray-600">
+              Complete all steps to generate your Letter of Intent
+            </p>
           </div>
-
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm">
-          {/* Formik Form */}
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchemas[currentStep]}
-            onSubmit={handleSubmit}
-          >
-            {({ values }) => (
-              <Form>
-
-                {/* Stepper */}
-                <div className="border-b border-gray-200 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    {steps.map((step, index) => (
-                      <div key={step.id} className="flex items-center">
-                        <div className="flex flex-col items-center">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step.id
-                              ? 'bg-blue-500 text-white'
-                              : isStepComplete(step.id, values)
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-200 text-gray-600'
-                            }`}>
-                            {isStepComplete(step.id, values) && currentStep > step.id ? (
-                              <Check className="w-5 h-5" />
-                            ) : (
-                              step.id
-                            )}
-                          </div>
-                          <div className="text-center mt-2">
-                            <div className="text-sm font-medium">{step.title}</div>
-                            <div className="text-xs text-gray-500">{step.subtitle}</div>
-                          </div>
-                        </div>
-                        {index < steps.length - 1 && (
-                          <div className={`w-24 h-0.5 mx-4 ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}`} />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Form Content */}
-                <div className="p-6 space-y-6">
-                  {renderStepContent(values)}
-                </div>
-
-                {/* Footer Navigation */}
-                <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 bg-gray-50">
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    disabled={currentStep === 1}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${currentStep === 1
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
-                      }`}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Back
-                  </button>
-
-                  <button
-                    type="submit"
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${isStepComplete(currentStep, values)
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      }`}
-                    disabled={!isStepComplete(currentStep, values)}
-                  >
-                    {currentStep === steps.length ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        Submit
-                      </>
-                    ) : (
-                      <>
-                        Next
-                        <ChevronRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </Form>
-            )}
-          </Formik>
         </div>
+
+        {/* Right Section: Action Buttons */}
+        <div className="flex items-center gap-4">
+          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
+            <Save className="w-4 h-4" />
+            Save Draft
+          </button>
+          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
+            <Bot className="w-4 h-4" />
+            AI Assistant
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto">
+        {/* Formik Form */}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchemas[currentStep]}
+          onSubmit={handleSubmit}
+        >
+          {({ values }) => (
+            <Form>
+              {/* Stepper */}
+              <div className="bg-white mt-4 rounded-lg shadow-sm px-3 py-3">
+                <div className="flex items-center justify-between">
+                  {steps.map((step, index) => (
+                    <div key={step.id} className="flex items-center">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step.id
+                          ? 'bg-blue-500 text-white'
+                          : isStepComplete(step.id, values)
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-200 text-gray-600'
+                          }`}>
+                          {isStepComplete(step.id, values) && currentStep > step.id ? (
+                            <Check className="w-5 h-5" />
+                          ) : (
+                            step.id
+                          )}
+                        </div>
+                        <div className="text-center mt-2">
+                          <div className="text-sm font-medium">{step.title}</div>
+                          <div className="text-xs text-gray-500">{step.subtitle}</div>
+                        </div>
+                      </div>
+                      {index < steps.length - 1 && (
+                        <div className={`w-24 h-0.5 mx-4 ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}`} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Form Content */}
+              <div className="p-6 space-y-6 bg-white mt-2 rounded-lg mt-4">
+                {renderStepContent(values)}
+              </div>
+
+              {/* Footer Navigation */}
+              <div className="flex items-center mt-4 justify-between border-t border-gray-200 px-6 py-4 bg-gray-50">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${currentStep === 1
+                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                    }`}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </button>
+
+                <button
+                  type="submit"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${isStepComplete(currentStep, values)
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    }`}
+                  disabled={!isStepComplete(currentStep, values)}
+                >
+                  {currentStep === steps.length ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Submit
+                    </>
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+
       </div>
     </DashboardLayout>
   );

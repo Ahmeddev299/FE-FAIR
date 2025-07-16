@@ -225,7 +225,6 @@ export default function LetterOfIntentDashboard() {
                     <div className="col-span-3">Property Address</div>
                     <div className="col-span-2">Last Edited</div>
                     <div className="col-span-2">Status</div>
-                    <div className="col-span-1">Assignee</div>
                     <div className="col-span-1">Actions</div>
                   </div>
                 </div>
@@ -256,11 +255,7 @@ export default function LetterOfIntentDashboard() {
                             {letter.status}
                           </span>
                         </div>
-                        <div className="col-span-1">
-                          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                            {letter.assignee}
-                          </div>
-                        </div>
+                       
                         <div className="col-span-1">
                           <div className="flex items-center space-x-1">
                             <button className="p-1 hover:bg-gray-100 rounded">
