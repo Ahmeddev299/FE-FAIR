@@ -1,5 +1,5 @@
 import React from 'react';
-import {Eye} from 'lucide-react';
+import { Eye, Calendar } from 'lucide-react';
 import Image from "next/image"; // ✅ Correct
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { DashboardLayout } from '@/components/layouts';
@@ -408,24 +408,14 @@ function MainPage() {
 
 
                                                 <div className="text-xs text-gray-500 mt-1 flex items-center">
-                                                    <Image
-                                                        src="/icons/calendar-icon.png"
-                                                        alt="Calendar"
-                                                        width={12}
-                                                        height={12}
-                                                        className="w-3 h-3 mr-1"
-                                                    />
-                                                    {event.date}
+                                                    <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                        <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                                                        {event.date}
+                                                    </div>
+
                                                 </div>
 
                                                 <div className="text-xs text-gray-500 mt-1 flex items-center">
-                                                    <Image
-                                                        src="/icons/location-icon.png"
-                                                        alt="Location"
-                                                        width={12}
-                                                        height={12}
-                                                        className="w-3 h-3 mr-1"
-                                                    />
                                                     <span className="truncate">{event.location}</span>
                                                 </div>
                                             </div>
