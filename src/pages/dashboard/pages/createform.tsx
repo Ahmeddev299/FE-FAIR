@@ -790,34 +790,40 @@ const CreateLoiForm: React.FC = () => {
   return (
     <DashboardLayout>
       {/* Header */}
-      <div className="max-w-6xl rounded mx-auto flex items-center justify-between bg-white border-b border-gray-200 px-6 py-4">
-        {/* Left Section: Back Button and Title */}
-        <div className="flex items-center gap-6">
-          <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
-            <ChevronLeft className="w-4 h-4" />
-            Back to LOI Dashboard
-          </button>
-          <div className="w-px h-10 bg-gray-300" />
-          <div>
-            <h1 className="text-2xl font-bold">Create New LOI</h1>
-            <p className="text-sm text-gray-600">
-              Complete all steps to generate your Letter of Intent
-            </p>
+      <div className="max-w-6xl rounded mx-auto bg-white border-b border-gray-200 px-4 py-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Left Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+              <ChevronLeft className="w-4 h-4" />
+              <span className="text-sm sm:text-base">Back to LOI Dashboard</span>
+            </button>
+
+            {/* Vertical divider for md+ screens */}
+            <div className="hidden sm:block w-px h-8 bg-gray-300" />
+
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold">Create New LOI</h1>
+              <p className="text-sm text-gray-600">
+                Complete all steps to generate your Letter of Intent
+              </p>
+            </div>
+          </div>
+
+          {/* Right Section */}
+          <div className="flex flex-wrap gap-2 sm:gap-4">
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
+              <Save className="w-4 h-4" />
+              Save Draft
+            </button>
+            <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
+              <Bot className="w-4 h-4" />
+              AI Assistant
+            </button>
           </div>
         </div>
-
-        {/* Right Section: Action Buttons */}
-        <div className="flex items-center gap-4">
-          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
-            <Save className="w-4 h-4" />
-            Save Draft
-          </button>
-          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
-            <Bot className="w-4 h-4" />
-            AI Assistant
-          </button>
-        </div>
       </div>
+
 
       <div className="max-w-5xl mx-auto">
         {/* Formik Form */}
@@ -829,35 +835,39 @@ const CreateLoiForm: React.FC = () => {
           {({ values }) => (
             <Form>
               {/* Stepper */}
-              <div className="bg-white mt-4 rounded-lg shadow-sm px-3 py-3">
-                <div className="flex items-center justify-between">
+              <div className="bg-white mt-4 rounded-lg shadow-sm px-3 py-4 overflow-x-auto">
+                <div className="flex items-start justify-between min-w-[600px] sm:min-w-full">
                   {steps.map((step, index) => (
                     <div key={step.id} className="flex items-center">
                       <div className="flex flex-col items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${currentStep === step.id
-                          ? 'bg-blue-500 text-white'
-                          : isStepComplete(step.id, values)
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-200 text-gray-600'
-                          }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+            ${currentStep === step.id
+                            ? 'bg-blue-500 text-white'
+                            : isStepComplete(step.id, values)
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-200 text-gray-600'}
+          `}>
                           {isStepComplete(step.id, values) && currentStep > step.id ? (
                             <Check className="w-5 h-5" />
                           ) : (
                             step.id
                           )}
                         </div>
-                        <div className="text-center mt-2">
+                        <div className="text-center mt-2 px-2">
                           <div className="text-sm font-medium">{step.title}</div>
                           <div className="text-xs text-gray-500">{step.subtitle}</div>
                         </div>
                       </div>
+
                       {index < steps.length - 1 && (
-                        <div className={`w-24 h-0.5 mx-4 ${currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'}`} />
+                        <div className={`h-0.5 bg-gray-200 mx-2 sm:mx-4`}
+                          style={{ width: currentStep > step.id ? '60px' : '60px', backgroundColor: currentStep > step.id ? '#22c55e' : '#e5e7eb' }} />
                       )}
                     </div>
                   ))}
                 </div>
               </div>
+
 
               {/* Form Content */}
               <div className="p-6 space-y-6 bg-white mt-2 rounded-lg mt-4">
