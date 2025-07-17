@@ -1,5 +1,7 @@
 import React from 'react';
-import { MapPin, Calendar, Eye } from 'lucide-react';
+import {Eye} from 'lucide-react';
+import Image from "next/image"; // ✅ Correct
+import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { DashboardLayout } from '@/components/layouts';
 
 type Status = 'available' | 'pending' | 'active' | 'in review' | 'terminated';
@@ -25,6 +27,8 @@ type Event = {
     date: string;
     type: Priority;
     location: string;
+    icon: string | StaticImport;
+
 };
 
 function MainPage() {
@@ -32,7 +36,7 @@ function MainPage() {
         {
             name: "Downtown Office Space",
             address: "123 Main St, Downtown",
-            status: "available", // lowercase
+            status: "available",
             lastUpdate: "2 days ago",
             type: "Downtown Office Space"
         },
@@ -90,32 +94,31 @@ function MainPage() {
             title: "Office Lease Renewal Due",
             date: "Jan 15, 2024",
             type: "high",
-            location: "123 Main St"
+            location: "123 Main St",
+            icon: "/background-1.png"
         },
         {
             title: "Lease Termination Notice",
             date: "Jan 20, 2024",
             type: "urgent",
-            location: "Retail Space - Mall Location"
+            location: "Retail Space - Mall Location",
+            icon: "/background-2.png"
         },
         {
             title: "Document Review Required",
             date: "Jan 25, 2024",
             type: "medium",
-            location: "Various Properties"
+            location: "Various Properties",
+            icon: "/background-3.png",
         },
         {
             title: "Rent Payment Due",
             date: "Jan 30, 2024",
             type: "high",
-            location: "Warehouse Facility"
+            location: "Warehouse Facility",
+            icon: "/rent.png",
         },
-        {
-            title: "Rent Payment Due",
-            date: "Jan 30, 2024",
-            type: "high",
-            location: "Warehouse Facility"
-        }
+
     ];
 
     const getStatusColor = (status: Status) => {
@@ -140,184 +143,291 @@ function MainPage() {
 
     return (
         <DashboardLayout>
-            <div className="min-h-screen">
+            <div className=" flex-1 overflow-auto">
                 {/* Header */}
-                <header className="bg-white rounded-lg  shadow-sm border-b border-gray-200">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-28">
-                            <div className="items-center space-x-4">
-                                <h1 className="text-2xl font-bold text-gray-900">Welcome back, John!</h1>
-                                <p className="text-lg text-gray-500">Here is what is happening with your leases and lots today</p>
-                            </div>
+                <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16 sm:h-20">
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome back, John!</h1>
+                            <p className="text-sm sm:text-base text-gray-500 mt-1">Here is what is happening with your leases and LOIs today.</p>
                         </div>
                     </div>
                 </header>
 
                 {/* Main Content */}
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
+                <div className="p-4 sm:p-6 lg:p-0 mt-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                         {/* Left Column - Listings and Leases */}
-                        <div className="lg:col-span-2 space-y-8">
-                            {/* My Lots Section */}
-                            <div className="bg-white rounded-lg shadow lg:w-[770px] lg:h-[350px]">
-                                <div className="px-6 py-4">
-                                    <h2 className="text-lg font-bold text-gray-900">My LOIs</h2>
+                        <div className="xl:col-span-3 space-y-6">
+                            {/* My LOIs Section */}
+                            <div className="bg-white rounded-lg shadow">
+                                <div className="px-4 sm:px-6 py-4">
+                                    <h2 className="text-lg font-semibold text-gray-900">My LOIs</h2>
                                 </div>
-                                <div className="overflow-hidden">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-white">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    LOI Title
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Property Address
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Status
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Last Updated
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold  ">
-                                                    Action
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {listings.map((listing, index) => (
-                                                <tr key={index} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4">
-                                                        <div>
-                                                            <div className="text-sm w-[162px] h-[20px] font-medium text-black">{listing.name}</div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div>
-                                                            <div className="text-sm w-[156px] h-[20px] text-gray-500 flex items-center">
-                                                                {listing.address}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`inline-flex  w-[78px]  px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}`}>
-                                                            {listing.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 w-[100px] h-[61px] text-sm text-gray-500">
-                                                        {listing.lastUpdate}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <button className="w-[88px] h-[36px] flex items-center justify-center gap-2 border border-gray-300 rounded-md hover:bg-gray-100 text-black text-sm">
-                                                            <Eye className="w-4 h-4" />
-                                                            <span>View</span>
-                                                        </button>
-                                                    </td>
 
+                                {/* Mobile Card View */}
+                                <div className="block lg:hidden">
+                                    <div className="divide-y divide-gray-200">
+                                        {listings.map((listing, index) => (
+                                            <div key={index} className="p-4 hover:bg-gray-50">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{listing.name}</h3>
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)} flex-shrink-0`}>
+                                                        {listing.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mb-2">{listing.address}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs text-gray-500">{listing.lastUpdate}</span>
+                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                        <Eye className="w-4 h-4" />
+                                                        <span>View</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
 
+                                {/* Desktop Table View */}
+                                <div className="hidden lg:block">
+                                    <div className="min-w-full">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-white">
+                                                <tr>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        LOI Title
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Property Address
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Status
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Last Updated
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Action
+                                                    </th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {listings.map((listing, index) => (
+                                                    <tr key={index} className="hover:bg-gray-50">
+                                                        <td className="px-5 py-4">
+                                                            <div className="text-sm font-medium text-gray-900 max-w-xs truncate">{listing.name}</div>
+                                                        </td>
+                                                        <td className="px-5 py-4">
+                                                            <div className="text-sm text-gray-500 max-w-xs truncate">{listing.address}</div>
+                                                        </td>
+                                                        <td className="px-5 py-4">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}`}>
+                                                                {listing.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-5 py-4 text-sm text-gray-500">
+                                                            {listing.lastUpdate}
+                                                        </td>
+                                                        <td className="px-5 py-4">
+                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                                <Eye className="w-4 h-4" />
+                                                                <span>View</span>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* My Leases Section */}
-                            <div className="bg-white rounded-lg shadow lg:w-[770px] lg:h-[350px]">
-                                <div className="px-6 py-4">
-                                    <h2 className="text-lg font-bold text-gray-900">My Leases</h2>
+                            <div className="bg-white rounded-lg shadow">
+                                <div className="px-5 sm:px-6 py-4">
+                                    <h2 className="text-lg font-semibold text-gray-900">My Leases</h2>
                                 </div>
-                                <div className="overflow-hidden">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-white">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Lease Title
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Property Address
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Status
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold   ">
-                                                    Last Updated
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-sm font-bold  ">
-                                                    Action
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {leases.map((lease, index) => (
-                                                <tr key={index} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-sm font-medium text-gray-900">{lease.tenant}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-sm text-gray-500 flex items-center">
-                                                            {lease.address}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(lease.status)}`}>
-                                                            {lease.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                                        {lease.lastUpdate}
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <button className="w-[88px] h-[36px] flex items-center justify-center gap-2 border border-gray-300 rounded-md hover:bg-gray-100 text-black text-sm">
-                                                            <Eye className="w-4 h-4" />
-                                                            <span>View</span>
-                                                        </button>
-                                                    </td>
+
+                                {/* Mobile Card View */}
+                                <div className="block lg:hidden">
+                                    <div className="divide-y divide-gray-200">
+                                        {leases.map((lease, index) => (
+                                            <div key={index} className="p-4 hover:bg-gray-50">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{lease.tenant}</h3>
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(lease.status)} flex-shrink-0`}>
+                                                        {lease.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-gray-500 mb-2">{lease.address}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs text-gray-500">{lease.lastUpdate}</span>
+                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                        <Eye className="w-4 h-4" />
+                                                        <span>View</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Desktop Table View */}
+                                <div className="hidden lg:block">
+                                    <div className="min-w-full">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-white">
+                                                <tr>
+                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Lease Title
+                                                    </th>
+                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Property Address
+                                                    </th>
+                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Status
+                                                    </th>
+                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Last Updated
+                                                    </th>
+                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Action
+                                                    </th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {leases.map((lease, index) => (
+                                                    <tr key={index} className="hover:bg-gray-50">
+                                                        <td className="px-5 py-4">
+                                                            <div className="text-sm font-medium text-gray-900 max-w-xs truncate">{lease.tenant}</div>
+                                                        </td>
+                                                        <td className="px-5 py-4">
+                                                            <div className="text-sm text-gray-500 max-w-xs truncate">{lease.address}</div>
+                                                        </td>
+                                                        <td className="px-5 py-4">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(lease.status)}`}>
+                                                                {lease.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-5 py-4 text-sm text-gray-500">
+                                                            {lease.lastUpdate}
+                                                        </td>
+                                                        <td className="px-5 py-4">
+                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                                <Eye className="w-4 h-4" />
+                                                                <span>View</span>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right Column - Quick Actions and Upcoming Events */}
-                        <div className="space-y-12 lg:w-[310px] lg:h-[900px]">
+                        <div className="xl:col-span-1 space-y-10">
                             {/* Quick Actions */}
-                            <div className="bg-white rounded-lg shadow p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                                <div className="space-y-3">
-                                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                                        Add new Lease Documents
+
+                            <div className="bg-white rounded-xl shadow lg:p-4 sm:p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
+                                <div className="space-y-5">
+
+                                    {/* Start New LOI */}
+                                    <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                                        <Image
+                                            src="/start.png"
+                                            alt="Start New LOI"
+                                            width={24}
+                                            height={24}
+                                            className="w-6 h-4"
+                                        />
+                                        <span>Start New LOI</span>
                                     </button>
-                                    <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                                        View Lease Documents
+
+                                    {/* Upload Lease Document */}
+                                    <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+                                        <Image
+                                            src="/start-loi-1.png"
+                                            alt="Upload Document"
+                                            width={24}
+                                            height={24}
+                                            className="w-7 h-4"
+                                        />
+                                        <span className="truncate inline-block max-w-[150px]">Upload Lease Document</span>
                                     </button>
-                                    <button className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
-                                        Terminate Lease
+
+
+                                    {/* Terminate Lease */}
+                                    <button className="w-full flex items-center justify-start gap-3 bg-red-500 text-white py-2.5 px-4 rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                        <Image
+                                            src="/start-loi-2.png"
+                                            alt="Terminate Lease"
+                                            width={24}
+                                            height={24}
+                                            className="w-7 h-4"
+                                        />
+                                        <span>Terminate Lease</span>
                                     </button>
+
                                 </div>
                             </div>
 
+
                             {/* Upcoming Events */}
-                            <div className="bg-white rounded-lg shadow p-6">
+                            <div className="bg-white rounded-lg shadow lg:p-3 sm:p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
                                 <div className="space-y-4">
                                     {upcomingEvents.map((event, index) => (
-                                        <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <h4 className="text-sm font-medium text-gray-900">{event.title}</h4>
-                                                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(event.type)}`}>
-                                                    {event.type}
-                                                </span>
+                                        <div key={index} className="flex items-start gap-4 bg-gray-50 rounded-md p-3">
+
+                                            {/* Icon */}
+                                            <div className="flex-shrink-0 bg-blue-100 p-2 rounded-md">
+                                                <Image
+                                                    src={event.icon} // e.g., "/icons/calendar.png"
+                                                    alt={event.title}
+                                                    width={24}
+                                                    height={24}
+                                                    className="w-5 h-5"
+                                                />
                                             </div>
-                                            <div className="text-xs text-gray-500 flex items-center">
-                                                <Calendar className="w-3 h-3 mr-1" />
-                                                {event.date}
-                                            </div>
-                                            <div className="text-xs text-gray-500 flex items-center mt-1">
-                                                <MapPin className="w-3 h-3 mr-1" />
-                                                {event.location}
+
+                                            {/* Content */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start gap-2">
+                                                    <h4 className="text-sm font-medium text-gray-900 truncate max-w-[180px]">
+                                                        {event.title}
+                                                    </h4>
+                                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getPriorityColor(event.type)}`}>
+                                                        {event.type}
+                                                    </span>
+                                                </div>
+
+
+                                                <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                    <Image
+                                                        src="/icons/calendar-icon.png"
+                                                        alt="Calendar"
+                                                        width={12}
+                                                        height={12}
+                                                        className="w-3 h-3 mr-1"
+                                                    />
+                                                    {event.date}
+                                                </div>
+
+                                                <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                    <Image
+                                                        src="/icons/location-icon.png"
+                                                        alt="Location"
+                                                        width={12}
+                                                        height={12}
+                                                        className="w-3 h-3 mr-1"
+                                                    />
+                                                    <span className="truncate">{event.location}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -325,7 +435,7 @@ function MainPage() {
                             </div>
                         </div>
                     </div>
-                </main>
+                </div>
             </div>
         </DashboardLayout>
     );

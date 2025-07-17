@@ -56,7 +56,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
-                    <Image src={item.icon} alt={item.name} width={30} height={30} className="mr-3" />
+                    <Image  src={item.icon as string} alt={item.name} width={30} height={30} className="mr-3" />
                     {item.name}
                   </a>
                 ))}
