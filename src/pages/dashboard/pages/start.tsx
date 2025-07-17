@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, FileText, HelpCircle, Zap, CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
+import Image from 'next/image';
 
 type LOIStatus = 'Draft' | 'Sent' | 'Approved';
 interface Letter {
@@ -66,16 +67,14 @@ export default function LetterOfIntentDashboard() {
             <h1 className="text-3xl lg:w-[1086px] font-bold text-[24px] text-gray-900 mb-2">Start a New Letter of Intent</h1>
             <p className="text-gray-600">Create the LOI process by completing the steps below or reviewing previously saved drafts.</p>
           </div>
-
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-110 gap-8">
-            {/* Left Side - Start New LOI Module */}
-            <div className="lg:col-span-1 lg:w-[749px] lg:h-[552px]">
-              <div className="bg-[#EFF6FF] rounded-lg shadow-sm p-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6">
+            {/* Left Side */}
+            <div className="xl:col-span-2 w-full">
+              <div className="bg-[#EFF6FF] rounded-lg shadow-sm p-6 h-full">
                 <div className="flex items-center mb-6">
-                  <div className="bg-blue-500 rounded-lg p-2 mr-3">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
+                  <Image src='/loititle.png' width={50} height={40} alt="" className='mr-5' />
+
                   <h2 className="text-xl font-semibold text-gray-900">Start New LOI</h2>
                 </div>
 
@@ -83,99 +82,88 @@ export default function LetterOfIntentDashboard() {
                   Create a new Letter of Intent using our step-by-step intake wizard. Our AI-powered platform will guide you through each section to ensure your LOI is comprehensive and professional.
                 </p>
 
-                <div className="flex gap-4 mb-8 ">
-                  <button className="bg-blue-500 text-white lg:w-[187px] lg:h-[44px] px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center" onClick={handleStartNewLOI} >
-                    Start New LOsI
+                <div className="flex gap-4 mb-8 flex-wrap">
+                  <button
+                    className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+                    onClick={handleStartNewLOI}
+                  >
+                    Start New LOI
                     <Plus className="w-4 h-4 ml-2" />
                   </button>
-                  <button className="border border-gray-300 lg:w-[187px] lg:h-[44px] text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
                     View Sample LOI
                   </button>
                 </div>
 
-                <div className="bg-[#EFF6FF] rounded-lg p-4 h-60">
+                <div className="bg-[#EFF6FF] rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-3">What you will get:</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">Professional LOI template</span>
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">AI-powered suggestions</span>
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">Save and resume anytime</span>
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                      <span className="text-sm text-gray-700">Export to PDF</span>
-                    </div>
+                    {[
+                      'Professional LOI template',
+                      'AI-powered suggestions',
+                      'Save and resume anytime',
+                      'Export to PDF',
+                    ].map((text, i) => (
+                      <div className="flex items-center" key={i}>
+                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                        <span className="text-sm text-gray-700">{text}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Side - 4 Equal Width Sections */}
-            <div className="lg:col-span-1 space-y-2 lg:w-[320px] lg:h-[552px]">
-              {/* Section 1 - AI-Powered Assistance */}
-              <div className="bg-white rounded-lg shadow-sm p-3 h-32">
-                <div className="flex items-center mb-4">
-                  <div className="bg-purple-100 rounded-lg p-1 mr-3">
-                    <Zap className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">AI-Powered Assistance</h3>
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Get intelligent suggestions and guidance throughout the process to ensure your LOI is comprehensive and professional.
-                </p>
-              </div>
+            {/* Right Side - Four Feature Cards */}
+            <div className="flex flex-col gap-4 w-full">
+              {[
+                {
+                  icon: '/ai-powered.png',
+                  title: 'AI-Powered Assistance',
+                  desc: 'Get intelligent suggestions and guidance throughout the process to ensure your LOI is comprehensive and professional.',
 
-              {/* Section 2 - Step-by-Step Wizard */}
-              <div className="bg-white rounded-lg shadow-sm p-3 h-32">
-                <div className="flex items-center mb-4">
-                  <div className="bg-green-100 rounded-lg p-1 mr-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Step-by-Step Wizard</h3>
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Complete your LOI with our intuitive guided workflow that walks you through each required section.
-                </p>
-              </div>
+                },
+                {
+                  icon: '/loititle.png',
+                  title: 'Step-by-Step Wizard',
+                  desc: 'Complete your LOI with our intuitive guided workflow that walks you through each required section.',
 
-              {/* Section 3 - Professional Templates */}
-              <div className="bg-white rounded-lg shadow-sm p-3 h-32">
-                <div className="flex items-center mb-4">
-                  <div className="bg-blue-100 rounded-lg p-1 mr-3">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Professional Templates</h3>
-                </div>
-                <p className="text-gray-600 text-sm">
-                  Use industry-standard LOI templates tailored for commercial leases and real estate transactions.
-                </p>
-              </div>
+                },
+                {
+                  icon: '/professional.png',
+                  title: 'Professional Templates',
+                  desc: 'Use industry-standard LOI templates tailored for commercial leases and real estate transactions.',
 
-              {/* Section 4 - Need Help */}
-              <div className="rounded-lg shadow-sm p-3 h-38">
-                <div className="flex items-center mb-3">
-                  <div className="bg-orange-100 rounded-lg p-1 mr-3">
-                    <HelpCircle className="w-5 h-5 text-orange-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Need Help?</h3>
-                </div>
-                <p className="text-gray-600 text-sm mb-3">
-                  Our support team is here to assist you with any questions about the LOI process.
-                </p>
-                <button className="bg-[#FAFAFA] items-center font-semibold text-black h-[36px] w-[300px] px-4 py-1 rounded-lg text-lg"
+                },
+                {
+                  icon: '/step.png',
+                  title: 'Need Help?',
+                  desc: 'Our support team is here to assist you with any questions about the LOI process.',
+
+                  support: true,
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`bg-white rounded-xl shadow-sm px-4 py-5 ${item.support ? 'min-h-[150px]' : 'min-h-[130px]'
+                    }`}
                 >
-                  Contact Support
-                </button>
-              </div>
+                  <div className="flex items-start gap-3 mb-2">
+                    <Image src={item.icon} width={40} height={30} alt="" />
+                    <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
+                  </div>
+                  <p className="text-gray-700 text-sm mb-3 leading-snug">{item.desc}</p>
+                  {item.support && (
+                    <button className="bg-gray-50 font-semibold text-black h-9 w-full px-4 py-1 rounded-lg text-sm hover:bg-gray-100 transition-colors">
+                      Contact Support
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
+
           </div>
+
 
           {/* My Draft LOIs Section */}
           <div className="bg-white rounded-lg shadow-sm mt-8">
@@ -205,8 +193,8 @@ export default function LetterOfIntentDashboard() {
                     key={tab}
                     onClick={() => setActiveTab(tab.toLowerCase())}
                     className={`pb-2 border-b-2 font-medium text-sm ${activeTab === tab.toLowerCase()
-                        ? 'border-blue-600 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                   >
                     {tab}
@@ -236,10 +224,19 @@ export default function LetterOfIntentDashboard() {
                       <div className="grid grid-cols-12 gap-1 items-center">
                         <div className="col-span-3">
                           <div className="flex items-center">
-                            <FileText className="w-4 h-4 text-gray-400 mr-2" />
-                            <div className="text-sm font-medium text-gray-900">{letter.title}</div>
+                            <Image
+                              src="/loititle.png"
+                              alt="Upload Document"
+                              width={24}
+                              height={24}
+                              className="w-10 h-10 mr-3" // ← Added margin-right
+                            />
+                            <div className="text-sm font-medium text-gray-900">
+                              {letter.title}
+                            </div>
                           </div>
                         </div>
+
                         <div className="col-span-3">
                           <div className="text-sm text-gray-500">{letter.propertyAddress}</div>
                         </div>
@@ -255,7 +252,7 @@ export default function LetterOfIntentDashboard() {
                             {letter.status}
                           </span>
                         </div>
-                       
+
                         <div className="col-span-1">
                           <div className="flex items-center space-x-1">
                             <button className="p-1 hover:bg-gray-100 rounded">
@@ -282,6 +279,6 @@ export default function LetterOfIntentDashboard() {
 
         </div>
       </div>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 }
