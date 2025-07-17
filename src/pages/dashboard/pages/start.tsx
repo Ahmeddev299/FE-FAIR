@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, FileText, HelpCircle, Zap, CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 import Image from 'next/image';
