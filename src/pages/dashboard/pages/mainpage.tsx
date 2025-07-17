@@ -145,7 +145,7 @@ function MainPage() {
         <DashboardLayout>
             <div className=" flex-1 overflow-auto">
                 {/* Header */}
-                <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8">
+                <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 p-4">
                     <div className="flex items-center justify-between h-16 sm:h-20">
                         <div>
                             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome back, John!</h1>
@@ -332,7 +332,7 @@ function MainPage() {
                         <div className="xl:col-span-1 space-y-10">
                             {/* Quick Actions */}
 
-                            <div className="bg-white rounded-xl shadow lg:p-4 sm:p-6">
+                            <div className="bg-white rounded-xl shadow lg:p-4 p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
                                 <div className="space-y-5">
 
