@@ -26,9 +26,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { name: 'Upload Lease', href: '/dashboard/pages/uploadLeaseform', icon: '/upload.png', current: router.pathname === '/news-alerts' },
     { name: 'Clause Management', href: '/dashboard/pages/clauseManagement', icon: '/img4.png', current: router.pathname === '/bills' },
     { name: 'E-Signature', href: '/reports', icon: '/img5.png', current: router.pathname === '/reports' },
-    { name: 'Mailbox', href: '/settings', icon: '/img6.png', current: router.pathname === '/settings' },
-    { name: 'Billing & Plan', href: '/reports', icon: '/img7.png', current: router.pathname === '/reports' },
-    { name: 'Storage', href: '/settings', icon: '/img8.png', current: router.pathname === '/settings' },
+    { name: 'Terminate Tenant', href: '/dashboard/pages/terminateLease', icon: '/img7.png', current: router.pathname === '/settings' },
+    { name: 'Storage', href: '/dashboard/pages/tenantStorage', icon: '/img8.png', current: router.pathname === '/settings' },
   ];
   const userSetting = [
     { name: 'Setting', href: '/setting', icon: '/img10.png', current: router.pathname === '/setting' },
