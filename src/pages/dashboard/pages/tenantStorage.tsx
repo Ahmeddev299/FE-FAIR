@@ -480,7 +480,7 @@ const DocumentStorage: React.FC = () => {
                   <div className="p-8 text-center">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-sm font-medium text-gray-900 mb-2">No documents found</h3>
-                    <p className="text-sm text-gray-500">Try adjusting your search or filters to find what you're looking for.</p>
+                    <p className="text-sm text-gray-500">Try adjusting your search or filters to find what you are looking for.</p>
                   </div>
                 )}
               </div>

@@ -1,48 +1,47 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Eye, FileText, Calendar } from 'lucide-react';
+import { ArrowLeft, Upload, Eye, FileText } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import Image from 'next/image';
 
-interface Lease {
-    id: string;
-    title: string;
-    address: string;
-    district: string;
-    leaseTerm: string;
-    parties: string;
-    tenantName: string;
-    status: string;
-}
+// interface Lease {
+//     id: string;
+//     title: string;
+//     address: string;
+//     district: string;
+//     leaseTerm: string;
+//     parties: string;
+//     tenantName: string;
+//     status: string;
+// }
 
 const TerminateLease: React.FC = () => {
-    const [selectedLease, setSelectedLease] = useState<string>('');
     const [terminationReason, setTerminationReason] = useState<string>('');
     const [terminationDate, setTerminationDate] = useState<string>('');
     const [supportingNotes, setSupportingNotes] = useState<string>('');
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
-    const leases: Lease[] = [
-        {
-            id: '1',
-            title: 'Warehouse Facility',
-            address: '345 Industrial Ave, Warehouse Quarter',
-            district: 'Warehouse District',
-            leaseTerm: '04/08/2024 - 11/08/2026',
-            parties: 'Landmark Industrial Holdings Inc.',
-            tenantName: 'Tenant: Your Business Name',
-            status: 'Active'
-        },
-        {
-            id: '2',
-            title: 'Parking',
-            address: 'Outdoor Designated Parking for Vehicle Year-Round lease',
-            district: 'Commercial District',
-            leaseTerm: '12 months - 01/01/2024',
-            parties: 'Downtown Parking Authority',
-            tenantName: 'Tenant: Vehicle Services LLC',
-            status: 'Active'
-        }
-    ];
+    // const leases: Lease[] = [
+    //     {
+    //         id: '1',
+    //         title: 'Warehouse Facility',
+    //         address: '345 Industrial Ave, Warehouse Quarter',
+    //         district: 'Warehouse District',
+    //         leaseTerm: '04/08/2024 - 11/08/2026',
+    //         parties: 'Landmark Industrial Holdings Inc.',
+    //         tenantName: 'Tenant: Your Business Name',
+    //         status: 'Active'
+    //     },
+    //     {
+    //         id: '2',
+    //         title: 'Parking',
+    //         address: 'Outdoor Designated Parking for Vehicle Year-Round lease',
+    //         district: 'Commercial District',
+    //         leaseTerm: '12 months - 01/01/2024',
+    //         parties: 'Downtown Parking Authority',
+    //         tenantName: 'Tenant: Vehicle Services LLC',
+    //         status: 'Active'
+    //     }
+    // ];
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
