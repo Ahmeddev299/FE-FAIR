@@ -124,7 +124,7 @@ const DocumentStorage: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <div className="min-h-screen  overflow-x-hidden">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
           <div className="w-full max-w-none">
@@ -269,7 +269,7 @@ const DocumentStorage: React.FC = () => {
                   <div className="overflow-x-auto -mx-1">
                     <div className="inline-block min-w-full align-middle px-1">
                       <table className="min-w-full w-full">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-white border-b border-gray-200">
                           <tr>
                             <th className="px-7 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0">
                               <div className="truncate">Document Name</div>

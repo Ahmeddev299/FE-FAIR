@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Eye, FileText } from 'lucide-react';
+import { ArrowLeft, Upload, FileText } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import Image from 'next/image';
 
@@ -248,7 +248,7 @@ const TerminateLease: React.FC = () => {
                         </div>
 
                         {/* Right Section - AI Preview */}
-                        <div className="lg:col-span-1">
+                        {/* <div className="lg:col-span-1">
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 sticky top-8">
                                 <div className="p-6">
                                     <div className="flex items-center justify-between mb-4">
@@ -276,7 +276,7 @@ const TerminateLease: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
