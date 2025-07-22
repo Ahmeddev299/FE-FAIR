@@ -5,7 +5,7 @@ const dev = {
   API_ENDPOINT: "https://dev-api.fair.com",
 };
 const stag = {
-  API_ENDPOINT: "https://stg-api.fair.com",
+  API_ENDPOINT: "http://3.131.241.239:5000",
 };
 const prod = {
   API_ENDPOINT: "http://3.131.241.239:5000",
