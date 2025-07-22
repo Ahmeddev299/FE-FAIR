@@ -42,4 +42,4 @@ jobs:
 
             # Clean up unused docker resources
             docker system prune -af --volumes
-          EOF
+          EOF 
