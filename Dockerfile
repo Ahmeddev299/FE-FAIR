@@ -1,28 +1,43 @@
-# 1. Use Node.js base image
-FROM node:18-alpine
+# ---- 1. Build Stage ----
+FROM node:18-alpine AS builder
 
-# 2. Set working directory
 WORKDIR /app
 
-# 3. Accept build-time environment variable
+# Accept build-time environment variable
 ARG NEXT_PUBLIC_STAGE
 ENV NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE
 
-# 4. Copy package files first
+# Copy only package files
 COPY package*.json ./
 
-# 5. Install only production deps
-RUN npm install --production
+# Install all deps
+RUN npm install
 
-# 6. Copy the rest of the app
+# Copy all app files
 COPY . .
 
-# 7. Build the Next.js app
+# Build the Next.js app
 RUN npm run build
 
-# 8. Expose port
+# ---- 2. Production Stage ----
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+# Copy only production dependencies
+COPY --from=builder /app/package*.json ./
+RUN npm install --production
+
+# Copy built app and static assets
+COPY --from=builder /app/.next .next
+COPY --from=builder /app/public public
+
+# If required, copy server.js or config
+COPY --from=builder /app/next.config.js . || true
+COPY --from=builder /app/server.js . || true
+
+# Expose port
 EXPOSE 3000
 
-# 9. Start the app
+# Start app
 CMD ["npm", "start"]
-
