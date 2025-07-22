@@ -3,14 +3,16 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy and install dependencies
 COPY package.json package-lock.json ./
 RUN npm install --frozen-lockfile
 
 # Copy source files
 COPY . .
 
-# Build Next.js app
+# Build the app — allow passing NEXT_PUBLIC_STAGE at build time
+ARG NEXT_PUBLIC_STAGE
+ENV NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE
 RUN npm run build
 
 # Expose port
