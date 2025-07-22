@@ -3,7 +3,7 @@ name: Deploy Next.js App to EC2
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   deploy:
@@ -26,9 +26,20 @@ jobs:
           NEXT_PUBLIC_STAGE: ${{ secrets.NEXT_PUBLIC_STAGE }}
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/fair.pem $EC2_USER@$EC2_HOST << 'EOF'
+            # Stop and remove old container by previous name
+            docker stop my-nextjs-app || true
+            docker rm my-nextjs-app || true
+
+            # Build new image
             docker build -t nextjs-app --build-arg NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE .
+
+            # Stop and remove new container name if already exists
             docker stop nextjs-container || true
             docker rm nextjs-container || true
+
+            # Run new container
             docker run -d --name nextjs-container -p 3000:3000 nextjs-app
+
+            # Clean up unused docker resources
             docker system prune -af --volumes
           EOF
