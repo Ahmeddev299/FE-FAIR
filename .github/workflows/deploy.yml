@@ -42,16 +42,15 @@ jobs:
           echo "Uploading Docker image to EC2..."
           scp -i ssh_key.pem -o StrictHostKeyChecking=no ai-lease-fe.tar $EC2_USER@$EC2_HOST:~/ai-lease-fe.tar
 
-          echo "Running remote deployment script on EC2..."
-          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'REMOTE_EOF'
-            docker load -i ~/ai-lease-fe.tar
-            docker stop ai-lease-fe || true
-            docker rm ai-lease-fe || true
-            docker image rm ai-lease-fe || true
-
+          echo "Running remote Docker deployment..."
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
+            docker load -i ~/ai-lease-fe.tar &&
+            docker stop ai-lease-fe || true &&
+            docker rm ai-lease-fe || true &&
+            docker image rm ai-lease-fe || true &&
             docker run -d \
               --name ai-lease-fe \
               -p 3000:3000 \
               -e NEXT_PUBLIC_STAGE=${NEXT_PUBLIC_STAGE} \
               ai-lease-fe
-REMOTE_EOF
+          "
