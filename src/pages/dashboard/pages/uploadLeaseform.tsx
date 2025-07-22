@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { Upload, FileText, X, CheckCircle, AlertCircle, Bell, HelpCircle } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 
 // Type definitions
 interface FormValues {
@@ -197,7 +198,7 @@ const UploadLeaseForm: React.FC = () => {
                                     {/* Document Upload */}
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                                         <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                            <Upload className="w-6 h-6 mr-2" />
+                                            <Image alt="upload" src="/mini.png" height={20} width={20} className='mr-3' />
                                             Document Upload
                                             <span className="text-red-500 ml-1">*</span>
                                         </h2>
@@ -227,8 +228,10 @@ const UploadLeaseForm: React.FC = () => {
                                                 id="file-upload"
                                             />
                                             <label htmlFor="file-upload" className="cursor-pointer">
-                                                <div className="bg-gray-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                                                    <Upload className="w-8 h-8 text-gray-400" />
+                                                <div className="rounded-full p-4 mx-auto mb-4 flex items-center justify-center">
+                                                    {/* <Upload className="w-8 h-8 text-gray-400" /> */}
+                                                    <Image alt="upload" src="/file.png" height={60} width={60} />
+
                                                 </div>
                                                 <p className="text-lg font-medium text-gray-900 mb-2">Drag and drop your lease documents</p>
                                                 <p className="text-gray-500 mb-4">or click to browse and select files</p>
@@ -236,7 +239,12 @@ const UploadLeaseForm: React.FC = () => {
                                                     <span className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
                                                         Choose Files
                                                     </span>
-                                                </div>
+                                                    <div className="mt-4 text-lg font-semibold text-gray-500">
+                                                        <p>Supported formats: PDF, DOCX</p>
+                                                        <p>Maximum file size: 10MB</p>
+                                                    </div>
+                                                    </div>
+
                                             </label>
                                         </div>
 
@@ -244,10 +252,7 @@ const UploadLeaseForm: React.FC = () => {
                                             <div className="mt-2 text-red-500 text-sm">{errors.document}</div>
                                         )}
 
-                                        <div className="mt-4 text-lg font-semibold text-gray-500">
-                                            <p>Supported formats: PDF, DOCX</p>
-                                            <p>Maximum file size: 10MB</p>
-                                        </div>
+
                                     </div>
 
                                     {/* Uploaded Files */}
@@ -335,7 +340,8 @@ const UploadLeaseForm: React.FC = () => {
                                     {/* AI Processing Benefits */}
                                     <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
                                         <h2 className="text-xl w-[312px] mx-auto font-semibold text-blue-900 mb-4 flex">
-                                            <CheckCircle className="w-6 h-6 mr-2" />
+                                            {/* <CheckCircle className="w-6 h-6 mr-2" /> */}
+                                             <Image alt="ai" src="/ai.png" height={10} width={30} className='mr-3' />
                                             AI Processing Benefits
                                         </h2>
 

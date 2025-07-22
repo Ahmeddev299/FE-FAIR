@@ -45,7 +45,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               src={backgroundImage}
               width={200} // Example width
               height={100} // Example height
-            />            <div className="mt-5 flex-grow flex flex-col">
+            />
+            <div className="mt-5 flex-grow flex flex-col">
               <nav className="flex-1 px-2 pb-4 space-y-1">
                 {navigation.map((item) => (
                   <a
@@ -56,21 +57,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
-                    <Image src={item.icon as string} alt={item.name} width={30} height={30} className="mr-3" />
+                    <Image src={item.icon as string} alt={item.name} width={32} height={32} className="mr-3" />
                     {item.name}
                   </a>
                 ))}
-                <div className="border-t border-gray-200">
+                <div className="border-t border-gray-200 pt-2 mt-2">
                   {userSetting.map((item) => (
                     <a
                       key={item.name}
                       href={item.href}
+                      onClick={item.name === 'Logout' ? handleLogout : undefined}
                       className={`${item.current
                         ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                         } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                     >
-                      <Image src={item.icon} alt={item.name} width={30} height={30} className="mr-3" />
+                      <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-3" />
                       {item.name}
                     </a>
                   ))}
@@ -95,26 +97,60 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </button>
               </div>
               <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-                <div className="flex-shrink-0 flex items-center px-4">
-                  <h1 className="text-xl font-bold text-gray-900">Your App</h1>
+                {/* Mobile Logo */}
+                <div className="flex-shrink-0 flex items-center px-4 mb-5">
+                  <Image
+                    alt="Logo"
+                    src={backgroundImage}
+                    width={150}
+                    height={75}
+                  />
                 </div>
-                <nav className="mt-5 flex-1 px-2 space-y-1">
+
+                {/* Mobile Navigation */}
+                <nav className="flex-1 px-2 space-y-1">
                   {navigation.map((item) => (
                     <a
                       key={item.name}
                       href={item.href}
                       className={`${item.current
-                        ? 'bg-blue-100 text-blue-700'
+                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                        } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-150`}
                       onClick={() => setSidebarOpen(false)}
                     >
-                      <span className="mr-4 text-lg">{item.icon}</span>
+                      <Image src={item.icon} alt={item.name} width={40} height={40} className="mr-3" />
                       {item.name}
                     </a>
                   ))}
+
+                  {/* Mobile User Settings */}
+                  <div className="border-t border-gray-200 pt-2 mt-4">
+                    {userSetting.map((item) => (
+                      <a
+                        key={item.name}
+                        href={item.href}
+                        onClick={(e) => {
+                          if (item.name === 'Logout') {
+                            e.preventDefault();
+                            handleLogout();
+                          }
+                          setSidebarOpen(false);
+                        }}
+                        className={`${item.current
+                          ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                          } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-150`}
+                      >
+                        <Image src={item.icon} alt={item.name} width={40} height={30} className="mr-3" />
+                        {item.name}
+                      </a>
+                    ))}
+                  </div>
                 </nav>
               </div>
+
+              {/* Mobile User Profile Section */}
               <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
                 <div className="flex items-center w-full">
                   <div className="flex-shrink-0">
@@ -132,13 +168,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       {profile?.role || 'User'}
                     </p>
                   </div>
-                  <button
-                    onClick={handleLogout}
-                    className="ml-3 text-gray-400 hover:text-red-500 transition-colors duration-150"
-                    title="Logout"
-                  >
-                    <span className="text-lg">🚪</span>
-                  </button>
                 </div>
               </div>
             </div>
@@ -179,20 +208,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
                   {/* User Avatar & Dropdown */}
                   <div className="flex items-center space-x-2">
-                    <img
+                    <Image
                       src="/avatar.png" // <-- replace with real path
                       alt="User Avatar"
-                      className="w-8 h-8 rounded-full"
+                      width={40}
+                      height={40}
                     />
-                    <div className="text-sm text-gray-700 font-medium">John Doe</div>
+                    <div className="text-sm text-gray-700 font-medium">
+                      {profile?.name || profile?.email || 'John Doe'}
+                    </div>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-
           <main className="flex-1">
             <div className="py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

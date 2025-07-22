@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 import Image from 'next/image';
@@ -94,7 +94,7 @@ export default function LetterOfIntentDashboard() {
                     View Sample LOI
                   </button>
                 </div>
-                <div className="h-[2px] bg-[#DBEAFE] w-full my-6" />
+                <div className=" h-[1.5px] bg-[#DBEAFE] w-full my-15" />
 
 
                 <div className="bg-[#EFF6FF] rounded-lg p-4">

@@ -4,7 +4,6 @@ import {
     CreditCard,
     FileText,
     Bell,
-    BarChart3,
     Edit,
     Download,
     CheckCircle,
@@ -324,7 +323,7 @@ const Setting: React.FC = () => {
                                 <Calendar className="w-5 h-5 text-gray-400 mr-3" />
                                 <div>
                                     <div className="font-medium text-gray-900">Contract Reminders</div>
-                                    <div className="text-sm text-gray-500">When contractors expire and it's times to renewal or discussions</div>
+                                    <div className="text-sm text-gray-500">When contractors expire and it is times to renewal or discussions</div>
                                 </div>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
