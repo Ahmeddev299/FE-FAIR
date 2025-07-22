@@ -34,16 +34,14 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          NEXT_PUBLIC_STAGE: ${{ secrets.NEXT_PUBLIC_STAGE }}
         run: |
-          # Save SSH key to a file
           echo "$EC2_SSH_KEY" > ssh_key
           chmod 600 ssh_key
 
-          # Copy Docker image tar to EC2
           scp -i ssh_key -o StrictHostKeyChecking=no ai-lease-fe.tar $EC2_USER@$EC2_HOST:~/ai-lease-fe.tar
 
-          # SSH into EC2 and deploy the container
-          ssh -i ssh_key -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -i ssh_key -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << "EOF"
             docker load -i ~/ai-lease-fe.tar
             docker stop ai-lease-fe || true
             docker rm ai-lease-fe || true
@@ -51,6 +49,6 @@ jobs:
             docker run -d \
               --name ai-lease-fe \
               -p 3000:3000 \
-              -e NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} \
+              -e NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE \
               ai-lease-fe
- EOF
+EOF
