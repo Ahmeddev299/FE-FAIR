@@ -1,4 +1,4 @@
-name: Deploy Next.js App to EC2
+name: Deploy Next.js FE to EC2
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Build and Deploy on EC2
+    name: Build and Deploy Frontend on EC2
     runs-on: ubuntu-latest
 
     steps:
@@ -21,21 +21,22 @@ jobs:
 
       - name: Build Docker image locally
         run: |
-          docker build -t nextjs-app --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} .
+          docker build -t ai-lease-fe --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} .
 
       - name: Save Docker image to tarball
         run: |
-          docker save nextjs-app > nextjs-app.tar
+          docker save ai-lease-fe > ai-lease-fe.tar
 
       - name: Copy image to EC2
+        timeout-minutes: 5
         run: |
-          scp -o StrictHostKeyChecking=no -i key.pem nextjs-app.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
+          scp -o StrictHostKeyChecking=no -i key.pem ai-lease-fe.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
 
       - name: Load and run container on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
             docker system prune -af --volumes
-            docker load < nextjs-app.tar
+            docker load < /home/ubuntu/ai-lease-fe.tar
             docker rm -f nextjs-container || true
-            docker run -d --name nextjs-container -p 3000:3000 nextjs-app
+            docker run -d --name nextjs-container -p 3000:3000 ai-lease-fe
           '
