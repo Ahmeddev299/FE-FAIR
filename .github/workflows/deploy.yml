@@ -11,25 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up SSH key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
           chmod 400 key.pem
 
-      - name: Build and Run Docker on EC2
+      - name: Build Docker image locally
+        run: |
+          docker build -t nextjs-app --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} .
+
+      - name: Save Docker image to tarball
+        run: |
+          docker save nextjs-app > nextjs-app.tar
+
+      - name: Copy image to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i key.pem nextjs-app.tar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ubuntu/
+
+      - name: Load and run container on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
-            cd /home/ubuntu/AI-Lease-FE
-
-            # Clean up old containers/images/volumes
             docker system prune -af --volumes
-
-            # Build Docker image
-            docker build -t nextjs-app --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} .
-
-            # Stop and remove old container if running
+            docker load < nextjs-app.tar
             docker rm -f nextjs-container || true
-
-            # Run new container
             docker run -d --name nextjs-container -p 3000:3000 nextjs-app
           '
