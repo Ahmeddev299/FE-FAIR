@@ -75,18 +75,6 @@ function MainPage() {
             status: "pending",
             lastUpdate: "3 days ago"
         },
-        {
-            tenant: "Storage Facility",
-            address: "200 Storage Lane, Industrial",
-            status: "in review",
-            lastUpdate: "1 week ago"
-        },
-        {
-            tenant: "Restaurant Space",
-            address: "300 Food Court Ave",
-            status: "terminated",
-            lastUpdate: "2 weeks ago"
-        }
     ];
 
     const upcomingEvents: Event[] = [
@@ -95,28 +83,28 @@ function MainPage() {
             date: "Jan 15, 2024",
             type: "high",
             location: "123 Main St",
-            icon: "/background-1.png"
+            icon: "/start.png"
         },
         {
             title: "Lease Termination Notice",
             date: "Jan 20, 2024",
             type: "urgent",
             location: "Retail Space - Mall Location",
-            icon: "/background-2.png"
+            icon: "/termination.png"
         },
         {
             title: "Document Review Required",
             date: "Jan 25, 2024",
             type: "medium",
             location: "Various Properties",
-            icon: "/background-3.png",
+            icon: "/preview.png",
         },
         {
             title: "Rent Payment Due",
             date: "Jan 30, 2024",
             type: "high",
             location: "Warehouse Facility",
-            icon: "/rent.png",
+            icon: "/rent02.png",
         },
 
     ];
@@ -141,6 +129,13 @@ function MainPage() {
         }
     };
 
+    const truncateWords = (text: string, limit: number) => {
+        const words = text.trim().split(" ");
+        return words.length > limit ? words.slice(0, limit).join(" ") + "..." : text;
+    };
+
+
+
     return (
         <DashboardLayout>
             <div className=" flex-1 overflow-auto">
@@ -160,26 +155,26 @@ function MainPage() {
                         {/* Left Column - Listings and Leases */}
                         <div className="xl:col-span-3 space-y-6">
                             {/* My LOIs Section */}
-                            <div className="bg-white rounded-lg shadow">
-                                <div className="px-4 sm:px-6 py-4">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                                <div className="px-6 py-5 border-b border-gray-100">
                                     <h2 className="text-lg font-semibold text-gray-900">My LOIs</h2>
                                 </div>
 
                                 {/* Mobile Card View */}
                                 <div className="block lg:hidden">
-                                    <div className="divide-y divide-gray-200">
+                                    <div className="divide-y divide-gray-100">
                                         {listings.map((listing, index) => (
-                                            <div key={index} className="p-4 hover:bg-gray-50">
-                                                <div className="flex items-start justify-between mb-2">
+                                            <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-start justify-between mb-1">
                                                     <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{listing.name}</h3>
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)} flex-shrink-0`}>
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)} flex-shrink-0`}>
                                                         {listing.status}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mb-2">{listing.address}</p>
+                                                <p className="text-sm text-gray-500 mb-2 truncate">{listing.address}</p>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">{listing.lastUpdate}</span>
-                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                    <span className="text-xs text-gray-400">{listing.lastUpdate}</span>
+                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                                                         <Eye className="w-4 h-4" />
                                                         <span>View</span>
                                                     </button>
@@ -191,46 +186,33 @@ function MainPage() {
 
                                 {/* Desktop Table View */}
                                 <div className="hidden lg:block">
-                                    <div className="min-w-full">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-white">
+                                    <div className="p-6">
+                                        <table className="min-w-full divide-y divide-gray-100 table-fixed">
+                                            <thead>
                                                 <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        LOI Title
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Property Address
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Status
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Last Updated
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Action
-                                                    </th>
+                                                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">LOI Title</th>
+                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">Property Address</th>
+                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Status</th>
+                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Last Updated</th>
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Action</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
+                                            <tbody className="divide-y divide-gray-100">
                                                 {listings.map((listing, index) => (
-                                                    <tr key={index} className="hover:bg-gray-50">
-                                                        <td className="px-5 py-4">
-                                                            <div className="text-sm font-medium text-gray-900 max-w-xs truncate">{listing.name}</div>
+                                                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                                                        <td className="px-5 py-4 text-sm font-medium text-gray-900">
+                                                            {truncateWords(listing.name, 2)}
                                                         </td>
-                                                        <td className="px-5 py-4">
-                                                            <div className="text-sm text-gray-500 max-w-xs truncate">{listing.address}</div>
-                                                        </td>
-                                                        <td className="px-5 py-4">
-                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(listing.status)}`}>
+                                                        <td className="px-2 py-4 text-sm text-gray-500">
+                                                            {truncateWords(listing.address, 2)}
+                                                        </td>                                                        <td className="px-2 py-4">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)}`}>
                                                                 {listing.status}
                                                             </span>
                                                         </td>
-                                                        <td className="px-5 py-4 text-sm text-gray-500">
-                                                            {listing.lastUpdate}
-                                                        </td>
-                                                        <td className="px-5 py-4">
-                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                        <td className="px-2 py-4 text-sm text-gray-400">{listing.lastUpdate}</td>
+                                                        <td className="px-4 py-4">
+                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                                                                 <Eye className="w-4 h-4" />
                                                                 <span>View</span>
                                                             </button>
@@ -243,27 +225,32 @@ function MainPage() {
                                 </div>
                             </div>
 
+
                             {/* My Leases Section */}
-                            <div className="bg-white rounded-lg shadow">
-                                <div className="px-5 sm:px-6 py-4">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                                <div className="px-6 py-5 border-b border-gray-100">
                                     <h2 className="text-lg font-semibold text-gray-900">My Leases</h2>
                                 </div>
 
                                 {/* Mobile Card View */}
                                 <div className="block lg:hidden">
-                                    <div className="divide-y divide-gray-200">
+                                    <div className="divide-y divide-gray-100">
                                         {leases.map((lease, index) => (
-                                            <div key={index} className="p-4 hover:bg-gray-50">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{lease.tenant}</h3>
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(lease.status)} flex-shrink-0`}>
+                                            <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-start justify-between mb-1">
+                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2" title={lease.tenant}>
+                                                        {truncateWords(lease.tenant, 2)}
+                                                    </h3>
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease.status)} flex-shrink-0`}>
                                                         {lease.status}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mb-2">{lease.address}</p>
+                                                <p className="text-sm text-gray-500 mb-2" title={lease.address}>
+                                                    {truncateWords(lease.address, 2)}
+                                                </p>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">{lease.lastUpdate}</span>
-                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                    <span className="text-xs text-gray-400">{lease.lastUpdate}</span>
+                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                                                         <Eye className="w-4 h-4" />
                                                         <span>View</span>
                                                     </button>
@@ -275,46 +262,44 @@ function MainPage() {
 
                                 {/* Desktop Table View */}
                                 <div className="hidden lg:block">
-                                    <div className="min-w-full">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-white">
+                                    <div className="p-6">
+                                        <table className="min-w-full divide-y divide-gray-100 table-fixed">
+                                            <thead>
                                                 <tr>
-                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">
                                                         Lease Title
                                                     </th>
-                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">
                                                         Property Address
                                                     </th>
-                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                                                         Status
                                                     </th>
-                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                                                         Last Updated
                                                     </th>
-                                                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                                                         Action
                                                     </th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
+                                            <tbody className="divide-y divide-gray-100">
                                                 {leases.map((lease, index) => (
-                                                    <tr key={index} className="hover:bg-gray-50">
-                                                        <td className="px-5 py-4">
-                                                            <div className="text-sm font-medium text-gray-900 max-w-xs truncate">{lease.tenant}</div>
+                                                    <tr key={index} className="hover:bg-gray-50 transition-colors">
+                                                        <td className="px-5 py-4 text-sm font-medium text-gray-900" title={lease.tenant}>
+                                                            {truncateWords(lease.tenant, 2)}
                                                         </td>
-                                                        <td className="px-5 py-4">
-                                                            <div className="text-sm text-gray-500 max-w-xs truncate">{lease.address}</div>
+                                                        <td className="px-2 py-4 text-sm text-gray-500" title={lease.address}>
+                                                            {truncateWords(lease.address, 2)}
                                                         </td>
-                                                        <td className="px-5 py-4">
-                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(lease.status)}`}>
+                                                        <td className="px-2 py-4">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease.status)}`}>
                                                                 {lease.status}
                                                             </span>
                                                         </td>
-                                                        <td className="px-5 py-4 text-sm text-gray-500">
-                                                            {lease.lastUpdate}
-                                                        </td>
-                                                        <td className="px-5 py-4">
-                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                                                        <td className="px-2 py-4 text-sm text-gray-400">{lease.lastUpdate}</td>
+                                                        <td className="px-4 py-4">
+                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                                                                 <Eye className="w-4 h-4" />
                                                                 <span>View</span>
                                                             </button>
@@ -326,6 +311,8 @@ function MainPage() {
                                     </div>
                                 </div>
                             </div>
+
+
                         </div>
 
                         {/* Right Column - Quick Actions and Upcoming Events */}
@@ -339,9 +326,9 @@ function MainPage() {
                                     {/* Start New LOI */}
                                     <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
                                         <Image
-                                            src="/start.png"
+                                            src="/star.png"
                                             alt="Start New LOI"
-                                            width={24}
+                                            width={30}
                                             height={24}
                                             className="w-6 h-4"
                                         />
@@ -389,9 +376,8 @@ function MainPage() {
                                                 <Image
                                                     src={event.icon} // e.g., "/icons/calendar.png"
                                                     alt={event.title}
-                                                    width={24}
-                                                    height={24}
-                                                    className="w-5 h-5"
+                                                    width={30}
+                                                    height={30}
                                                 />
                                             </div>
 

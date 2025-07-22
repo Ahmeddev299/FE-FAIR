@@ -4,6 +4,7 @@ import { selectUser, userLogout } from '../../redux/slices/userSlice';
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { Bell, ChevronDown } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { name: 'Storage', href: '/dashboard/pages/tenantStorage', icon: '/img8.png', current: router.pathname === '/settings' },
   ];
   const userSetting = [
-    { name: 'Setting', href: '/setting', icon: '/img10.png', current: router.pathname === '/setting' },
+    { name: 'Setting', href: '/dashboard/pages/setting', icon: '/img10.png', current: router.pathname === '/setting' },
     { name: 'Logout', href: '/logout', icon: '/img9.png', current: router.pathname === '/profile' },
   ];
   return (
@@ -55,7 +56,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
                   >
-                    <Image  src={item.icon as string} alt={item.name} width={30} height={30} className="mr-3" />
+                    <Image src={item.icon as string} alt={item.name} width={30} height={30} className="mr-3" />
                     {item.name}
                   </a>
                 ))}
@@ -159,16 +160,38 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
           {/* Page header */}
           <div className="bg-white shadow">
-            <div className="px-2 sm:px-2 lg:px-4">
-              <div className="flex justify-between items-center py-1">
-                <div className="flex items-center">
-                  <h1 className="text-xl font-bold text-gray-900">
-                    {navigation.find(item => item.current)?.name || 'Dashboard'}
-                  </h1>
+            <div className="px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-4">
+                {/* Left - Page Title */}
+                <h1 className="text-xl font-bold text-gray-900">
+                  {navigation.find(item => item.current)?.name || 'Dashboard'}
+                </h1>
+
+                {/* Right - Notifications + User */}
+                <div className="flex items-center space-x-4">
+                  {/* Notification Icon with Red Dot */}
+                  <div className="relative">
+                    <button className="text-gray-500 hover:text-gray-700">
+                      <Bell className="w-5 h-5" />
+                    </button>
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                  </div>
+
+                  {/* User Avatar & Dropdown */}
+                  <div className="flex items-center space-x-2">
+                    <img
+                      src="/avatar.png" // <-- replace with real path
+                      alt="User Avatar"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <div className="text-sm text-gray-700 font-medium">John Doe</div>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
 
           <main className="flex-1">
             <div className="py-6">

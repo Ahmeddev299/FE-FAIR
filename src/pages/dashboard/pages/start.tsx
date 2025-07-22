@@ -65,7 +65,7 @@ export default function LetterOfIntentDashboard() {
           {/* Header */}
           <div className="bg-white p-4 rounded-lg shadow-sm mb-8">
             <h1 className="text-3xl lg:w-[1086px] font-bold text-[24px] text-gray-900 mb-2">Start a New Letter of Intent</h1>
-            <p className="text-gray-600">Create the LOI process by completing the steps below or reviewing previously saved drafts.</p>
+            <p className="text-gray-600">Initiate the LOI process by completing the steps below or reviewing previously saved drafts.</p>
           </div>
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6">
@@ -84,16 +84,18 @@ export default function LetterOfIntentDashboard() {
 
                 <div className="flex gap-4 mb-8 flex-wrap">
                   <button
-                    className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+                    className="bg-[#3B82F6] w-[187px] text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
                     onClick={handleStartNewLOI}
                   >
                     Start New LOI
-                    <Plus className="w-4 h-4 ml-2" />
+                    <Image alt='arrow' src='/arrow.png' width={30} height={20} />
                   </button>
-                  <button className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button className="bg-[white] w-[187px]  border border-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
                     View Sample LOI
                   </button>
                 </div>
+                <div className="h-[2px] bg-[#DBEAFE] w-full my-6" />
+
 
                 <div className="bg-[#EFF6FF] rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-3">What you will get:</h3>
