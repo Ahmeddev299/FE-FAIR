@@ -40,38 +40,34 @@ jobs:
           echo "$EC2_SSH_KEY" > ssh_key.pem
           chmod 600 ssh_key.pem
 
-          echo "Uploading Docker image to EC2 using rsync..."
+          echo "Uploading Docker image to EC2..."
           rsync -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" --progress ai-lease-fe.tar.gz $EC2_USER@$EC2_HOST:~/
 
-          echo "Creating remote deployment script..."
-          cat <<SCRIPT > deploy.sh
-#!/bin/bash
-set -ex
+          echo "Running deployment on EC2..."
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
+            set -ex
+            echo 'Checking disk space...'
+            df -h ~
 
-echo "Checking disk space..."
-df -h ~
+            echo 'Uncompressing Docker image...'
+            gunzip -f ~/ai-lease-fe.tar.gz
 
-echo "Uncompressing Docker image..."
-gunzip -f ~/ai-lease-fe.tar.gz
+            echo 'Stopping old container if it exists...'
+            docker stop ai-lease-fe || true
+            docker rm ai-lease-fe || true
 
-echo "Stopping old container if it exists..."
-docker stop ai-lease-fe || true
-docker rm ai-lease-fe || true
+            echo 'Loading Docker image...'
+            docker load -i ~/ai-lease-fe.tar
 
-echo "Loading new Docker image..."
-docker load -i ~/ai-lease-fe.tar
+            echo 'Starting new container...'
+            docker run -d \
+              --name ai-lease-fe \
+              -p 3000:3000 \
+              -e NEXT_PUBLIC_STAGE=${NEXT_PUBLIC_STAGE} \
+              ai-lease-fe
 
-echo "Starting new container..."
-docker run -d \
-  --name ai-lease-fe \
-  -p 3000:3000 \
-  -e NEXT_PUBLIC_STAGE=${NEXT_PUBLIC_STAGE} \
-  ai-lease-fe
+            echo 'Cleaning up Docker system...'
+            docker system prune -af --volumes
 
-echo "Cleaning up unused Docker resources..."
-docker system prune -af --volumes
-SCRIPT
-
-          echo "Uploading and running deployment script on EC2..."
-          scp -i ssh_key.pem -o StrictHostKeyChecking=no deploy.sh $EC2_USER@$EC2_HOST:~/deploy.sh
-          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'bash ~/deploy.sh && rm ~/deploy.sh && rm ~/ai-lease-fe.tar'
+            #rm -f ~/ai-lease-fe.tar
+          "
