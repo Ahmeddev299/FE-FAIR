@@ -10,9 +10,10 @@ RUN npm install --frozen-lockfile
 # Copy source files
 COPY . .
 
-# Build the app — allow passing NEXT_PUBLIC_STAGE at build time
-ARG NEXT_PUBLIC_STAGE
-ENV NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE
+# Set environment variable for Next.js build
+ENV NEXT_PUBLIC_STAGE=stag
+
+# Build the app
 RUN npm run build
 
 # Expose port
