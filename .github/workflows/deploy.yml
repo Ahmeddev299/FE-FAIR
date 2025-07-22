@@ -10,25 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository code
+      # ✅ Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Set up Docker Buildx for building the image
+      # ✅ Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Add NEXT_PUBLIC_STAGE to .env.production
+      # ✅ Create .env.production file with required env vars
       - name: Create .env.production
         run: echo "NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }}" > .env.production
 
-      # Build and save Docker image
-      - name: Build and Save Docker Image
+      # ✅ Build Docker image with build args
+      - name: Build Docker Image
         run: |
-          docker build -t ai-lease-fe .
+          docker build \
+            --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} \
+            -t ai-lease-fe .
+
+      # ✅ Save Docker image to tar file
+      - name: Save Docker Image to File
+        run: |
           docker save -o ai-lease-fe.tar ai-lease-fe
 
-      # Deploy to EC2
+      # ✅ Upload Docker image to EC2
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -36,19 +42,22 @@ jobs:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           NEXT_PUBLIC_STAGE: ${{ secrets.NEXT_PUBLIC_STAGE }}
         run: |
-          echo "$EC2_SSH_KEY" > ssh_key
-          chmod 600 ssh_key
+          echo "$EC2_SSH_KEY" > ssh_key.pem
+          chmod 600 ssh_key.pem
 
-          scp -i ssh_key -o StrictHostKeyChecking=no ai-lease-fe.tar $EC2_USER@$EC2_HOST:~/ai-lease-fe.tar
+          echo "Uploading Docker image to EC2..."
+          scp -i ssh_key.pem -o StrictHostKeyChecking=no ai-lease-fe.tar $EC2_USER@$EC2_HOST:~/ai-lease-fe.tar
 
-          ssh -i ssh_key -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << "EOF"
+          echo "Running remote deployment script on EC2..."
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
             docker load -i ~/ai-lease-fe.tar
             docker stop ai-lease-fe || true
             docker rm ai-lease-fe || true
             docker image rm ai-lease-fe || true
+
             docker run -d \
               --name ai-lease-fe \
               -p 3000:3000 \
               -e NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE \
               ai-lease-fe
-  EOF
+ EOF
