@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PageContainer } from '@/components/ui/components';
 
 const ResetPassword = () => {
   const router = useRouter();
@@ -22,7 +23,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
+    <PageContainer backgroundImage='/Frame.png'>
       <div className="bg-white shadow-2xl p-8 w-[473px] h-[361px]">
         <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
           Reset your password
@@ -62,7 +63,7 @@ const ResetPassword = () => {
           </button>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

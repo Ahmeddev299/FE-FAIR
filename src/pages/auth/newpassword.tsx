@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { PageContainer } from '@/components/ui/components';
 
 const NewPassword = () => {
   const [isLogin] = useState(true);
@@ -31,7 +32,9 @@ const NewPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
+     <PageContainer
+            backgroundImage='/Frame.png'
+          >
       <div className="bg-white shadow-2xl p-8 w-[473px] h-[361px]">
         <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
           Create New Password
@@ -94,7 +97,7 @@ const NewPassword = () => {
           </button>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
