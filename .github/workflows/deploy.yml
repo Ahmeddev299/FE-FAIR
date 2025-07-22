@@ -1,4 +1,4 @@
-name: Deploy Next.js App to EC2
+name: CI/CD Deploy Docker to EC2
 
 on:
   push:
@@ -6,30 +6,68 @@ on:
       - main
 
 jobs:
-  deploy:
-    name: Build and Deploy on EC2
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up SSH key
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
-          chmod 400 key.pem
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Build and Run Docker on EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
-            cd /home/ubuntu/AI-Lease-FE
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-            # Clean up old containers/images/volumes
+      - name: Create .env.production
+        run: echo "NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }}" > .env.production
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} \
+            -t ai-lease-fe .
+
+      - name: Save and Compress Docker Image
+        run: |
+          docker save -o ai-lease-fe.tar ai-lease-fe
+          gzip -c ai-lease-fe.tar > ai-lease-fe.tar.gz
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          NEXT_PUBLIC_STAGE: ${{ secrets.NEXT_PUBLIC_STAGE }}
+        run: |
+          echo "$EC2_SSH_KEY" > ssh_key.pem
+          chmod 600 ssh_key.pem
+
+          echo "Uploading Docker image to EC2..."
+          rsync -e "ssh -i ssh_key.pem -o StrictHostKeyChecking=no" --progress ai-lease-fe.tar.gz $EC2_USER@$EC2_HOST:~/
+
+          echo "Running deployment on EC2..."
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
+            set -ex
+            echo 'Checking disk space...'
+            df -h ~
+
+            echo 'Uncompressing Docker image...'
+            gunzip -f ~/ai-lease-fe.tar.gz
+
+            echo 'Stopping old container if it exists...'
+            docker stop ai-lease-fe || true
+            docker rm ai-lease-fe || true
+
+            echo 'Loading Docker image...'
+            docker load -i ~/ai-lease-fe.tar
+
+            echo 'Starting new container...'
+            docker run -d \
+              --name ai-lease-fe \
+              -p 3000:3000 \
+              -e NEXT_PUBLIC_STAGE=${NEXT_PUBLIC_STAGE} \
+              ai-lease-fe
+
+            echo 'Cleaning up Docker system...'
             docker system prune -af --volumes
 
-            # Build Docker image
-            docker build -t nextjs-app --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} .
-
-            # Stop and remove old container if running
-            docker rm -f nextjs-container || true
-
-            # Run new container
-            docker run -d --name nextjs-container -p 3000:3000 nextjs-app
-          '
+            #rm -f ~/ai-lease-fe.tar
+          "

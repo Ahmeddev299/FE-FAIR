@@ -1,28 +1,23 @@
-# 1. Use Node.js base image
 FROM node:18-alpine
 
-# 2. Set working directory
+# Set working directory
 WORKDIR /app
 
-# 3. Accept build-time environment variable
-ARG NEXT_PUBLIC_STAGE
-ENV NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE
+# Copy and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install --frozen-lockfile
 
-# 4. Copy package files first
-COPY package*.json ./
-
-# 5. Install only production deps
-RUN npm install --production
-
-# 6. Copy the rest of the app
+# Copy source files
 COPY . .
 
-# 7. Build the Next.js app
+# Set environment variable for Next.js build
+ENV NEXT_PUBLIC_STAGE=stag
+
+# Build the app
 RUN npm run build
 
-# 8. Expose port
+# Expose port
 EXPOSE 3000
 
-# 9. Start the app
+# Start the app
 CMD ["npm", "start"]
-
