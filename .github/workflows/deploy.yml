@@ -36,7 +36,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} '
             docker system prune -af --volumes
-            docker load < /home/ubuntu/ai-lease-fe.tar
             docker rm -f nextjs-container || true
+            docker image rm ai-lease-fe || true
+            docker load < /home/ubuntu/ai-lease-fe.tar
             docker run -d --name nextjs-container -p 3000:3000 ai-lease-fe
           '
