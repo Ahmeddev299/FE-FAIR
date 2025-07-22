@@ -51,4 +51,4 @@ jobs:
               -p 3000:3000 \
               -e NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE \
               ai-lease-fe
-EOF
+  EOF
