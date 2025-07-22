@@ -10,31 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ Checkout code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # ✅ Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ✅ Create .env.production file with required env vars
       - name: Create .env.production
         run: echo "NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }}" > .env.production
 
-      # ✅ Build Docker image with build args
       - name: Build Docker Image
         run: |
           docker build \
             --build-arg NEXT_PUBLIC_STAGE=${{ secrets.NEXT_PUBLIC_STAGE }} \
             -t ai-lease-fe .
 
-      # ✅ Save Docker image to tar file
       - name: Save Docker Image to File
         run: |
           docker save -o ai-lease-fe.tar ai-lease-fe
 
-      # ✅ Upload Docker image to EC2
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
@@ -49,7 +43,7 @@ jobs:
           scp -i ssh_key.pem -o StrictHostKeyChecking=no ai-lease-fe.tar $EC2_USER@$EC2_HOST:~/ai-lease-fe.tar
 
           echo "Running remote deployment script on EC2..."
-          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << EOF
+          ssh -i ssh_key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'REMOTE_EOF'
             docker load -i ~/ai-lease-fe.tar
             docker stop ai-lease-fe || true
             docker rm ai-lease-fe || true
@@ -58,6 +52,6 @@ jobs:
             docker run -d \
               --name ai-lease-fe \
               -p 3000:3000 \
-              -e NEXT_PUBLIC_STAGE=$NEXT_PUBLIC_STAGE \
+              -e NEXT_PUBLIC_STAGE=${NEXT_PUBLIC_STAGE} \
               ai-lease-fe
- EOF
+REMOTE_EOF
