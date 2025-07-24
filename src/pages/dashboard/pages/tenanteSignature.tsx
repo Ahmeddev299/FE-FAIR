@@ -634,7 +634,10 @@ const ElectronicSignatureInterface: React.FC = () => {
                                 {parties.map((person) => (
                                     <div
                                         key={person.email}
-                                        className={`border rounded-lg p-4 ${person.required ? 'bg-blue-50 border-blue-200' : 'bg-yellow-50 border-yellow-200'}`}
+                                        className={`border rounded-lg p-4 ${person.required
+                                                ? 'bg-blue-50 border-blue-200'
+                                                : 'bg-[#F9FAFB] border-gray-200'
+                                            }`}
                                     >
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center space-x-2">

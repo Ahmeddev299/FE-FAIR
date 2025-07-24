@@ -1,32 +1,32 @@
 import React, { useEffect } from 'react';
-import { X, History, Check, MessageSquare } from 'lucide-react';
+import { X, History, Check, MessageSquare, AlertTriangle } from 'lucide-react';
 
 interface Clause {
-  id: number;
-  name: string;
-  description: string;
-  status: string;
-  risk: string;
-  lastEdited: string;
-  editor: string;
-  comments: number;
-  unresolved: boolean;
-  // Optional additional fields:
-  originalText?: string;
-  aiSuggestion?: string;
-  currentVersion?: string;
+    id: number;
+    name: string;
+    description: string;
+    status: string;
+    risk: string;
+    lastEdited: string;
+    editor: string;
+    comments: number;
+    unresolved: boolean;
+    // Optional additional fields:
+    originalText?: string;
+    aiSuggestion?: string;
+    currentVersion?: string;
 }
 
 interface ClauseDetailModalProps {
-  onClose: () => void;
-  clause: Clause | null;
-  newComment: string;
-  setNewComment: (value: string) => void;
-  handleAddComment: () => void;
+    onClose: () => void;
+    clause: Clause | null;
+    newComment: string;
+    setNewComment: (value: string) => void;
+    handleAddComment: () => void;
 }
 
 export default function ClauseDetailModal({ onClose, newComment,
-     setNewComment, handleAddComment } :ClauseDetailModalProps) {
+    setNewComment, handleAddComment }: ClauseDetailModalProps) {
     // Lock scroll when modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -52,9 +52,9 @@ export default function ClauseDetailModal({ onClose, newComment,
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-gray-200">
                         <div>
-                            <h2 className="text-lg font-semibold">{ 'Base Rent Amount'}</h2>
+                            <h2 className="text-lg font-semibold">{'Base Rent Amount'}</h2>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-sm text-gray-600">{ 'Rent'}</span>
+                                <span className="text-sm text-gray-600">{'Rent'}</span>
                                 <span className="text-sm text-gray-400">•</span>
                                 <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Approved</span>
                                 <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">Low Risk</span>
@@ -146,16 +146,28 @@ export default function ClauseDetailModal({ onClose, newComment,
                             <div className="mt-6 pt-4 border-t border-gray-200">
                                 <p className="text-xs text-gray-500">Last edited 15/01/2024 19:30 by John Doe</p>
                             </div>
-                            <div className="flex justify-between">
-                                <div className="flex gap-2">
-                                    <button className="bg-red-100 text-red-700 px-2 py-2 rounded-md hover:bg-red-200">
-                                        Reject
-                                    </button>
-                                    <button className="bg-orange-100 text-orange-700 px-2 py-2 rounded-md hover:bg-orange-200">
-                                        Request Review
-                                    </button>
-                                </div>
-                                <button className="bg-green-600 text-white px-2 py-2 rounded-md hover:bg-green-700">
+                            <div className="flex flex-col mt-6 sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                                <button
+                                    className="flex items-center justify-center px-4 py-2 border border-red-500 text-red-600 rounded-md hover:bg-red-50 text-sm font-medium"
+                                    type="button"
+                                >
+                                    <X className="w-4 h-4 mr-2" />
+                                    Reject
+                                </button>
+
+                                <button
+                                    className="flex items-center justify-center px-4 py-2 border border-yellow-500 text-yellow-700 bg-yellow-50 rounded-md hover:bg-yellow-100 text-sm font-medium"
+                                    type="button"
+                                >
+                                    <AlertTriangle className="w-4 h-4 mr-2" />
+                                    Request Review
+                                </button>
+
+                                <button
+                                    className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
+                                    type="button"
+                                >
+                                    <Check className="w-4 h-4 mr-2" />
                                     Approve
                                 </button>
                             </div>

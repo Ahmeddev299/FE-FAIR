@@ -55,6 +55,7 @@ export default function LetterOfIntentDashboard() {
   }
 
   const handleStartNewLOI = () => {
+    console.log("running")
     router.push('/dashboard/pages/createform');
   };
 

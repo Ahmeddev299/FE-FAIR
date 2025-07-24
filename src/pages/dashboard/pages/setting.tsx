@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    User,
     CreditCard,
     FileText,
     Bell,
@@ -8,47 +7,66 @@ import {
     Download,
     CheckCircle,
     XCircle,
-    Calendar,
+    FileWarning,
+    MessageCircle,
+    CalendarCheck,
     Mail,
+    Settings,
+    ArrowLeft,
 } from 'lucide-react';
+
 import { DashboardLayout } from '@/components/layouts';
 import Image from 'next/image';
 
-interface NotificationSettings {
-    leadEvents: boolean;
-    legalNotices: boolean;
-    contractReminders: boolean;
-    renewalsDeadlines: boolean;
-}
-
 const Setting: React.FC = () => {
-    const [notifications, setNotifications] = useState<NotificationSettings>({
-        leadEvents: true,
-        legalNotices: true,
-        contractReminders: false,
-        renewalsDeadlines: true
-    });
+
 
     const [autoRenewal, setAutoRenewal] = useState<boolean>(true);
 
-    const handleNotificationChange = (key: keyof NotificationSettings): void => {
-        setNotifications(prev => ({
-            ...prev,
-            [key]: !prev[key]
-        }));
-    };
 
+    // Toggle Switch Component
+    function Switch({ isOn, disabled = false }: { isOn: boolean; disabled?: boolean }) {
+        return (
+            <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                    type="checkbox"
+                    checked={isOn}
+                    disabled={disabled}
+                    className="sr-only peer"
+                    readOnly
+                />
+                <div
+                    className={`w-11 h-6 rounded-full peer-focus:outline-none transition-colors ${disabled ? "bg-gray-300" : isOn ? "bg-blue-600" : "bg-gray-200"
+                        }`}
+                >
+                    <div
+                        className={`absolute top-[2px] left-[2px] h-5 w-5 bg-white border border-gray-300 rounded-full transition-transform ${isOn ? "translate-x-full" : ""
+                            }`}
+                    ></div>
+                </div>
+            </label>
+        );
+    }
     return (
         <DashboardLayout>
-            <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                    <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900">Account Settings</h2>
-                <span className="text-sm text-gray-500 ml-2">Manage your profile, billing, and preferences</span>
+            <div className="flex items-center gap-3 mb-2">
+                <ArrowLeft className="h-5 w-5 text-gray-600 cursor-pointer" />
+                <span className="text-sm text-gray-600">Back</span>
             </div>
 
-            <div className="max-w-4xl mx-auto p-6 min-h-screen">
+            <div className="mx-auto p-6 p-4 bg-[white] shadow-sm border border-gray-200 rounded">
+                <div className="flex items-center gap-3">
+                    <div className="text-white rounded-lg p-2">
+                        <Image src='/account.png' alt='account'  width={30} height={30} />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-semibold text-gray-900">Account Setting</h1>
+                        <p className="text-sm text-gray-600">Manage your profile, billing, and preferences.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-5xl mx-auto p-6 min-h-screen">
                 {/* Account Settings */}
                 <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
 
@@ -59,8 +77,8 @@ const Setting: React.FC = () => {
                                 <Image alt="profile" src='/profile.png' width={40} height={40} className='mr-5' />
                                 <span className="font-bold text-gray-700">Profile Information</span>
                             </div>
-                            <button className="flex items-center text-blue-600 hover:text-blue-700">
-                                <Edit className="w-4 h-4 mr-1" />
+                            <button className="flex  px-4 py-2  text-gray-800 rounded-lg border border-gray-300  bg-white transition-colors font-medium">
+                                <Edit className="mr-6 mt-1 w-4 h-4 mr-1" />
                                 Edit
                             </button>
                         </div>
@@ -91,34 +109,63 @@ const Setting: React.FC = () => {
 
                 {/* Plan & Usage */}
                 <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
-                    <div className="flex items-center justify-between mb-4">
+
+                    <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center">
-                            <Image alt="plan" src='/plan.png' width={40} height={40} className='mr-5' />
-                            <h2 className="text-lg font-bold text-gray-900">Plan & Usage</h2>
-                            <span className="text-sm text-gray-500 ml-2">Current plan and usage</span>
+                            <div className="bg-green-100 p-2 rounded-lg mr-3">
+                                <Settings className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">Plan & Usage</h3>
+                                <p className="text-sm text-gray-500">Current plan: Pro Plan</p>
+                            </div>
                         </div>
-                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                            Upgrade Plan
-                        </button>
+                        <div className="flex items-center space-x-3">
+                            <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-semibold">$29/month</span>
+                            <button className="px-4 py-2  text-gray-800 rounded-lg border border-gray-300  bg-white transition-colors font-medium">
+                                Upgrade Plan
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-gray-600 font-semibold">Current Plan</span>
-                            <span className="text-gray-900">Pro</span>
+                    <div className="space-y-5">
+                        {/* Documents Used */}
+                        <div>
+                            <div className="flex justify-between mb-1 text-sm text-gray-700 font-medium">
+                                <span>Documents Used</span>
+                                <span>8 of 20</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: "40%" }}></div>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-gray-600 font-semibold">Monthly Queries</span>
-                            <span className="font-medium text-gray-900">2 of 5</span>
+
+                        {/* Mailbox Notices */}
+                        <div>
+                            <div className="flex justify-between mb-1 text-sm text-gray-700 font-medium">
+                                <span>Mailbox Notices</span>
+                                <span>2 of 5</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: "40%" }}></div>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-gray-600 font-semibold">Storage Used</span>
-                            <span className="font-medium text-gray-900">1.2TB of 5TB</span>
+
+                        {/* Storage Used */}
+                        <div>
+                            <div className="flex justify-between mb-1 text-sm text-gray-700 font-medium">
+                                <span>Storage Used</span>
+                                <span>1.2GB of 5GB</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: "24%" }}></div>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-gray-600 font-semibold">Next billing date</span>
-                            <span className="font-medium text-gray-900">January 15, 2024</span>
-                        </div>
+                    </div>
+
+                    <div className="mt-6 text-sm text-gray-600">
+                        <span className="font-medium">Next billing date:</span>{" "}
+                        <span className="text-gray-900 font-semibold">January 15, 2024</span>
                     </div>
                 </div>
 
@@ -131,7 +178,7 @@ const Setting: React.FC = () => {
                             </div>
                             <h2 className="text-lg font-semibold text-gray-900">Billing & Payment</h2>
                         </div>
-                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        <button className="px-4 py-2  text-gray-800 rounded-lg border border-gray-300  bg-white transition-colors font-medium">
                             Update Payment Info
                         </button>
                     </div>
@@ -268,6 +315,7 @@ const Setting: React.FC = () => {
 
                 {/* Notification Preferences */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
+                    {/* Header */}
                     <div className="flex items-center mb-4">
                         <div className="bg-indigo-100 p-2 rounded-lg mr-3">
                             <Bell className="w-5 h-5 text-indigo-600" />
@@ -275,88 +323,71 @@ const Setting: React.FC = () => {
                         <h2 className="text-lg font-semibold text-gray-900">Notification Preferences</h2>
                     </div>
 
-                    <div className="space-y-4">
-                        <p className="text-sm text-gray-600 mb-4">
-                            Legal advice cannot be disabled as they are required for compliance and future protections.
-                        </p>
+                    {/* Notice */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-5 text-sm text-gray-700">
+                        <span className="font-medium">Legal notices cannot be disabled</span> as they are required for compliance and tenant protection.
+                    </div>
 
-                        <div className="flex items-center justify-between py-3">
+                    {/* Notification Options */}
+                    <div className="space-y-5">
+                        {/* Lease Events */}
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <Mail className="w-5 h-5 text-gray-400 mr-3" />
+                                <Mail className="w-5 h-5 text-blue-500 mr-3" />
                                 <div>
-                                    <div className="font-medium text-gray-900">Lead Events</div>
-                                    <div className="text-sm text-gray-500">Get notified about lead changes, approvals, and updates</div>
+                                    <div className="font-medium text-gray-900">Lease Events</div>
+                                    <div className="text-sm text-gray-500">
+                                        Get notified about lease status changes, approvals, and updates
+                                    </div>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={notifications.leadEvents}
-                                    onChange={() => handleNotificationChange('leadEvents')}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            </label>
+                            <Switch isOn={true} />
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        {/* Legal Notices */}
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <FileText className="w-5 h-5 text-gray-400 mr-3" />
+                                <FileWarning className="w-5 h-5 text-red-500 mr-3" />
                                 <div>
                                     <div className="font-medium text-gray-900">Legal Notices</div>
-                                    <div className="text-sm text-gray-500">Important notifications about license terms, warnings, and legal matters</div>
+                                    <div className="text-sm text-gray-500">
+                                        Critical notifications about terminations, evictions, and legal documents
+                                    </div>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={notifications.legalNotices}
-                                    onChange={() => handleNotificationChange('legalNotices')}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            </label>
+                            <Switch isOn={false} disabled />
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        {/* Comment Mentions */}
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <Calendar className="w-5 h-5 text-gray-400 mr-3" />
+                                <MessageCircle className="w-5 h-5 text-green-500 mr-3" />
                                 <div>
-                                    <div className="font-medium text-gray-900">Contract Reminders</div>
-                                    <div className="text-sm text-gray-500">When contractors expire and it is times to renewal or discussions</div>
+                                    <div className="font-medium text-gray-900">Comment Mentions</div>
+                                    <div className="text-sm text-gray-500">
+                                        When someone mentions you in lease comments or discussions
+                                    </div>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={notifications.contractReminders}
-                                    onChange={() => handleNotificationChange('contractReminders')}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            </label>
+                            <Switch isOn={false} />
                         </div>
 
-                        <div className="flex items-center justify-between py-3">
+                        {/* Renewals & Deadlines */}
+                        <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                                <Bell className="w-5 h-5 text-gray-400 mr-3" />
+                                <CalendarCheck className="w-5 h-5 text-purple-500 mr-3" />
                                 <div>
                                     <div className="font-medium text-gray-900">Renewals & Deadlines</div>
-                                    <div className="text-sm text-gray-500">Notifications about license renewals, payment due dates, and important deadlines</div>
+                                    <div className="text-sm text-gray-500">
+                                        Reminders about lease renewals, payment due dates, and important deadlines
+                                    </div>
                                 </div>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={notifications.renewalsDeadlines}
-                                    onChange={() => handleNotificationChange('renewalsDeadlines')}
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            </label>
+                            <Switch isOn={true} />
                         </div>
                     </div>
                 </div>
+
             </div>
         </DashboardLayout>
     );

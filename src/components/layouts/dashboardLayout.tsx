@@ -1,10 +1,11 @@
-import { ProtectedRoute } from '../layouts/protectedRoutes';
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectUser, userLogout } from '../../redux/slices/userSlice';
-import { useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { Bell, ChevronDown } from 'lucide-react';
+import { ProtectedRoute } from '../layouts/protectedRoutes';
+import { LogoutModal } from '../models/logoutModel';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -15,10 +16,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const router = useRouter();
   const { profile } = useSelector(selectUser);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const backgroundImage = '/logo.png'
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const backgroundImage = '/logo.png';
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     dispatch(userLogout());
+    setShowLogoutModal(false);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const navigation = [
@@ -30,21 +41,30 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { name: 'Terminate Tenant', href: '/dashboard/pages/terminateLease', icon: '/img7.png', current: router.pathname === '/settings' },
     { name: 'Storage', href: '/dashboard/pages/tenantStorage', icon: '/img8.png', current: router.pathname === '/settings' },
   ];
+
   const userSetting = [
     { name: 'Setting', href: '/dashboard/pages/setting', icon: '/img10.png', current: router.pathname === '/setting' },
-    { name: 'Logout', href: '/logout', icon: '/img9.png', current: router.pathname === '/profile' },
+    { name: 'Logout', href: '#', icon: '/img9.png', current: router.pathname === '/profile' },
   ];
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-100">
+        {/* Logout Modal */}
+        <LogoutModal
+          isOpen={showLogoutModal}
+          onConfirm={confirmLogout}
+          onCancel={cancelLogout}
+        />
+
         {/* Sidebar for desktop */}
         <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
           <div className="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
             <Image
               alt="Logo"
               src={backgroundImage}
-              width={200} // Example width
-              height={100} // Example height
+              width={200}
+              height={100}
             />
             <div className="mt-5 flex-grow flex flex-col">
               <nav className="flex-1 px-2 pb-4 space-y-1">
@@ -66,11 +86,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     <a
                       key={item.name}
                       href={item.href}
-                      onClick={item.name === 'Logout' ? handleLogout : undefined}
+                      onClick={(e) => {
+                        if (item.name === 'Logout') {
+                          e.preventDefault();
+                          handleLogout();
+                        }
+                      }}
                       className={`${item.current
                         ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
+                        } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150 cursor-pointer`}
                     >
                       <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-3" />
                       {item.name}
@@ -140,7 +165,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         className={`${item.current
                           ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                          } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-150`}
+                          } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-150 cursor-pointer`}
                       >
                         <Image src={item.icon} alt={item.name} width={40} height={30} className="mr-3" />
                         {item.name}
@@ -209,7 +234,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   {/* User Avatar & Dropdown */}
                   <div className="flex items-center space-x-2">
                     <Image
-                      src="/avatar.png" // <-- replace with real path
+                      src="/avatar.png"
                       alt="User Avatar"
                       width={40}
                       height={40}

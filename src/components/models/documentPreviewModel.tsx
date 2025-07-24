@@ -1,6 +1,7 @@
 
 import { FileText, Download, X } from 'lucide-react';
 
+
 interface DocumentPreviewModalProps {
   onClose: () => void;
 }

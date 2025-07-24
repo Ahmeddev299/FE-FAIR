@@ -8,7 +8,6 @@ import {
   AlertTriangle,
   AlertCircle,
   X,
-  Edit,
   Check,
   MessageSquare,
   FileCheck,
@@ -305,8 +304,8 @@ const LeaseClauseReview: React.FC = () => {
                     key={clause.id}
                     onClick={() => handleClauseSelect(clause.name)}
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedClause === clause.name
-                        ? 'bg-blue-50 border-l-4 border-blue-500'
-                        : 'hover:bg-gray-50'
+                      ? 'bg-blue-50 border-l-4 border-blue-500'
+                      : 'hover:bg-gray-50'
                       }`}
                     role="button"
                     tabIndex={0}
@@ -425,25 +424,27 @@ const LeaseClauseReview: React.FC = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                   <button
-                    className="flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base"
+                    className="flex items-center justify-center px-4 py-2 border border-red-500 text-red-600 rounded-md hover:bg-red-50 text-sm font-medium"
                     type="button"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Reject
                   </button>
+
                   <button
-                    className="flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm sm:text-base"
+                    className="flex items-center justify-center px-4 py-2 border border-yellow-500 text-yellow-700 bg-yellow-50 rounded-md hover:bg-yellow-100 text-sm font-medium"
                     type="button"
                   >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Request Review
                   </button>
+
                   <button
-                    className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base"
+                    className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium"
                     type="button"
                   >
                     <Check className="w-4 h-4 mr-2" />
-                    Accept Suggestion
+                    Approve
                   </button>
                 </div>
               </div>

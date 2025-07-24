@@ -3,6 +3,7 @@ import { Eye, Calendar } from 'lucide-react';
 import Image from "next/image"; // ✅ Correct
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { DashboardLayout } from '@/components/layouts';
+import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 
 type Status = 'available' | 'pending' | 'active' | 'in review' | 'terminated';
 type Priority = 'high' | 'urgent' | 'medium';
@@ -32,6 +33,8 @@ type Event = {
 };
 
 function MainPage() {
+    const router = useRouter();
+
     const listings: Listing[] = [
         {
             name: "Downtown Office Space",
@@ -134,7 +137,18 @@ function MainPage() {
         return words.length > limit ? words.slice(0, limit).join(" ") + "..." : text;
     };
 
+    const handleStartNewLOI = () => {
+        console.log("running")
+        router.push('/dashboard/pages/createform');
+    };
 
+    const uploadLeaseNewLOI = () => {
+        router.push('/dashboard/pages/uploadLeaseform');
+    }
+
+     const terminateLease = () => {
+        router.push('/dashboard/pages/terminateLease');
+    }
 
     return (
         <DashboardLayout>
@@ -324,7 +338,8 @@ function MainPage() {
                                 <div className="space-y-5">
 
                                     {/* Start New LOI */}
-                                    <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                                    <button className="w-full flex items-center justify-start gap-3 
+                                    bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium"  onClick={handleStartNewLOI}>
                                         <Image
                                             src="/star.png"
                                             alt="Start New LOI"
@@ -336,7 +351,7 @@ function MainPage() {
                                     </button>
 
                                     {/* Upload Lease Document */}
-                                    <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-600 transition text-sm font-medium">
+                                    <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-600 transition text-sm font-medium" onClick={uploadLeaseNewLOI}>
                                         <Image
                                             src="/start-loi-1.png"
                                             alt="Upload Document"
@@ -349,7 +364,7 @@ function MainPage() {
 
 
                                     {/* Terminate Lease */}
-                                    <button className="w-full flex items-center justify-start gap-3 bg-red-500 text-white py-2.5 px-4 rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                                    <button className="w-full flex items-center justify-start gap-3 bg-red-500 text-white py-2.5 px-4 rounded-lg hover:bg-red-600 transition text-sm font-medium" onClick={terminateLease}>
                                         <Image
                                             src="/start-loi-2.png"
                                             alt="Terminate Lease"
