@@ -121,7 +121,6 @@ const DocumentStorage: React.FC = () => {
     ));
   };
 
-
   return (
     <DashboardLayout>
       <div className="min-h-screen  overflow-x-hidden">
