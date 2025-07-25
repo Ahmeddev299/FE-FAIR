@@ -203,7 +203,7 @@ const LeaseClauseReview: React.FC = () => {
                 <span className="hidden sm:inline">Back to Upload</span>
               </button>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Lease Clause Review</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate mr-5">Lease Clause Review</h1>
                 <div className="hidden sm:flex items-center text-sm text-gray-500 mt-1">
                   <FileText className="w-4 h-4 mr-1" />
                   <span className="truncate">Downtown Office Lease Agreement.pdf</span>

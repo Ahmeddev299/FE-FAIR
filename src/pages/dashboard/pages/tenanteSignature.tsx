@@ -96,13 +96,6 @@ const ElectronicSignatureInterface: React.FC = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
-    // const tabs: Tab[] = [
-    //     { label: 'All', key: 'all' },
-    //     { label: 'Completed', key: 'completed' },
-    //     { label: 'Declined', key: 'declined' },
-    //     { label: 'Pending', key: 'pending' },
-    // ];
-
     const total: number = 3;
     const signed: number = 0;
     const pending: number = total - signed;
@@ -134,38 +127,6 @@ const ElectronicSignatureInterface: React.FC = () => {
             required: false,
         },
     ];
-
-    // const getColorClasses = (color: Party['color'], type: 'bg' | 'text' | 'border') => {
-    //     const colorMap = {
-    //         blue: {
-    //             bg: 'bg-blue-100',
-    //             text: 'text-blue-700',
-    //             border: 'border-blue-200'
-    //         },
-    //         yellow: {
-    //             bg: 'bg-yellow-100',
-    //             text: 'text-yellow-700',
-    //             border: 'border-yellow-200'
-    //         },
-    //         green: {
-    //             bg: 'bg-green-100',
-    //             text: 'text-green-700',
-    //             border: 'border-green-200'
-    //         },
-    //         red: {
-    //             bg: 'bg-red-100',
-    //             text: 'text-red-700',
-    //             border: 'border-red-200'
-    //         }
-    //     };
-    //     return colorMap[color][type];
-    // };
-
-    // const handleTypedSignatureChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    //     setTypedSignature(e.target.value);
-    // };
-
-
     return (
         <DashboardLayout>
             <div className="min-h-screen">
@@ -236,7 +197,6 @@ const ElectronicSignatureInterface: React.FC = () => {
                                 </a>
                             </div>
 
-
                             {/* Status Card */}
                             <div className="bg-orange-50 rounded-xl p-4">
                                 <div className="flex items-start gap-3">
@@ -250,7 +210,6 @@ const ElectronicSignatureInterface: React.FC = () => {
                                 </p>
                                 <p className="text-xs text-orange-600 mt-1">Awaiting signatures</p>
                             </div>
-
                         </div>
 
                         {/* Signature Progress */}
@@ -356,14 +315,12 @@ const ElectronicSignatureInterface: React.FC = () => {
 
                             {/* Signature Boxes Layout */}
                             <div className="mt-8 flex flex-col items-center space-y-4">
-                                {/* Witness Signature */}
                                 <div className="border-2 border-dashed border-gray-400 text-center px-6 py-4 rounded-lg w-80 bg-gray-50">
                                     <div className="font-medium text-gray-700 mb-1">Witness Signature</div>
                                     <div className="text-gray-800">Sarah Wilson</div>
                                 </div>
 
-                                {/* Landlord Signature Row */}
-                                <div className="flex space-x-4">
+                                <div className="lg:flex-col flex space-x-4 lg:space-y-4 ">
                                     <div className="border-2 border-dashed border-gray-400 text-center px-6 py-4 rounded-lg w-80 bg-gray-50">
                                         <div className="font-medium text-gray-700 mb-1">Landlord Signature</div>
                                         <div className="text-gray-800">Property Management LLC</div>
@@ -374,8 +331,7 @@ const ElectronicSignatureInterface: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Tenant Signature Row (Interactive) */}
-                                <div className="flex space-x-4">
+                                <div className="flex space-x-4 lg:flex-col lg:space-y-4">
                                     <div className="border-2 border-dashed border-blue-500 bg-blue-50 text-center px-6 py-4 rounded-lg w-80 shadow-sm">
                                         <div className="font-medium text-blue-700 mb-1">Tenant Signature</div>
                                         <div className="text-gray-800 mb-2">John Doe</div>
@@ -508,9 +464,6 @@ const ElectronicSignatureInterface: React.FC = () => {
                                             </button>
                                         </div>
                                     </div>
-
-
-
                                 </div>
                             </div>
                         )}
