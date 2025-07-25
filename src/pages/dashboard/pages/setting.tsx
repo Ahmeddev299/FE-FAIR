@@ -57,7 +57,7 @@ const Setting: React.FC = () => {
             <div className="mx-auto p-6 p-4 bg-[white] shadow-sm border border-gray-200 rounded">
                 <div className="flex items-center gap-3">
                     <div className="text-white rounded-lg p-2">
-                        <Image src='/account.png' alt='account'  width={30} height={30} />
+                        <Image src='/account.png' alt='account' width={30} height={30} />
                     </div>
                     <div>
                         <h1 className="text-xl font-semibold text-gray-900">Account Setting</h1>
@@ -72,7 +72,7 @@ const Setting: React.FC = () => {
 
                     {/* Profile Information */}
                     <div className="p-4">
-                        <div className="flex items-center justify-between mb-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
                             <div className="flex items-center">
                                 <Image alt="profile" src='/profile.png' width={40} height={40} className='mr-5' />
                                 <span className="font-bold text-gray-700">Profile Information</span>
@@ -83,7 +83,7 @@ const Setting: React.FC = () => {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm text-gray-600 mb-1 font-bold">Full Name</label>
                                 <div className="text-gray-900">John Doe</div>
@@ -110,7 +110,7 @@ const Setting: React.FC = () => {
                 {/* Plan & Usage */}
                 <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
 
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
                         <div className="flex items-center">
                             <div className="bg-green-100 p-2 rounded-lg mr-3">
                                 <Settings className="w-5 h-5 text-green-600" />
@@ -171,8 +171,8 @@ const Setting: React.FC = () => {
 
                 {/* Billing & Payment */}
                 <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+                        <div className="flex  items-center">
                             <div className="bg-purple-100 p-2 rounded-lg mr-3">
                                 <CreditCard className="w-5 h-5 text-purple-600" />
                             </div>
@@ -233,7 +233,7 @@ const Setting: React.FC = () => {
                         <h2 className="text-lg font-semibold text-gray-900">Invoice History</h2>
                     </div>
 
-                    <div className="overflow-hidden">
+                    <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-gray-200">

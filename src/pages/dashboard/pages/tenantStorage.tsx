@@ -187,7 +187,7 @@ const DocumentStorage: React.FC = () => {
             <div className="flex-1 min-w-0">
               {/* Search and Filters */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4 sm:mb-6">
-                <div className="p-3 sm:p-4">
+                <div className="p-2 sm:p-4">
                   <div className="space-y-4">
                     {/* Search */}
                     <div className="relative">
@@ -215,7 +215,7 @@ const DocumentStorage: React.FC = () => {
                     {/* Filters */}
                     <div className={`space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:gap-3 ${showMobileFilters ? 'block' : 'hidden sm:flex'}`}>
                       <select
-                        className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full sm:w-auto px-1 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={selectedType}
                         onChange={(e) => setSelectedType(e.target.value)}
                       >
@@ -227,7 +227,7 @@ const DocumentStorage: React.FC = () => {
                       </select>
 
                       <select
-                        className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full sm:w-auto px-1 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
                       >
@@ -238,7 +238,7 @@ const DocumentStorage: React.FC = () => {
                       </select>
 
                       <select
-                        className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full sm:w-auto px-1 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         value={selectedTags}
                         onChange={(e) => setSelectedTags(e.target.value)}
                       >
@@ -501,13 +501,6 @@ const DocumentStorage: React.FC = () => {
                       </button>
 
                       <div className="flex items-center space-x-2">
-                        {/* Progress indicator */}
-                        <div className="w-32 sm:w-48 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300 ease-out"
-                            style={{ width: '80%' }}
-                          ></div>
-                        </div>
                         <span className="text-xs text-gray-500 font-medium">4/5</span>
                       </div>
 
