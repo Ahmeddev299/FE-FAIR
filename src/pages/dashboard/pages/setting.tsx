@@ -20,9 +20,7 @@ import Image from 'next/image';
 
 const Setting: React.FC = () => {
 
-
     const [autoRenewal, setAutoRenewal] = useState<boolean>(true);
-
 
     // Toggle Switch Component
     function Switch({ isOn, disabled = false }: { isOn: boolean; disabled?: boolean }) {
