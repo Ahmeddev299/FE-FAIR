@@ -36,8 +36,17 @@ const CreateLoiForm: React.FC = () => {
     }
   };
 
+   const saveAsDraft = async (formValues: FormValues) => {
+    try {
+      const draftPayload = transformToApiPayload(formValues);
+      await dispatch(submitLOIAsync({ ...draftPayload, submit_status: 'Draft' })).unwrap();
+      console.log('LOI saved as draft!');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+    }
+  };
+
   const renderStepContent = (formValues: FormValues) => {
-    console.log("values", formValues)
     switch (currentStep) {
       case 1: return <BasicInformationStep />;
       case 2: return <LeaseTermsStep />;
@@ -50,7 +59,6 @@ const CreateLoiForm: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <FormHeader />
 
       <div className="max-w-5xl mx-auto">
         <Formik
@@ -60,6 +68,7 @@ const CreateLoiForm: React.FC = () => {
         >
           {({ values }) => (
             <Form>
+              <FormHeader onSaveDraft={() => saveAsDraft(values)} />
               <StepperNavigation
                 steps={steps}
                 currentStep={currentStep}

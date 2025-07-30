@@ -2,7 +2,10 @@
 import React from 'react';
 import { ChevronLeft, Save, Bot } from 'lucide-react';
 
-export const FormHeader: React.FC = () => (
+type FormHeaderProps = {
+  onSaveDraft: () => void;
+};
+export const FormHeader: React.FC<FormHeaderProps> = ({ onSaveDraft }) => (
   <div className="max-w-6xl rounded mx-auto bg-white border-b border-gray-200 px-4 py-4">
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -17,7 +20,11 @@ export const FormHeader: React.FC = () => (
         </div>
       </div>
       <div className="flex flex-wrap gap-2 sm:gap-4">
-        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
+        <button
+          type="button"
+          onClick={onSaveDraft}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
+        >
           <Save className="w-4 h-4" />
           Save Draft
         </button>
