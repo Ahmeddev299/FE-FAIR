@@ -25,7 +25,6 @@ interface FileData {
 
 type SetFieldValue = (field: string, value: File | null) => void;
 
-
 interface CustomFieldProps {
     name: keyof FormValues;
     label: string;
@@ -82,7 +81,6 @@ const UploadLeaseForm: React.FC = () => {
     };
 
     const handleFileUpload = (file: File, setFieldValue: (field: string, value: File) => void): void => {
-
         if (file) {
             const fileData: FileData = {
                 name: file.name,
@@ -162,29 +160,32 @@ const UploadLeaseForm: React.FC = () => {
 
     return (
         <DashboardLayout>
-            {/* Header */}
-            <div className="max-w-8xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            {/* Header - Responsive container */}
+            <div className="w-full max-w-7xl xl:max-w-none mx-auto bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6">
                 <div className="flex items-center mb-2">
                     <div className="bg-blue-100 p-2 rounded-lg mr-3">
                         <Upload className="w-6 h-6 text-blue-600" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Upload Lease Document</h1>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Upload Lease Document</h1>
                 </div>
-                <p className="text-gray-600 ml-4">upload your lease document and let our AI analyze the terms and conditions automatically.</p>
+                <p className="text-gray-600 ml-4 text-sm sm:text-base">
+                    Upload your lease document and let our AI analyze the terms and conditions automatically.
+                </p>
 
-                <div className="flex items-center m-4 bg-[#EFF6FF] p-4 space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center mt-4 ml-4 bg-[#EFF6FF] p-4 space-y-2 sm:space-y-0 sm:space-x-4 rounded-lg">
                     <div className="flex items-center">
-                        <FileText className="w-4 h-4 text-gray-500 mr-2" />
+                        <FileText className="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" />
                         <span className="text-sm text-gray-600">Supported formats: PDF, DOCX</span>
                     </div>
                     <div className="flex items-center">
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                        <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
                         <span className="text-sm text-gray-600">AI-powered analysis included</span>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-8xl mt-6 mx-auto">
+            {/* Main Content - Responsive container */}
+            <div className="w-full max-w-7xl xl:max-w-none mt-6 mx-auto px-4 sm:px-0">
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchema}
@@ -192,19 +193,19 @@ const UploadLeaseForm: React.FC = () => {
                 >
                     {({ setFieldValue, errors, touched, isSubmitting }: FormikProps<FormValues>) => (
                         <Form>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                                 {/* Left Column - Upload Section */}
-                                <div className="lg:col-span-2 space-y-6">
+                                <div className="xl:col-span-2 space-y-6">
                                     {/* Document Upload */}
-                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                            <Image alt="upload" src="/mini.png" height={20} width={20} className='mr-3' />
-                                            Document Upload
+                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                            <Image alt="upload" src="/mini.png" height={20} width={20} className='mr-3 flex-shrink-0' />
+                                            <span className="flex-1">Document Upload</span>
                                             <span className="text-red-500 ml-1">*</span>
                                         </h2>
 
                                         <div
-                                            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
+                                            className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-colors ${dragActive
                                                 ? 'border-blue-400 bg-blue-50'
                                                 : errors.document && touched.document
                                                     ? 'border-red-300 bg-red-50'
@@ -229,45 +230,44 @@ const UploadLeaseForm: React.FC = () => {
                                             />
                                             <label htmlFor="file-upload" className="cursor-pointer">
                                                 <div className="rounded-full p-4 mx-auto mb-4 flex items-center justify-center">
-                                                    {/* <Upload className="w-8 h-8 text-gray-400" /> */}
                                                     <Image alt="upload" src="/file.png" height={60} width={60} />
-
                                                 </div>
-                                                <p className="text-lg font-medium text-gray-900 mb-2">Drag and drop your lease documents</p>
-                                                <p className="text-gray-500 mb-4">or click to browse and select files</p>
+                                                <p className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                                                    Drag and drop your lease documents
+                                                </p>
+                                                <p className="text-gray-500 mb-4 text-sm sm:text-base">
+                                                    or click to browse and select files
+                                                </p>
                                                 <div>
                                                     <span className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
                                                         Choose Files
                                                     </span>
-                                                    <div className="mt-4 text-lg font-semibold text-gray-500">
+                                                    <div className="mt-4 text-sm sm:text-base font-semibold text-gray-500 space-y-1">
                                                         <p>Supported formats: PDF, DOCX</p>
                                                         <p>Maximum file size: 10MB</p>
                                                     </div>
-                                                    </div>
-
+                                                </div>
                                             </label>
                                         </div>
 
                                         {errors.document && touched.document && (
                                             <div className="mt-2 text-red-500 text-sm">{errors.document}</div>
                                         )}
-
-
                                     </div>
 
                                     {/* Uploaded Files */}
                                     {uploadedFile && (
-                                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                                <CheckCircle className="w-5 h-5 mr-2 text-green-500" />
+                                                <CheckCircle className="w-5 h-5 mr-2 text-green-500 flex-shrink-0" />
                                                 Uploaded Files (1)
                                             </h3>
 
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 rounded-lg gap-4">
-                                                <div className="flex items-start sm:items-center">
-                                                    <FileText className="w-8 h-8 text-blue-600 mr-3 mt-1 sm:mt-0" />
-                                                    <div>
-                                                        <p className="font-medium text-gray-900 break-all">{uploadedFile.name}</p>
+                                                <div className="flex items-start sm:items-center flex-1 min-w-0">
+                                                    <FileText className="w-8 h-8 text-blue-600 mr-3 mt-1 sm:mt-0 flex-shrink-0" />
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="font-medium text-gray-900 break-words">{uploadedFile.name}</p>
                                                         <p className="text-sm text-gray-500">
                                                             {uploadedFile.size} • {uploadedFile.type.includes('pdf') ? 'PDF' : 'DOCX'}
                                                         </p>
@@ -277,7 +277,7 @@ const UploadLeaseForm: React.FC = () => {
                                                 <button
                                                     type="button"
                                                     onClick={() => removeFile(setFieldValue)}
-                                                    className="text-red-500 hover:text-red-700 transition-colors self-end sm:self-auto"
+                                                    className="text-red-500 hover:text-red-700 transition-colors self-end sm:self-auto flex-shrink-0"
                                                 >
                                                     <X className="w-5 h-5" />
                                                 </button>
@@ -288,13 +288,13 @@ const UploadLeaseForm: React.FC = () => {
 
                                 {/* Right Column - Context Information */}
                                 <div className="space-y-6">
-                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                        <h3 className="text-xl  font-semibold text-gray-900 mb-4 flex items-center justify-between">
-                                            <span className="flex font-semibold  items-center">
-                                                <AlertCircle className="w-6 h-6 mr-2" />
-                                                Context Information
+                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center justify-between flex-wrap gap-2">
+                                            <span className="flex items-center font-semibold min-w-0 flex-1">
+                                                <AlertCircle className="w-6 h-6 mr-2 flex-shrink-0" />
+                                                <span className="truncate">Context Information</span>
                                             </span>
-                                            <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">Required</span>
+                                            <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded flex-shrink-0">Required</span>
                                         </h3>
 
                                         <div className="space-y-4">
@@ -305,7 +305,7 @@ const UploadLeaseForm: React.FC = () => {
                                                 required
                                             />
 
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <CustomField
                                                     name="startDate"
                                                     label="Start Date"
@@ -338,11 +338,10 @@ const UploadLeaseForm: React.FC = () => {
                                     </div>
 
                                     {/* AI Processing Benefits */}
-                                    <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-                                        <h2 className="text-xl w-[312px] mx-auto font-semibold text-blue-900 mb-4 flex">
-                                            {/* <CheckCircle className="w-6 h-6 mr-2" /> */}
-                                             <Image alt="ai" src="/ai.png" height={10} width={30} className='mr-3' />
-                                            AI Processing Benefits
+                                    <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 sm:p-6">
+                                        <h2 className="text-lg sm:text-xl font-semibold text-blue-900 mb-4 flex items-center">
+                                            <Image alt="ai" src="/ai.png" height={30} width={30} className='mr-3 flex-shrink-0' />
+                                            <span className="flex-1">AI Processing Benefits</span>
                                         </h2>
 
                                         <div className="space-y-3">
@@ -366,9 +365,9 @@ const UploadLeaseForm: React.FC = () => {
                                     </div>
 
                                     {/* Help Section */}
-                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                            <HelpCircle className="w-6 h-6 mr-2" />
+                                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+                                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                                            <HelpCircle className="w-6 h-6 mr-2 flex-shrink-0" />
                                             Need Help?
                                         </h3>
 
@@ -389,12 +388,12 @@ const UploadLeaseForm: React.FC = () => {
                             </div>
 
                             {/* Submit Button */}
-                            <div className="mt-8 bg-white p-5 rounded flex justify-end">
+                            <div className="mt-8 bg-white p-4 sm:p-5 rounded-lg flex justify-end">
                                 <button
                                     onClick={handleStartNewLOI}
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center"
+                                    className="bg-blue-600 text-white px-6 sm:px-8 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -410,7 +409,6 @@ const UploadLeaseForm: React.FC = () => {
                     )}
                 </Formik>
             </div>
-
         </DashboardLayout>
     );
 }

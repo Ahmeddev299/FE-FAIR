@@ -21,9 +21,8 @@ import {
 import { DashboardLayout } from '@/components/layouts';
 
 const LeaseClauseReview: React.FC = () => {
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
   return (
     <DashboardLayout>
       {/* Topbar */}

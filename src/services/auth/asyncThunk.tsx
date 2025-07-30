@@ -24,6 +24,9 @@ interface UserData {
   updatedAt?: string;
 }
 
+interface ResetPasswordData {
+  email: string;
+}
 
 export const userAuthAsync = createAsyncThunk(
   "/auth",
@@ -116,7 +119,7 @@ export const userVerifyOTPAsync = createAsyncThunk(
 
 export const userResetPasswordAsync = createAsyncThunk(
   "/auth/change-password",
-  async (data, { rejectWithValue }) => {
+  async (data: ResetPasswordData, { rejectWithValue }) => {
     try {
       const response = await authBaseService.resetPassword(data);
       return response.data;

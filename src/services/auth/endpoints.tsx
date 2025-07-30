@@ -14,13 +14,13 @@ class AuthBaseService extends HttpService {
   signIn = (data: any): Promise<any> =>
     this.post(this.prefix + `/sign_in`, data);
   socialSignIn = (data: any): Promise<any> =>
-    this.post(this.prefix + `/social-sign-in`, data);
+    this.post(this.prefix + `/google_login`, data);
   forgetPassword = (data: any): Promise<any> =>
-    this.post(this.prefix + `/request-otp`, data);
+    this.post(this.prefix + `/change_password`, data);
   verifyOTP = (data: any): Promise<any> =>
-    this.post(this.prefix + `/verify-otp`, data);
+    this.post(this.prefix + `/verify_email_to_reset_password`, data);
   resetPassword = (data: any): Promise<any> =>
-    this.post(this.prefix + `/change-password`, data);
+    this.post(this.prefix + `/reset_password`, data);
 }
 
 export const authBaseService = new AuthBaseService();
