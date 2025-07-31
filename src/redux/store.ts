@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './slices/userSlice';
-import loiReducer from './slices/userSlice';
+import loiReducer from './slices/loiSlice';
 
 export const store = configureStore({
   reducer: {
@@ -9,6 +9,5 @@ export const store = configureStore({
   },
 });
 
-// ✅ Typed versions of RootState and Dispatch
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

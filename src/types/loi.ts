@@ -74,3 +74,56 @@ export interface LOIApiPayload {
   submit_status: string;
 }
 
+export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
+export interface Letter {
+  id: number;
+  title: string;
+  propertyAddress: string;
+  updated_at: string;
+  submit_status: LOIStatus;
+  assignee: string;
+}
+
+export interface PartyInfo {
+  landlord_name: string;
+  landlord_email: string;
+  tenant_name: string;
+  tenant_email: string;
+}
+
+export interface LeaseTerms {
+  monthlyRent: string;
+  securityDeposit: string;
+  leaseType: string;
+  leaseDuration: string;
+  startDate: string | null;
+}
+
+export interface PropertyDetails {
+  propertySize: string;
+  intendedUse: string;
+  propertyType: string;
+  amenities: string[];
+  utilities: string[];
+}
+
+export interface AdditionalDetails {
+  renewalOption: boolean;
+  tenantImprovement: string;
+  specialConditions: string;
+  contingencies: string;
+}
+
+export interface FullLOI {
+  id?: number;
+  title: string;
+  propertyAddress: string;
+  submit_status: LOIStatus;
+  updated_at?: string;
+  assignee?: string;
+
+  partyInfo: PartyInfo;
+  leaseTerms: LeaseTerms;
+  propertyDetails: PropertyDetails;
+  additionalDetails: AdditionalDetails;
+}

@@ -1,49 +1,47 @@
-import { useState } from 'react';
-import { CheckCircle, Search, Filter, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CheckCircle, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks'; // adjust based on your setup
+import { getDraftLOIsAsync } from '@/services/loi/asyncThunk'; // adjust path to where your thunk is located
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 import Image from 'next/image';
-
-type LOIStatus = 'Draft' | 'Sent' | 'Approved';
-interface Letter {
-  id: number;
-  title: string;
-  propertyAddress: string;
-  lastEdited: string;
-  status: LOIStatus;
-  assignee: string;
-}
+import { formatDate } from '@/utils/dateFormatter';
+import LoiDetailsModal from '@/components/models/loiDetailsModel';
+import { Letter, LOIStatus } from '@/types/loi';
 
 export default function LetterOfIntentDashboard() {
-  const [activeTab, setActiveTab] = useState('all');
+  const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch()
+  const { loiList } = useAppSelector((state) => state.loi);
 
-  const sampleLetters: Letter[] = [
-    {
-      id: 1,
-      title: 'Downtown Office Space LOI',
-      propertyAddress: '123 Main St, Downtown District',
-      lastEdited: '4 days ago',
-      status: 'Draft',
-      assignee: 'JD'
-    },
-    {
-      id: 2,
-      title: 'Retail Space - Shopping Center',
-      propertyAddress: '456 Commerce Blvd, Westfield Mall',
-      lastEdited: '1 day ago',
-      status: 'Sent',
-      assignee: 'MS'
-    },
-    {
-      id: 3,
-      title: 'Warehouse Facility LOI',
-      propertyAddress: '789 Industrial Way, Eastside',
-      lastEdited: '1 day ago',
-      status: 'Draft',
-      assignee: 'AB'
-    }
-  ];
+  // const sampleLetters: Letter[] = [
+  //   {
+  //     id: 1,
+  //     title: 'Downtown Office Space LOI',
+  //     propertyAddress: '123 Main St, Downtown District',
+  //     lastEdited: '4 days ago',
+  //     status: 'Draft',
+  //     assignee: 'JD'
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Retail Space - Shopping Center',
+  //     propertyAddress: '456 Commerce Blvd, Westfield Mall',
+  //     lastEdited: '1 day ago',
+  //     status: 'Sent',
+  //     assignee: 'MS'
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Warehouse Facility LOI',
+  //     propertyAddress: '789 Industrial Way, Eastside',
+  //     lastEdited: '1 day ago',
+  //     status: 'Draft',
+  //     assignee: 'AB'
+  //   }
+  // ];
 
   const getStatusColor = (status: LOIStatus) => {
     switch (status) {
@@ -58,6 +56,10 @@ export default function LetterOfIntentDashboard() {
     console.log("running")
     router.push('/dashboard/pages/createform');
   };
+
+  useEffect(() => {
+    dispatch(getDraftLOIsAsync());
+  }, [dispatch]);
 
   return (
     <DashboardLayout>
@@ -167,7 +169,6 @@ export default function LetterOfIntentDashboard() {
 
           </div>
 
-
           {/* My Draft LOIs Section */}
           <div className="bg-white rounded-lg shadow-sm mt-8">
             <div className="border-b border-gray-200 p-6">
@@ -183,26 +184,6 @@ export default function LetterOfIntentDashboard() {
                     className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filter
-                </button>
-              </div>
-
-              {/* Tabs */}
-              <div className="flex space-x-6 overflow-x-auto">
-                {['All', 'Draft', 'Sent', 'Approved'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab.toLowerCase())}
-                    className={`pb-2 border-b-2 font-medium text-sm ${activeTab === tab.toLowerCase()
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
               </div>
             </div>
 
@@ -222,8 +203,8 @@ export default function LetterOfIntentDashboard() {
 
                 {/* Table Rows */}
                 <div className="divide-y divide-gray-200">
-                  {sampleLetters.map((letter) => (
-                    <div key={letter.id} className="px-4 sm:px-6 md:px-8 lg:px-12 py-4 hover:bg-gray-50">
+                  {loiList?.my_loi?.map((letter: Letter) => (
+                    <div key={letter?.id} className="px-4 sm:px-6 md:px-8 lg:px-12 py-4 hover:bg-gray-50">
                       <div className="grid grid-cols-12 gap-1 items-center">
                         <div className="col-span-3">
                           <div className="flex items-center">
@@ -235,32 +216,40 @@ export default function LetterOfIntentDashboard() {
                               className="w-10 h-10 mr-3" // ← Added margin-right
                             />
                             <div className="text-sm font-medium text-gray-900">
-                              {letter.title}
+                              {letter?.title}
                             </div>
                           </div>
                         </div>
 
                         <div className="col-span-3">
-                          <div className="text-sm text-gray-500">{letter.propertyAddress}</div>
+                          <div className="text-sm text-gray-500">{letter?.propertyAddress}</div>
                         </div>
                         <div className="col-span-2">
-                          <div className="text-sm text-gray-500">{letter.lastEdited}</div>
-                        </div>
+                          <div className="text-sm text-gray-500">
+                            {letter?.updated_at && formatDate(letter.updated_at)}
+                          </div>                        </div>
                         <div className="col-span-2">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                              letter.status
+                              letter?.submit_status
                             )}`}
                           >
-                            {letter.status}
+                            {letter?.submit_status}
                           </span>
                         </div>
 
                         <div className="col-span-1">
                           <div className="flex items-center space-x-1">
-                            <button className="p-1 hover:bg-gray-100 rounded">
+                            <button
+                              className="p-1 hover:bg-gray-100 rounded"
+                              onClick={() => {
+                                setSelectedLetter(letter);
+                                setIsModalOpen(true);
+                              }}
+                            >
                               <Eye className="w-4 h-4 text-gray-500" />
                             </button>
+
                             <button className="p-1 hover:bg-gray-100 rounded">
                               <Edit className="w-4 h-4 text-gray-500" />
                             </button>
@@ -281,6 +270,12 @@ export default function LetterOfIntentDashboard() {
           </div>
 
         </div>
+        <LoiDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          data={selectedLetter}
+        />
+
       </div>
     </DashboardLayout >
   );

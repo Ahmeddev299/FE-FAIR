@@ -2,8 +2,11 @@
 import Toast from "@/components/Toast";
 import {
   submitLOIAsync,
+  getDraftLOIsAsync,
 } from "@/services/loi/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
+export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
+
 
 export const loiSlice = createSlice({
   name: "loi",
@@ -44,7 +47,10 @@ export const loiSlice = createSlice({
       },
       submit_status: "Draft",
     },
-    loiList: [],
+    loiList: {
+  my_loi: [],
+},
+
     metaData: {},
     filters: {},
     loadMore: false,
@@ -57,7 +63,7 @@ export const loiSlice = createSlice({
     updateLOIField: (state: any, action: any) => {
       const { field, value } = action.payload;
       const fieldPath = field.split('.');
-      
+
       if (fieldPath.length === 1) {
         state.currentLOI[field] = value;
       } else if (fieldPath.length === 2) {
@@ -196,7 +202,19 @@ export const loiSlice = createSlice({
         state.loiError = action.payload;
         Toast.fire({ icon: "error", title: action.payload });
       })
-      
+      /// get draft loi
+      .addCase(getDraftLOIsAsync.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getDraftLOIsAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loiList = action.payload;
+      })
+      .addCase(getDraftLOIsAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loiError = action.payload as string;
+      })
+
   },
 });
 

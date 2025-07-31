@@ -11,6 +11,8 @@ class LoiBaseService extends HttpService {
   auth = (data: any): Promise<any> => this.get(this.prefix + ``, data);
   submitLOI = (data: any): Promise<any> =>
     this.post(this.prefix + `/submit_loi`, data);
+  draftLOI = (): Promise<any> =>
+  this.post(this.prefix + `/mydraft_loi`, {}); 
 }
 
 export const loiBaseService = new LoiBaseService();
