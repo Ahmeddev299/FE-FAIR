@@ -10,14 +10,14 @@ import LoiDetailsModal from '@/components/models/loiDetailsModel';
 import { Letter, LOIStatus } from '@/types/loi';
 
 export default function LetterOfIntentDashboard() {
-  const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
+const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch()
   const { loiList } = useAppSelector((state) => state.loi);
 
   // const sampleLetters: Letter[] = [
-  //   {
+  //   {. 
   //     id: 1,
   //     title: 'Downtown Office Space LOI',
   //     propertyAddress: '123 Main St, Downtown District',
@@ -98,8 +98,6 @@ export default function LetterOfIntentDashboard() {
                   </button>
                 </div>
                 <div className=" h-[1.5px] bg-[#DBEAFE] w-full my-15" />
-
-
                 <div className="bg-[#EFF6FF] rounded-lg p-4">
                   <h3 className="font-medium text-gray-900 mb-3">What you will get:</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

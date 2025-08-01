@@ -108,5 +108,35 @@ export const EmailSchema = Yup.object().shape({
     .required("Required"),
 });
 
+export const validationSchema = Yup.object({
+  leaseTitle: Yup.string()
+    .min(3, 'Lease title must be at least 3 characters')
+    .max(100, 'Lease title must be less than 100 characters')
+    .required('Lease title is required'),
+  startDate: Yup.date()
+    .required('Start date is required')
+    .typeError('Please enter a valid date'),
+  endDate: Yup.date()
+    .required('End date is required')
+    .min(Yup.ref('startDate'), 'End date must be after start date')
+    .typeError('Please enter a valid date'),
+  propertyAddress: Yup.string()
+    .min(10, 'Property address must be at least 10 characters')
+    .max(200, 'Property address must be less than 200 characters')
+    .required('Property address is required'),
+  notes: Yup.string()
+    .max(500, 'Notes must be less than 500 characters'),
+  document: Yup.mixed<File>()
+    .required('Please upload a lease document')
+    .test('fileSize', 'File size must be less than 10MB', (value: File | undefined) => {
+      if (!value) return false;
+      return value.size <= 10 * 1024 * 1024; // 10MB
+    })
+    .test('fileType', 'Only PDF and DOCX files are supported', (value: File | undefined) => {
+      if (!value) return false;
+      return ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'].includes(value.type);
+    })
+});
+
 // Export the global password schema for reuse
 export { globalPasswordSchema };

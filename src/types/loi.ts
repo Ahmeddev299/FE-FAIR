@@ -7,10 +7,10 @@ export interface FormValues {
   tenantName: string;
   tenantEmail: string;
   rentAmount: string;
+    startDate: string,
   securityDeposit: string;
   propertyType: string;
   leaseDuration: string;
-  startDate: string;
   propertySize: string;
   intendedUse: string;
   parkingSpaces: string;
@@ -32,6 +32,7 @@ export interface FormValues {
   propertyInspection: boolean;
   insuranceApproval: boolean;
   terms: boolean;
+  
 }
 
 export interface Step {
@@ -126,4 +127,36 @@ export interface FullLOI {
   leaseTerms: LeaseTerms;
   propertyDetails: PropertyDetails;
   additionalDetails: AdditionalDetails;
+}
+
+export interface CustomFieldProps {
+  name: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  as?: 'input' | 'textarea';
+  rows?: number;
+  required?: boolean;
+}
+
+export interface FileData {
+  name: string;
+  size: string;
+  type: string;
+  file: File;
+}
+
+export interface LeaseFormValues {
+  title: string,
+  startDate: string,
+  endDate: string,
+  propertyAddress: '',
+  notes: '',
+  document: ''
+}
+export type SetFieldValue = (field: string, value: File | null) => void;
+
+// Extended FormikErrors to handle File type properly
+export interface ExtendedFormikErrors {
+  document?: string;
 }

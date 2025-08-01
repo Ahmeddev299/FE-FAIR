@@ -378,7 +378,6 @@ function MainPage() {
                                 </div>
                             </div>
 
-
                             {/* Upcoming Events */}
                             <div className="bg-white rounded-lg shadow p-4 lg:p-3 sm:p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>

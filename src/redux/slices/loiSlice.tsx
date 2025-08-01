@@ -7,7 +7,6 @@ import {
 import { createSlice } from "@reduxjs/toolkit";
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
 
-
 export const loiSlice = createSlice({
   name: "loi",
   initialState: {
