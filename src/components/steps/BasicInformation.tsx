@@ -68,7 +68,7 @@ export const BasicInformationStep: React.FC = () => (
         <div className="space-y-4">
           <h4 className="text-lg font-semibold">Tenant Information</h4>
           <Field
-            name="tenantName"
+            name="tenant_name"
             type="text"
             placeholder="Your Company Name"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

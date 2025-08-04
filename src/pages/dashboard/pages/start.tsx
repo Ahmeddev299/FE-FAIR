@@ -9,39 +9,13 @@ import { formatDate } from '@/utils/dateFormatter';
 import LoiDetailsModal from '@/components/models/loiDetailsModel';
 import { Letter, LOIStatus } from '@/types/loi';
 
+
 export default function LetterOfIntentDashboard() {
 const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch()
   const { loiList } = useAppSelector((state) => state.loi);
-
-  // const sampleLetters: Letter[] = [
-  //   {. 
-  //     id: 1,
-  //     title: 'Downtown Office Space LOI',
-  //     propertyAddress: '123 Main St, Downtown District',
-  //     lastEdited: '4 days ago',
-  //     status: 'Draft',
-  //     assignee: 'JD'
-  //   },
-  //   {
-  //     id: 2,
-  //     title: 'Retail Space - Shopping Center',
-  //     propertyAddress: '456 Commerce Blvd, Westfield Mall',
-  //     lastEdited: '1 day ago',
-  //     status: 'Sent',
-  //     assignee: 'MS'
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'Warehouse Facility LOI',
-  //     propertyAddress: '789 Industrial Way, Eastside',
-  //     lastEdited: '1 day ago',
-  //     status: 'Draft',
-  //     assignee: 'AB'
-  //   }
-  // ];
 
   const getStatusColor = (status: LOIStatus) => {
     switch (status) {
@@ -248,7 +222,10 @@ const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
                               <Eye className="w-4 h-4 text-gray-500" />
                             </button>
 
-                            <button className="p-1 hover:bg-gray-100 rounded">
+                            <button className="p-1 hover:bg-gray-100 rounded"
+onClick={() => router.push(`/dashboard/pages/loi/edit/${letter?.id}`)}
+
+                            >
                               <Edit className="w-4 h-4 text-gray-500" />
                             </button>
                             <button className="p-1 hover:bg-gray-100 rounded">

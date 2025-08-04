@@ -1,8 +1,8 @@
 // Main Component - CreateLoiForm.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
 import { DashboardLayout } from '@/components/layouts';
-import { submitLOIAsync } from '@/services/loi/asyncThunk';
+import { submitLOIAsync, getLOIDetailsById } from '@/services/loi/asyncThunk';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useFormStepper } from '../../../hooks/useFormStepper';
 import { transformToApiPayload } from '../../../utils/apiTransform';
@@ -16,11 +16,36 @@ import { LeaseTermsStep } from '@/components/steps/LeaseTermsSteps';
 import { PropertyDetailsStep } from '@/components/steps/PropertyDetailsStep';
 import { AdditionalTermsStep } from '@/components/steps/AdditionalTermsSteps';
 import { ReviewSubmitStep } from '@/components/steps/ReviewSubmitStep';
+import { unwrapResult } from '@reduxjs/toolkit';
 // Import other step components...
 
-const CreateLoiForm: React.FC = () => {
+interface Props {
+  mode?: 'edit' | 'create';
+  loiId?: string;
+}
+
+const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
   const { currentStep, nextStep, prevStep, isStepComplete, steps } = useFormStepper();
+  const [initialData, setInitialData] = useState<FormValues | null>(null);
+  console.log("initialData 31", initialData)
+  const [loading, setLoading] = useState(mode === 'edit');
+
+  useEffect(() => {
+    if (mode === 'edit' && loiId) {
+      (async () => {
+        try {
+          const resultAction = await dispatch(getLOIDetailsById(loiId));
+          const loiDetails = unwrapResult(resultAction); // <-- if using Redux Toolkit
+          setInitialData(loiDetails);
+        } catch (err) {
+          console.error('Error fetching LOI details', err);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [mode, loiId]);
 
   const handleSubmit = async (formValues: FormValues) => {
     try {
@@ -36,7 +61,7 @@ const CreateLoiForm: React.FC = () => {
     }
   };
 
-   const saveAsDraft = async (formValues: FormValues) => {
+  const saveAsDraft = async (formValues: FormValues) => {
     try {
       const draftPayload = transformToApiPayload(formValues);
       await dispatch(submitLOIAsync({ ...draftPayload, submit_status: 'Draft' })).unwrap();
@@ -57,12 +82,20 @@ const CreateLoiForm: React.FC = () => {
     }
   };
 
+  if (loading && mode === 'edit') {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-20 text-gray-500">Loading form data...</div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
-
       <div className="max-w-5xl mx-auto">
         <Formik
-          initialValues={INITIAL_VALUES}
+          initialValues={initialData || INITIAL_VALUES}
+          enableReinitialize
           validationSchema={VALIDATION_SCHEMAS[currentStep as keyof typeof VALIDATION_SCHEMAS]}
           onSubmit={handleSubmit}
         >
@@ -75,11 +108,9 @@ const CreateLoiForm: React.FC = () => {
                 isStepComplete={isStepComplete}
                 values={values}
               />
-
               <div className="p-6 space-y-6 bg-white mt-2 rounded-lg mt-4">
                 {renderStepContent(values)}
               </div>
-
               <FormNavigation
                 currentStep={currentStep}
                 totalSteps={steps.length}

@@ -53,6 +53,28 @@ export const getDraftLOIsAsync = createAsyncThunk(
   }
 );
 
+// in asyncThunk.ts or wherever you define thunks
+export const getLOIDetailsById = createAsyncThunk(
+  "loi/fetchSingleDraft",
+  async (loiId: string, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+
+      // Assuming your API accepts loiId as a query param
+const response = await loiBaseService.singledraftLOI(loiId);
+
+      if (!response.success || response.status === 400) {
+        return rejectWithValue(response.message);
+      }
+
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to fetch draft LOI");
+    }
+  }
+);
+
 
 // export const draftLOIAsync = createAsyncThunk(
 //   "/draft/loi",
