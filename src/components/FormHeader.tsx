@@ -1,38 +1,77 @@
 // components/FormHeader.tsx
 import React from 'react';
-import { ChevronLeft, Save, Bot } from 'lucide-react';
+import { Save, FileText, Edit3 } from 'lucide-react';
 
-type FormHeaderProps = {
+interface FormHeaderProps {
+  mode?: 'edit' | 'create';
   onSaveDraft: () => void;
-};
-export const FormHeader: React.FC<FormHeaderProps> = ({ onSaveDraft }) => (
-  <div className="max-w-6xl rounded mx-auto bg-white border-b border-gray-200 px-4 py-4">
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <button className="flex items-center gap-2 text-gray-600 hover:text-gray-800">
-          <ChevronLeft className="w-4 h-4" />
-          <span className="text-sm sm:text-base">Back to LOI Dashboard</span>
-        </button>
-        <div className="hidden sm:block w-px h-8 bg-gray-300" />
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold">Create New LOI</h1>
-          <p className="text-sm text-gray-600">Complete all steps to generate your Letter of Intent</p>
+  isLoading?: boolean;
+  lastSaved?: string;
+}
+
+export const FormHeader: React.FC<FormHeaderProps> = ({ 
+  mode = 'create', 
+  onSaveDraft, 
+  isLoading = false,
+  lastSaved 
+}) => {
+  const getTitle = () => {
+    return mode === 'edit' ? 'Update Draft LOI' : 'Create New LOI';
+  };
+
+  const getSubtitle = () => {
+    return mode === 'edit' 
+      ? 'Update your existing Letter of Intent draft'
+      : 'Complete the form to create your Letter of Intent';
+  };
+
+  const getIcon = () => {
+    return mode === 'edit' ? <Edit3 className="w-6 h-6" /> : <FileText className="w-6 h-6" />;
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+            {getIcon()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {getTitle()}
+            </h1>
+            <p className="text-gray-600 mt-1">
+              {getSubtitle()}
+            </p>
+            {lastSaved && mode === 'edit' && (
+              <p className="text-sm text-gray-500 mt-1">
+                Last updated: {new Date(lastSaved).toLocaleString()}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          {lastSaved && (
+            <div className="text-sm text-gray-500">
+              Auto-saved
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onSaveDraft}
+            disabled={isLoading}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isLoading
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Save className="w-4 h-4" />
+            <span>{isLoading ? 'Saving...' : 'Save Draft'}</span>
+          </button>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2 sm:gap-4">
-        <button
-          type="button"
-          onClick={onSaveDraft}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-        >
-          <Save className="w-4 h-4" />
-          Save Draft
-        </button>
-        <button className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-blue-600 rounded-md text-blue-600 hover:bg-blue-50">
-          <Bot className="w-4 h-4" />
-          AI Assistant
-        </button>
-      </div>
     </div>
-  </div>
-);
+  );
+};

@@ -1,41 +1,48 @@
-
 // hooks/useFormStepper.ts
-import { useState } from 'react';
-import { STEPS, VALIDATION_SCHEMAS } from '../constants/formData';
-import { FormValues } from '../types/loi';
+import { useState, useCallback } from 'react';
+import { STEPS } from '@/constants/formData';
 
 export const useFormStepper = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
-  const nextStep = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
+  const nextStep = useCallback(() => {
+    console.log('nextStep called, current:', currentStep);
+    setCurrentStep(prev => {
+      const next = Math.min(prev + 1, STEPS.length);
+      console.log('Moving from step', prev, 'to step', next);
+      return next;
+    });
+  }, []);
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  const prevStep = useCallback(() => {
+    console.log('prevStep called, current:', currentStep);
+    setCurrentStep(prev => {
+      const previous = Math.max(prev - 1, 1);
+      console.log('Moving from step', prev, 'to step', previous);
+      return previous;
+    });
+  }, []);
 
-  const isStepComplete = (stepId: number, values: FormValues): boolean => {
-    const schema = VALIDATION_SCHEMAS[stepId as keyof typeof VALIDATION_SCHEMAS];
-    if (!schema) return false;
+  const goToStep = useCallback((step: number) => {
+    console.log('goToStep called with:', step);
+    setCurrentStep(Math.max(1, Math.min(step, STEPS.length)));
+  }, []);
 
-    try {
-      schema.validateSync(values, { abortEarly: false });
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  const isStepComplete = useCallback((step: number) => {
+    return step < currentStep;
+  }, [currentStep]);
+
+  const resetStepper = useCallback(() => {
+    setCurrentStep(1);
+  }, []);
 
   return {
     currentStep,
     nextStep,
     prevStep,
+    goToStep,
     isStepComplete,
+    resetStepper,
     steps: STEPS
   };
 };

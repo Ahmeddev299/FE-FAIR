@@ -1,20 +1,22 @@
 // utils/apiTransform.ts
 import { FormValues } from '../types/loi';
 
-export const transformToApiPayload = (values: FormValues) => {
- const selectedUtilities = Object.entries(values.utilities)
-  .filter(([, value]) => value === true)
-  .map(([key]) => {
-    const utilityMap: { [key: string]: string } = {
-      electricity: 'Electricity',
-      waterSewer: 'Water/Sewer',
-      naturalGas: 'Natural Gas',
-      internetCable: 'Internet/Cable',
-      hvac: 'HVAC',
-      securitySystem: 'Security System'
-    };
-    return utilityMap[key] || key;
-  });
+
+export const transformToApiPayload = (values: FormValues, loiId: String) => {
+
+  const selectedUtilities = Object.entries(values.utilities)
+    .filter(([, value]) => value === true)
+    .map(([key]) => {
+      const utilityMap: { [key: string]: string } = {
+        electricity: 'Electricity',
+        waterSewer: 'Water/Sewer',
+        naturalGas: 'Natural Gas',
+        internetCable: 'Internet/Cable',
+        hvac: 'HVAC',
+        securitySystem: 'Security System'
+      };
+      return utilityMap[key] || key;
+    });
 
   const contingencies = [];
   if (values.financingApproval) contingencies.push('Financing Approval');
@@ -30,6 +32,7 @@ export const transformToApiPayload = (values: FormValues) => {
   }
 
   return {
+    doc_id: loiId,
     title: values.title,
     propertyAddress: values.propertyAddress,
     partyInfo: {

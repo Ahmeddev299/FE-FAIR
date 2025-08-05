@@ -11,7 +11,7 @@ const NewPassword = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    role: 'Lawyer',
+    role: 'tenant',
     password: '',
     confirmPassword: '',
     agreeToTerms: false,

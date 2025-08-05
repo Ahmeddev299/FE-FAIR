@@ -5,10 +5,10 @@ const dev = {
   API_ENDPOINT: "https://dev-api.fair.com",
 };
 const stag = {
-  API_ENDPOINT: "http://192.168.22.238:8000",
+  API_ENDPOINT: "http://192.168.22.238:5000",
 };
 const prod = {
-  API_ENDPOINT: "http://192.168.22.238:8000",
+  API_ENDPOINT: "http://192.168.22.238:5000",
 };
 const config = {
   ...(process.env.NEXT_PUBLIC_STAGE === "local"

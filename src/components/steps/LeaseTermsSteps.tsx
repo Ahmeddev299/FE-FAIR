@@ -50,7 +50,7 @@ export const LeaseTermsStep: React.FC = () => (
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Select property type</option>
-            <option value="office">Office</option>
+            <option value="Commercial">Commercial</option>
             <option value="retail">Retail</option>
             <option value="warehouse">Warehouse</option>
             <option value="residential">Residential</option>
@@ -72,11 +72,11 @@ export const LeaseTermsStep: React.FC = () => (
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Select Duration</option>
-            <option value="12">12 months</option>
-            <option value="24">24 months</option>
-            <option value="36">36 months</option>
-            <option value="48">48 months</option>
-            <option value="60">60 months</option>
+            <option value="12 months">12 months</option>
+            <option value="24 months">24 months</option>
+            <option value="36 months">36 months</option>
+            <option value="48 months">48 months</option>
+            <option value="60 months">60 months</option>
           </Field>
           <ErrorMessage name="leaseDuration" component="div" className="text-red-500 text-sm mt-1" />
         </div>

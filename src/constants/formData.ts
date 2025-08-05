@@ -44,6 +44,55 @@ export const INITIAL_VALUES: FormValues = {
   insuranceApproval: false,
   terms: false
 };
+export const EDIT_INITIAL_VALUES = (loi: any): FormValues => ({
+
+  title: loi.title,
+  propertyAddress: loi.propertyAddress,
+  landlordName: loi.partyInfo.landlord_name,
+  landlordEmail: loi.partyInfo.landlord_email,
+  tenantName: loi.partyInfo.tenant_name,
+  tenantEmail: loi.partyInfo.tenant_email,
+
+  rentAmount: loi.leaseTerms.monthlyRent,
+  securityDeposit: loi.leaseTerms.securityDeposit,
+  leaseDuration: loi.leaseTerms.leaseDuration,
+  startDate: loi.leaseTerms.startDate?.split('T')[0] || '',
+  propertyType: loi.leaseTerms.leaseType,
+
+  propertySize: loi.propertyDetails.propertySize,
+  intendedUse: loi.propertyDetails.intendedUse,
+  parkingSpaces: loi.propertyDetails.amenities,
+  utilities: mapUtilitiesToBoolean(loi.propertyDetails.utilities),
+
+  improvementAllowance: loi.additionalDetails.tenantImprovement,
+  renewalOption: loi.additionalDetails.renewalOption,
+  specialConditions: loi.additionalDetails.specialConditions,
+
+  // Optional: you can reverse the comma-separated string
+  financingApproval: loi.additionalDetails.contingencies?.includes("Financing Approval") ?? false,
+  environmentalAssessment: loi.additionalDetails.contingencies?.includes("Environmental Assessment") ?? false,
+  zoningCompliance: loi.additionalDetails.contingencies?.includes("Zoning Compliance") ?? false,
+  permitsLicenses: loi.additionalDetails.contingencies?.includes("Permits & Licenses") ?? false,
+  propertyInspection: loi.additionalDetails.contingencies?.includes("Property Inspection") ?? false,
+  insuranceApproval: loi.additionalDetails.contingencies?.includes("Insurance Approval") ?? false,
+  terms: false
+});
+
+const mapUtilitiesToBoolean = (list: string[]) => ({
+  electricity: list.includes("Electricity"),
+  waterSewer: list.includes("Water/Sewer"),
+  naturalGas: list.includes("Natural Gas"),
+  internetCable: list.includes("Internet/Cable"),
+  hvac: list.includes("HVAC"),
+  securitySystem: list.includes("Security System"),
+});
+
+const extractParkingSpaces = (amenities: string[]): string => {
+  const match = amenities.find(a => a.toLowerCase().includes("parking"));
+  const number = match?.split(" ")[0];
+  return number || "";
+};
+
 
 export const VALIDATION_SCHEMAS = {
   1: Yup.object({

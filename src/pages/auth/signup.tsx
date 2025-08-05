@@ -85,10 +85,9 @@ const SignUp = () => {
     const [authError, setAuthError] = useState('');
 
     const roles = [
-        'Lawyer',
-        'Property Manager',
-        'Broker',
-        'Other'
+        'admin',
+        'tenant',
+        'landlord',
     ];
 
     const handleGoogleAuth = async () => {

@@ -6,7 +6,7 @@ import { submitLOIAsync, getLOIDetailsById } from '@/services/loi/asyncThunk';
 import { useAppDispatch } from '@/hooks/hooks';
 import { useFormStepper } from '../../../hooks/useFormStepper';
 import { transformToApiPayload } from '../../../utils/apiTransform';
-import { INITIAL_VALUES, VALIDATION_SCHEMAS } from '../../../constants/formData'
+import { INITIAL_VALUES, VALIDATION_SCHEMAS, EDIT_INITIAL_VALUES } from '../../../constants/formData'
 import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
@@ -28,16 +28,18 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
   const { currentStep, nextStep, prevStep, isStepComplete, steps } = useFormStepper();
   const [initialData, setInitialData] = useState<FormValues | null>(null);
-  console.log("initialData 31", initialData)
   const [loading, setLoading] = useState(mode === 'edit');
+   const [saving, setSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode === 'edit' && loiId) {
       (async () => {
         try {
           const resultAction = await dispatch(getLOIDetailsById(loiId));
-          const loiDetails = unwrapResult(resultAction); // <-- if using Redux Toolkit
-          setInitialData(loiDetails);
+          const loiDetails = unwrapResult(resultAction);
+          console.log("loiDetails", loiDetails)
+          setInitialData(EDIT_INITIAL_VALUES(loiDetails));
         } catch (err) {
           console.error('Error fetching LOI details', err);
         } finally {
@@ -50,7 +52,8 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const handleSubmit = async (formValues: FormValues) => {
     try {
       if (currentStep === steps.length) {
-        const apiPayload = transformToApiPayload(formValues);
+        console.log("currentStep", currentStep)
+        const apiPayload = transformToApiPayload(formValues , loiId);
         await dispatch(submitLOIAsync(apiPayload)).unwrap();
         console.log('LOI submitted successfully!');
       } else {
@@ -63,7 +66,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
 
   const saveAsDraft = async (formValues: FormValues) => {
     try {
-      const draftPayload = transformToApiPayload(formValues);
+      const draftPayload = transformToApiPayload(formValues , loiId);
       await dispatch(submitLOIAsync({ ...draftPayload, submit_status: 'Draft' })).unwrap();
       console.log('LOI saved as draft!');
     } catch (error) {
@@ -73,6 +76,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
 
   const renderStepContent = (formValues: FormValues) => {
     switch (currentStep) {
+
       case 1: return <BasicInformationStep />;
       case 2: return <LeaseTermsStep />;
       case 3: return <PropertyDetailsStep />;
@@ -99,10 +103,14 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
           validationSchema={VALIDATION_SCHEMAS[currentStep as keyof typeof VALIDATION_SCHEMAS]}
           onSubmit={handleSubmit}
         >
-          {({ values }) => (
+          {({ values, isValid, validateForm }) => (
             <Form>
-              <FormHeader onSaveDraft={() => saveAsDraft(values)} />
-              <StepperNavigation
+              <FormHeader
+                mode={mode}
+                onSaveDraft={() => saveAsDraft(values)}
+                isLoading={saving}
+                lastSaved={lastSaved}
+              />              <StepperNavigation
                 steps={steps}
                 currentStep={currentStep}
                 isStepComplete={isStepComplete}
@@ -114,9 +122,19 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
               <FormNavigation
                 currentStep={currentStep}
                 totalSteps={steps.length}
-                isStepValid={isStepComplete(currentStep, values)}
+                isStepValid={isValid} // ✅ Formik/Yup aware
                 onPrevStep={prevStep}
-                onSubmit={() => handleSubmit(values)}
+                onSubmit={async () => {
+                  const errors = await validateForm();
+
+                  if (Object.keys(errors).length === 0) {
+                    if (currentStep === steps.length) {
+                      await handleSubmit(values);
+                    } else {
+                      nextStep();
+                    }
+                  }
+                }}
               />
             </Form>
           )}

@@ -75,33 +75,3 @@ const response = await loiBaseService.singledraftLOI(loiId);
   }
 );
 
-
-// export const draftLOIAsync = createAsyncThunk(
-//   "/draft/loi",
-//   async (data: LOIApiPayload, { rejectWithValue }) => {
-//     try {
-//       const token: string = `${ls.get("access_token", { decrypt: true })}`;
-//       HttpService.setToken(token);
-//       const response = await loiBaseService.draftLOI(data);
-      
-//       // Additional check for API-level errors
-//       if (response.success === false && response.status === 400) {
-//         return rejectWithValue(response.message);
-//       }
-
-//       return response.data;
-//     } catch (error: any) {
-//       // Handle different error scenarios
-//       if (error.response?.data?.message) {
-//         return rejectWithValue(error.response.data.message);
-//       } else if (error.response?.message) {
-//         return rejectWithValue(error.response.message);
-//       } else if (error.message) {
-//         return rejectWithValue(error.message);
-//       } else {
-//         return rejectWithValue('An unexpected error occurred while submitting LOI');
-//       }
-//     }
-//   }
-// );
-
