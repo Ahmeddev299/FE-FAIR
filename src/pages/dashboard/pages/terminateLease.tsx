@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Upload, FileText } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import Image from 'next/image';
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks"
+import { getUserLeasesAsync , terminateLeaseAsync} from "@/services/lease/asyncThunk";
+
 
 // interface Lease {
 //     id: string;
@@ -19,6 +22,14 @@ const TerminateLease: React.FC = () => {
     const [terminationDate, setTerminationDate] = useState<string>('');
     const [supportingNotes, setSupportingNotes] = useState<string>('');
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const dispatch = useAppDispatch();
+    const { leaseList: leases } = useAppSelector((state) => state.lease);
+
+    const [selectedLeaseId, setSelectedLeaseId] = useState("");
+
+    useEffect(() => {
+        dispatch(getUserLeasesAsync());
+    }, [dispatch]);
 
     // const leases: Lease[] = [
     //     {
@@ -51,8 +62,22 @@ const TerminateLease: React.FC = () => {
     };
 
     const handleSubmit = () => {
-        console.log('Generating Legal Notice...');
+        if (!selectedLeaseId || !terminationReason || !terminationDate) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("leaseId", selectedLeaseId);
+        formData.append("terminationReason", terminationReason);
+        formData.append("terminationDate", terminationDate);
+        formData.append("supportingNotes", supportingNotes);
+        if (uploadedFile) {
+            formData.append("document", uploadedFile);
+        }
+        dispatch(terminateLeaseAsync(formData)); // You need to create this thunk
     };
+
 
     const handleCancel = () => {
         console.log('Cancelled');
@@ -85,8 +110,7 @@ const TerminateLease: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
                         {/* Left Section - Form */}
                         <div className="lg:col-span-2 space-y-8">
-                            {/* Select Lease to Terminate */}
-                            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                            {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                                 <div className="p-6">
                                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Lease to Terminate</h2>
 
@@ -98,7 +122,7 @@ const TerminateLease: React.FC = () => {
                                         </select>
                                     </div>
 
-                                    {/* Lease Summary */}
+                                  
                                     <div className="bg-[#F9FAFB] rounded-lg p-4">
                                         <h3 className="font-medium text-gray-900 mb-3">Lease Summary</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,9 +161,31 @@ const TerminateLease: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
+                            </div> */}
+
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div className="p-6">
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Lease to Terminate</h2>
+
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-3">Choose Lease</label>
+                                        <select
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            value={selectedLeaseId}
+                                            onChange={(e) => setSelectedLeaseId(e.target.value)}
+                                        >
+                                            <option value="" disabled>Select a lease</option>
+                                            {leases?.data?.map((lease) => (
+                                                <option key={lease.id} value={lease.id}>
+                                                    {lease.name} ({lease.email})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                </div>
                             </div>
 
-                            {/* Termination Details */}
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                                 <div className="p-6">
                                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Termination Details</h2>

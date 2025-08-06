@@ -10,9 +10,9 @@ export const getDashboardStatsAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = `${ls.get("access_token", { decrypt: true })}`;
-      HttpService.setToken(token);
+      HttpService.setToken(token);  
       const response = await dashboardStatusService.dashboardStats(); // API call
-
+      console.log("response", response)
 
       if (!response.success || response.status === 400) {
         return rejectWithValue(response.message);

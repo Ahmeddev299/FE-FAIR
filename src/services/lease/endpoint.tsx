@@ -9,8 +9,13 @@ class LeaseBaseService extends HttpService {
    * @paramdata
    */
   auth = (data: any): Promise<any> => this.get(this.prefix + ``, data);
-  submitLease = (data: any): Promise<any> =>
-    this.post(this.prefix + `/upload_lease_tenant`, data);
+  submitLease = (data: any , option = {}): Promise<any> =>
+    this.post(this.prefix + `/upload_lease_tenant`, data, option);
+  userleasedetails = (): Promise<any> =>
+    this.get(`termination/lease_of_user_for_termination`, {})
+  terminatelease = (data: any, options = {}): Promise<any> =>
+    this.post(this.prefix + `/termination`, data, options);
+
 }
 
 export const leaseBaseService = new LeaseBaseService();

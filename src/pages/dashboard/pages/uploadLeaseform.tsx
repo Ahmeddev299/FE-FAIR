@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Formik, Form, FormikProps } from 'formik';
 import { useRouter } from 'next/router';
 import { DashboardLayout } from '@/components/layouts';
+import { useAppDispatch } from '@/hooks/hooks';
 
 // Import types
 import { LeaseFormValues, FileData } from '@/types/loi';
@@ -18,10 +19,12 @@ import { ContextForm } from '@/components/uploadLeaseForm/ContextForm';
 import { AIBenefits } from '@/components/uploadLeaseForm/AIBenefits';
 import { HelpSection } from '@/components/uploadLeaseForm/HelpSection';
 import { SubmitButton } from '@/components/buttons/submitButton';
+import { uploadLeaseAsync } from '@/services/lease/asyncThunk';
 
 const UploadLeaseForm: React.FC = () => {
     const [uploadedFile, setUploadedFile] = useState<FileData | null>(null);
     const router = useRouter();
+    const dispatch = useAppDispatch()
 
     const initialValues: LeaseFormValues = {
         title: '',
@@ -32,21 +35,45 @@ const UploadLeaseForm: React.FC = () => {
         document: ''
     };
 
-    const handleSubmit = (values: LeaseFormValues, { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }): void => {
-        // Simulate API call
-        setTimeout(() => {
-            console.log('Form submitted with values:', values);
-            console.log('Uploaded file:', uploadedFile);
-            alert('Lease document uploaded successfully!');
-            setSubmitting(false);
-            router.push('/dashboard/pages/uploadLeaseReview');
-        }, 2000);
-    };
+    const handleSubmit = async (
+        values: LeaseFormValues,
+        { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+    ): Promise<void> => {
+        try {
+            if (!uploadedFile) {
+                alert("Please upload a document before submitting.");
+                return;
+            }
 
+            const formData = new FormData();
+            formData.append("loi_id", "689257757e0972ac6bf4ebbe")
+            formData.append("lease_title", values.title);
+            formData.append("startDate", values.startDate);
+            formData.append("endDate", values.endDate);
+            formData.append("property_address", values.propertyAddress);
+            formData.append("notes", values.notes);
+            formData.append("file", uploadedFile.file); 
+
+            const resultAction = await dispatch(uploadLeaseAsync(formData));
+
+            if (uploadLeaseAsync.fulfilled.match(resultAction)) {
+                alert("Lease uploaded successfully!");
+                router.push("/dashboard/pages/uploadLeaseReview");
+            } else {
+                alert("Failed to upload lease. Please try again.");
+            }
+        } catch (err) {
+            console.error("Upload error", err);
+            alert("An error occurred during upload.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
     const handleStartNewLOI = (): void => {
         router.push('/dashboard/pages/uploadLeaseReview');
     };
 
+    // uploadLeaseAsync
     return (
         <DashboardLayout>
             {/* Header */}

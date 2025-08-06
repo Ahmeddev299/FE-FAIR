@@ -20,7 +20,7 @@ const initialState = {
   isLoadingLeases: false,
   isLoadingLOIs: false,
   
-  // Error states
+  // Error statesp
   error: null,
   leaseError: null,
   loiError: null,
@@ -53,15 +53,17 @@ const dashboardSlice = createSlice({
         state.isSuccess = true;
         state.error = null;
         
-        const { data } = action.payload;
-        state.totalLease = data.total_lease;
-        state.totalLOI = data.total_loi;
-        state.myLeases = data.my_lease || [];
-        state.myLOIs = data.my_loi || [];
-        state.leasePage = data.lease_page;
-        state.loiPage = data.loi_page;
-        state.leaseLimit = data.lease_limit;
-        state.loiLimit = data.loi_limit;
+        const  data  = action.payload;
+        console.log("data", action.payload
+        )
+        state.totalLease = data?.total_lease;
+        state.totalLOI = data?.total_loi;
+        state.myLeases = data?.my_lease || [];
+        state.myLOIs = data?.my_loi || [];
+        state.leasePage = data?.lease_page;
+        state.loiPage = data?.loi_page;
+        state.leaseLimit = data?.lease_limit;
+        state.loiLimit = data?.loi_limit;
       })
       .addCase(getDashboardStatsAsync.rejected, (state, action) => {
         state.isLoading = false;
@@ -70,7 +72,6 @@ const dashboardSlice = createSlice({
   },
 });
 
-// Export actions
-export const {
 
-} = dashboardSlice.actions
+
+export default dashboardSlice.reducer;

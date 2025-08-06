@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Eye, Calendar } from 'lucide-react';
 import Image from "next/image"; // ✅ Correct
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { getDashboardStatsAsync } from '@/services/dashboard/asyncThunk';
+import formatDate from '@/utils/dateFormatter'
 
 type Status = 'available' | 'pending' | 'active' | 'in review' | 'terminated';
 type Priority = 'high' | 'urgent' | 'medium';
@@ -34,30 +37,34 @@ type Event = {
 
 function MainPage() {
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const { myLeases, myLOIs, isLoading, error } = useAppSelector((state) => state.dashboard);
+    console.log("myLeases", myLeases)
+    console.log("myLOIs", myLOIs)
 
-    const listings: Listing[] = [
-        {
-            name: "Downtown Office Space",
-            address: "123 Main St, Downtown",
-            status: "available",
-            lastUpdate: "2 days ago",
-            type: "Downtown Office Space"
-        },
-        {
-            name: "Retail Space - Shopping Center",
-            address: "456 Corporate Blvd, Midtown",
-            status: "pending",
-            lastUpdate: "5 days ago",
-            type: "Retail Space - Shopping Center"
-        },
-        {
-            name: "Warehouse Facility",
-            address: "789 Industrial Way, Eastside",
-            status: "available",
-            lastUpdate: "1 week ago",
-            type: "Warehouse Facility"
-        }
-    ];
+    // const listings: Listing[] = [
+    //     {
+    //         name: "Downtown Office Space",
+    //         address: "123 Main St, Downtown",
+    //         status: "available",
+    //         lastUpdate: "2 days ago",
+    //         type: "Downtown Office Space"
+    //     },
+    //     {
+    //         name: "Retail Space - Shopping Center",
+    //         address: "456 Corporate Blvd, Midtown",
+    //         status: "pending",
+    //         lastUpdate: "5 days ago",
+    //         type: "Retail Space - Shopping Center"
+    //     },
+    //     {
+    //         name: "Warehouse Facility",
+    //         address: "789 Industrial Way, Eastside",
+    //         status: "available",
+    //         lastUpdate: "1 week ago",
+    //         type: "Warehouse Facility"
+    //     }
+    // ];
 
     const leases: Lease[] = [
         {
@@ -132,9 +139,14 @@ function MainPage() {
         }
     };
 
+    useEffect(() => {
+        dispatch(getDashboardStatsAsync());
+    }, [dispatch]);
+
+
     const truncateWords = (text: string, limit: number) => {
-        const words = text.trim().split(" ");
-        return words.length > limit ? words.slice(0, limit).join(" ") + "..." : text;
+        const words = text?.trim().split(" ");
+        return words?.length > limit ? words.slice(0, limit).join(" ") + "..." : text;
     };
 
     const handleStartNewLOI = () => {
@@ -146,7 +158,7 @@ function MainPage() {
         router.push('/dashboard/pages/uploadLeaseform');
     }
 
-     const terminateLease = () => {
+    const terminateLease = () => {
         router.push('/dashboard/pages/terminateLease');
     }
 
@@ -177,15 +189,15 @@ function MainPage() {
                                 {/* Mobile Card View */}
                                 <div className="block lg:hidden">
                                     <div className="divide-y divide-gray-100">
-                                        {listings.map((listing, index) => (
+                                        {myLOIs.map((listing, index) => (
                                             <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
                                                 <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{listing.name}</h3>
+                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{listing.title}</h3>
                                                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)} flex-shrink-0`}>
-                                                        {listing.status}
+                                                        {listing.status || "active"}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mb-2 truncate">{listing.address}</p>
+                                                <p className="text-sm text-gray-500 mb-2 truncate">{listing.propertyAddress}</p>
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-xs text-gray-400">{listing.lastUpdate}</span>
                                                     <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
@@ -207,24 +219,24 @@ function MainPage() {
                                                     <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">LOI Title</th>
                                                     <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">Property Address</th>
                                                     <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Status</th>
-                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Last Updated</th>
                                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100">
-                                                {listings.map((listing, index) => (
+                                                {myLOIs.map((listing, index) => (
+                                                   
                                                     <tr key={index} className="hover:bg-gray-50 transition-colors">
                                                         <td className="px-5 py-4 text-sm font-medium text-gray-900">
-                                                            {truncateWords(listing.name, 2)}
+                                                            {truncateWords(listing.title, 2)}
                                                         </td>
                                                         <td className="px-2 py-4 text-sm text-gray-500">
-                                                            {truncateWords(listing.address, 2)}
+                                                            {truncateWords(listing.propertyAddress, 2)}
                                                         </td>                                                        <td className="px-2 py-4">
                                                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)}`}>
-                                                                {listing.status}
+                                                                {listing.status || "active"} 
                                                             </span>
                                                         </td>
-                                                        <td className="px-2 py-4 text-sm text-gray-400">{listing.lastUpdate}</td>
+                                                        {/* <td className="px-2 py-4 text-sm text-gray-400">{formatDate(listing.updated_at)}</td> */}
                                                         <td className="px-4 py-4">
                                                             <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                                                                 <Eye className="w-4 h-4" />
@@ -249,21 +261,21 @@ function MainPage() {
                                 {/* Mobile Card View */}
                                 <div className="block lg:hidden">
                                     <div className="divide-y divide-gray-100">
-                                        {leases.map((lease, index) => (
+                                        {myLeases.map((lease, index) => (
                                             <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
                                                 <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2" title={lease.tenant}>
-                                                        {truncateWords(lease.tenant, 2)}
+                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2" title={lease?.tenant}>
+                                                        {truncateWords(lease?.tenant, 2)}
                                                     </h3>
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease.status)} flex-shrink-0`}>
-                                                        {lease.status}
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease?.status)} flex-shrink-0`}>
+                                                        {lease?.status}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-500 mb-2" title={lease.address}>
-                                                    {truncateWords(lease.address, 2)}
+                                                <p className="text-sm text-gray-500 mb-2" title={lease?.address}>
+                                                    {truncateWords(lease?.address, 2)}
                                                 </p>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-400">{lease.lastUpdate}</span>
+                                                    <span className="text-xs text-gray-400">{lease?.lastUpdate}</span>
                                                     <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                                                         <Eye className="w-4 h-4" />
                                                         <span>View</span>

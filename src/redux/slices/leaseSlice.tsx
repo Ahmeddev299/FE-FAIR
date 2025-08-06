@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
 import Toast from "@/components/Toast";
-import { uploadLeaseAsync } from "@/services/lease/asyncThunk";
+import { uploadLeaseAsync, getUserLeasesAsync } from "@/services/lease/asyncThunk";
 
 export const leaseSlice = createSlice({
   name: "lease",
@@ -33,7 +33,7 @@ export const leaseSlice = createSlice({
     filters: {},
     loadMore: false,
   },
-  reducers: { 
+  reducers: {
     setLoading: (state, action) => {
       state.isLoading = action.payload;
     },
@@ -50,10 +50,21 @@ export const leaseSlice = createSlice({
       .addCase(uploadLeaseAsync.fulfilled, (state) => {
         state.isLoading = false;
         state.submitSuccess = true;
-        Toast.fire({ icon: "success", title: "Lease uploaded successfully!" });
       })
       .addCase(uploadLeaseAsync.rejected, (state) => {
         state.isLoading = false;
+      })
+      .addCase(getUserLeasesAsync.pending, (state) => {
+        state.isLoading = true;
+        state.leaseError = "";
+      })
+      .addCase(getUserLeasesAsync.fulfilled, (state , action) => {
+        state.isLoading = false;
+        state.leaseList = action.payload;
+      })
+      .addCase(getUserLeasesAsync.rejected, (state, action) => {
+        state.isLoading = false;
+          state.leaseError = "";
       })
   },
 });
