@@ -3,8 +3,7 @@ import { ArrowLeft, Upload, FileText } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks"
-import { getUserLeasesAsync , terminateLeaseAsync} from "@/services/lease/asyncThunk";
-
+import { getUserLeasesAsync, terminateLeaseAsync } from "@/services/lease/asyncThunk";
 
 // interface Lease {
 //     id: string;
@@ -176,8 +175,8 @@ const TerminateLease: React.FC = () => {
                                         >
                                             <option value="" disabled>Select a lease</option>
                                             {leases?.data?.map((lease) => (
-                                                <option key={lease.id} value={lease.id}>
-                                                    {lease.name} ({lease.email})
+                                                <option key={lease?.lease_id} value={lease?.lease_id}>
+                                                    {lease?.lease_title}
                                                 </option>
                                             ))}
                                         </select>

@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'; // or 'next/navigation' if using app di
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { getDashboardStatsAsync } from '@/services/dashboard/asyncThunk';
 import formatDate from '@/utils/dateFormatter'
+import { LoadingOverlay } from '@/components/loaders/overlayloader';
 
 type Status = 'available' | 'pending' | 'active' | 'in review' | 'terminated';
 type Priority = 'high' | 'urgent' | 'medium';
@@ -41,7 +42,7 @@ function MainPage() {
     const { myLeases, myLOIs, isLoading, error } = useAppSelector((state) => state.dashboard);
     console.log("myLeases", myLeases)
     console.log("myLOIs", myLOIs)
-
+    console.log("isLoading", isLoading)
     // const listings: Listing[] = [
     //     {
     //         name: "Downtown Office Space",
@@ -164,283 +165,291 @@ function MainPage() {
 
     return (
         <DashboardLayout>
-            <div className=" flex-1 overflow-auto">
-                {/* Header */}
-                <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 p-4">
-                    <div className="flex items-center justify-between h-16 sm:h-20">
-                        <div>
-                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome back, John!</h1>
-                            <p className="text-sm sm:text-base text-gray-500 mt-1">Here is what is happening with your leases and LOIs today.</p>
+            {isLoading ? (
+
+                <LoadingOverlay
+                    isVisible={isLoading}
+                    message="Fetching dashboard statistics..."
+                    size="large"
+                />
+
+            ) : (
+                <div className=" flex-1 overflow-auto">
+                    {/* Header */}
+                    <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 p-4">
+                        <div className="flex items-center justify-between h-16 sm:h-20">
+                            <div>
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome back, John!</h1>
+                                <p className="text-sm sm:text-base text-gray-500 mt-1">Here is what is happening with your leases and LOIs today.</p>
+                            </div>
                         </div>
-                    </div>
-                </header>
+                    </header>
 
-                {/* Main Content */}
-                <div className="p-4 sm:p-6 lg:p-0 mt-4">
-                    <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-                        {/* Left Column - Listings and Leases */}
-                        <div className="xl:col-span-3 space-y-6">
-                            {/* My LOIs Section */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                                <div className="px-6 py-5 border-b border-gray-100">
-                                    <h2 className="text-lg font-semibold text-gray-900">My LOIs</h2>
-                                </div>
-
-                                {/* Mobile Card View */}
-                                <div className="block lg:hidden">
-                                    <div className="divide-y divide-gray-100">
-                                        {myLOIs.map((listing, index) => (
-                                            <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
-                                                <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{listing.title}</h3>
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)} flex-shrink-0`}>
-                                                        {listing.status || "active"}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-500 mb-2 truncate">{listing.propertyAddress}</p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-400">{listing.lastUpdate}</span>
-                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                                                        <Eye className="w-4 h-4" />
-                                                        <span>View</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                    {/* Main Content */}
+                    <div className="p-4 sm:p-6 lg:p-0 mt-4">
+                        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+                            {/* Left Column - Listings and Leases */}
+                            <div className="xl:col-span-3 space-y-6">
+                                {/* My LOIs Section */}
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                                    <div className="px-6 py-5 border-b border-gray-100">
+                                        <h2 className="text-lg font-semibold text-gray-900">My LOIs</h2>
                                     </div>
-                                </div>
 
-                                {/* Desktop Table View */}
-                                <div className="hidden lg:block">
-                                    <div className="p-6">
-                                        <table className="min-w-full divide-y divide-gray-100 table-fixed">
-                                            <thead>
-                                                <tr>
-                                                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">LOI Title</th>
-                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">Property Address</th>
-                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Status</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-100">
-                                                {myLOIs.map((listing, index) => (
-                                                   
-                                                    <tr key={index} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-5 py-4 text-sm font-medium text-gray-900">
-                                                            {truncateWords(listing.title, 2)}
-                                                        </td>
-                                                        <td className="px-2 py-4 text-sm text-gray-500">
-                                                            {truncateWords(listing.propertyAddress, 2)}
-                                                        </td>                                                        <td className="px-2 py-4">
-                                                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)}`}>
-                                                                {listing.status || "active"} 
-                                                            </span>
-                                                        </td>
-                                                        {/* <td className="px-2 py-4 text-sm text-gray-400">{formatDate(listing.updated_at)}</td> */}
-                                                        <td className="px-4 py-4">
-                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                                                                <Eye className="w-4 h-4" />
-                                                                <span>View</span>
-                                                            </button>
-                                                        </td>
+                                    {/* Mobile Card View */}
+                                    <div className="block lg:hidden">
+                                        <div className="divide-y divide-gray-100">
+                                            {myLOIs.map((listing, index) => (
+                                                <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
+                                                    <div className="flex items-start justify-between mb-1">
+                                                        <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2">{listing.title}</h3>
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)} flex-shrink-0`}>
+                                                            {listing.status || "active"}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 mb-2 truncate">{listing.propertyAddress}</p>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-xs text-gray-400">{listing.lastUpdate}</span>
+                                                        <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                                                            <Eye className="w-4 h-4" />
+                                                            <span>View</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Desktop Table View */}
+                                    <div className="hidden lg:block">
+                                        <div className="p-6">
+                                            <table className="min-w-full divide-y divide-gray-100 table-fixed">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">LOI Title</th>
+                                                        <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">Property Address</th>
+                                                        <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Status</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">Action</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {myLOIs.map((listing, index) => (
+
+                                                        <tr key={index} className="hover:bg-gray-50 transition-colors">
+                                                            <td className="px-5 py-4 text-sm font-medium text-gray-900">
+                                                                {truncateWords(listing.title, 2)}
+                                                            </td>
+                                                            <td className="px-2 py-4 text-sm text-gray-500">
+                                                                {truncateWords(listing.propertyAddress, 2)}
+                                                            </td>                                                        <td className="px-2 py-4">
+                                                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(listing.status)}`}>
+                                                                    {listing.status || "Active"}
+                                                                </span>
+                                                            </td>
+                                                            {/* <td className="px-2 py-4 text-sm text-gray-400">{formatDate(listing.updated_at)}</td> */}
+                                                            <td className="px-4 py-4">
+                                                                <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                                                                    <Eye className="w-4 h-4" />
+                                                                    <span>View</span>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
+
+
+                                {/* My Leases Section */}
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+                                    <div className="px-6 py-5 border-b border-gray-100">
+                                        <h2 className="text-lg font-semibold text-gray-900">My Leases</h2>
+                                    </div>
+
+                                    {/* Mobile Card View */}
+                                    <div className="block lg:hidden">
+                                        <div className="divide-y divide-gray-100">
+                                            {myLeases.map((lease, index) => (
+                                                <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
+                                                    <div className="flex items-start justify-between mb-1">
+                                                        <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2" title={lease?.lease_title}>
+                                                            {truncateWords(lease?.lease_title, 2)}
+                                                        </h3>
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease?.status)} flex-shrink-0`}>
+                                                            {lease?.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-500 mb-2" title={lease?.property_address}>
+                                                        {truncateWords(lease?.property_address, 2)}
+                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-xs text-gray-400">{lease?.lastUpdate}</span>
+                                                        <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                                                            <Eye className="w-4 h-4" />
+                                                            <span>View</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Desktop Table View */}
+                                    <div className="hidden lg:block">
+                                        <div className="p-6">
+                                            <table className="min-w-full divide-y divide-gray-100 table-fixed">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">
+                                                            Lease Title
+                                                        </th>
+                                                        <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">
+                                                            Property Address
+                                                        </th>
+                                                        <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
+                                                            Status
+                                                        </th>
+                                                        <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
+                                                            Last Updated
+                                                        </th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {myLeases.map((lease, index) => (
+                                                        <tr key={index} className="hover:bg-gray-50 transition-colors">
+                                                            <td className="px-5 py-4 text-sm font-medium text-gray-900" title={lease.lease_title || "N/A"}>
+                                                                {truncateWords(lease.lease_title, 2)}
+                                                            </td>
+                                                            <td className="px-2 py-4 text-sm text-gray-500" title={lease.property_address}>
+                                                                {truncateWords(lease.property_address, 2)}
+                                                            </td>
+                                                            <td className="px-2 py-4">
+                                                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease.status)}`}>
+                                                                    {lease.status || "Active"}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-4">
+                                                                <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                                                                    <Eye className="w-4 h-4" />
+                                                                    <span>View</span>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                             </div>
 
+                            {/* Right Column - Quick Actions and Upcoming Events */}
+                            <div className="xl:col-span-1 space-y-10">
+                                {/* Quick Actions */}
 
-                            {/* My Leases Section */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-                                <div className="px-6 py-5 border-b border-gray-100">
-                                    <h2 className="text-lg font-semibold text-gray-900">My Leases</h2>
-                                </div>
+                                <div className="bg-white rounded-xl shadow lg:p-4 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
+                                    <div className="space-y-5">
 
-                                {/* Mobile Card View */}
-                                <div className="block lg:hidden">
-                                    <div className="divide-y divide-gray-100">
-                                        {myLeases.map((lease, index) => (
-                                            <div key={index} className="p-4 hover:bg-gray-50 transition-colors">
-                                                <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="text-sm font-medium text-gray-900 flex-1 pr-2" title={lease?.tenant}>
-                                                        {truncateWords(lease?.tenant, 2)}
-                                                    </h3>
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease?.status)} flex-shrink-0`}>
-                                                        {lease?.status}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-500 mb-2" title={lease?.address}>
-                                                    {truncateWords(lease?.address, 2)}
-                                                </p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-gray-400">{lease?.lastUpdate}</span>
-                                                    <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                                                        <Eye className="w-4 h-4" />
-                                                        <span>View</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Desktop Table View */}
-                                <div className="hidden lg:block">
-                                    <div className="p-6">
-                                        <table className="min-w-full divide-y divide-gray-100 table-fixed">
-                                            <thead>
-                                                <tr>
-                                                    <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/4">
-                                                        Lease Title
-                                                    </th>
-                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/3">
-                                                        Property Address
-                                                    </th>
-                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
-                                                        Status
-                                                    </th>
-                                                    <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
-                                                        Last Updated
-                                                    </th>
-                                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
-                                                        Action
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-100">
-                                                {leases.map((lease, index) => (
-                                                    <tr key={index} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="px-5 py-4 text-sm font-medium text-gray-900" title={lease.tenant}>
-                                                            {truncateWords(lease.tenant, 2)}
-                                                        </td>
-                                                        <td className="px-2 py-4 text-sm text-gray-500" title={lease.address}>
-                                                            {truncateWords(lease.address, 2)}
-                                                        </td>
-                                                        <td className="px-2 py-4">
-                                                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lease.status)}`}>
-                                                                {lease.status}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-2 py-4 text-sm text-gray-400">{lease.lastUpdate}</td>
-                                                        <td className="px-4 py-4">
-                                                            <button className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                                                                <Eye className="w-4 h-4" />
-                                                                <span>View</span>
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
-
-                        {/* Right Column - Quick Actions and Upcoming Events */}
-                        <div className="xl:col-span-1 space-y-10">
-                            {/* Quick Actions */}
-
-                            <div className="bg-white rounded-xl shadow lg:p-4 p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
-                                <div className="space-y-5">
-
-                                    {/* Start New LOI */}
-                                    <button className="w-full flex items-center justify-start gap-3 
+                                        {/* Start New LOI */}
+                                        <button className="w-full flex items-center justify-start gap-3 
                                     bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium"  onClick={handleStartNewLOI}>
-                                        <Image
-                                            src="/star.png"
-                                            alt="Start New LOI"
-                                            width={30}
-                                            height={24}
-                                            className="w-6 h-4"
-                                        />
-                                        <span>Start New LOI</span>
-                                    </button>
+                                            <Image
+                                                src="/star.png"
+                                                alt="Start New LOI"
+                                                width={30}
+                                                height={24}
+                                                className="w-6 h-4"
+                                            />
+                                            <span>Start New LOI</span>
+                                        </button>
 
-                                    {/* Upload Lease Document */}
-                                    <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-600 transition text-sm font-medium" onClick={uploadLeaseNewLOI}>
-                                        <Image
-                                            src="/start-loi-1.png"
-                                            alt="Upload Document"
-                                            width={24}
-                                            height={24}
-                                            className="w-7 h-4"
-                                        />
-                                        <span className="truncate inline-block max-w-[150px]">Upload Lease Document</span>
-                                    </button>
+                                        {/* Upload Lease Document */}
+                                        <button className="w-full flex items-center justify-start gap-3 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-600 transition text-sm font-medium" onClick={uploadLeaseNewLOI}>
+                                            <Image
+                                                src="/start-loi-1.png"
+                                                alt="Upload Document"
+                                                width={24}
+                                                height={24}
+                                                className="w-7 h-4"
+                                            />
+                                            <span className="truncate inline-block max-w-[150px]">Upload Lease Document</span>
+                                        </button>
 
 
-                                    {/* Terminate Lease */}
-                                    <button className="w-full flex items-center justify-start gap-3 bg-red-500 text-white py-2.5 px-4 rounded-lg hover:bg-red-600 transition text-sm font-medium" onClick={terminateLease}>
-                                        <Image
-                                            src="/start-loi-2.png"
-                                            alt="Terminate Lease"
-                                            width={24}
-                                            height={24}
-                                            className="w-7 h-4"
-                                        />
-                                        <span>Terminate Lease</span>
-                                    </button>
+                                        {/* Terminate Lease */}
+                                        <button className="w-full flex items-center justify-start gap-3 bg-red-500 text-white py-2.5 px-4 rounded-lg hover:bg-red-600 transition text-sm font-medium" onClick={terminateLease}>
+                                            <Image
+                                                src="/start-loi-2.png"
+                                                alt="Terminate Lease"
+                                                width={24}
+                                                height={24}
+                                                className="w-7 h-4"
+                                            />
+                                            <span>Terminate Lease</span>
+                                        </button>
 
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Upcoming Events */}
-                            <div className="bg-white rounded-lg shadow p-4 lg:p-3 sm:p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
-                                <div className="space-y-4">
-                                    {upcomingEvents.map((event, index) => (
-                                        <div key={index} className="flex items-start gap-4 bg-gray-50 rounded-md p-3">
+                                {/* Upcoming Events */}
+                                <div className="bg-white rounded-lg shadow p-4 lg:p-3 sm:p-6">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
+                                    <div className="space-y-4">
+                                        {upcomingEvents.map((event, index) => (
+                                            <div key={index} className="flex items-start gap-4 bg-gray-50 rounded-md p-3">
 
-                                            {/* Icon */}
-                                            <div className="flex-shrink-0 bg-blue-100 p-2 rounded-md">
-                                                <Image
-                                                    src={event.icon} // e.g., "/icons/calendar.png"
-                                                    alt={event.title}
-                                                    width={30}
-                                                    height={30}
-                                                />
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-start gap-2">
-                                                    <h4 className="text-sm font-medium text-gray-900 truncate max-w-[180px]">
-                                                        {event.title}
-                                                    </h4>
-                                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getPriorityColor(event.type)}`}>
-                                                        {event.type}
-                                                    </span>
+                                                {/* Icon */}
+                                                <div className="flex-shrink-0 bg-blue-100 p-2 rounded-md">
+                                                    <Image
+                                                        src={event.icon} // e.g., "/icons/calendar.png"
+                                                        alt={event.title}
+                                                        width={30}
+                                                        height={30}
+                                                    />
                                                 </div>
 
-
-                                                <div className="text-xs text-gray-500 mt-1 flex items-center">
-                                                    <div className="text-xs text-gray-500 mt-1 flex items-center">
-                                                        <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-                                                        {event.date}
+                                                {/* Content */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start gap-2">
+                                                        <h4 className="text-sm font-medium text-gray-900 truncate max-w-[180px]">
+                                                            {event.title}
+                                                        </h4>
+                                                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getPriorityColor(event.type)}`}>
+                                                            {event.type}
+                                                        </span>
                                                     </div>
 
-                                                </div>
 
-                                                <div className="text-xs text-gray-500 mt-1 flex items-center">
-                                                    <span className="truncate">{event.location}</span>
+                                                    <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                        <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                            <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                                                            {event.date}
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div className="text-xs text-gray-500 mt-1 flex items-center">
+                                                        <span className="truncate">{event.location}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
+
         </DashboardLayout>
-    );
+    )
 }
 
 export default MainPage;

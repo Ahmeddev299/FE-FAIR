@@ -44,15 +44,16 @@ const UploadLeaseForm: React.FC = () => {
                 alert("Please upload a document before submitting.");
                 return;
             }
-
+            console.log("lease", values)
+            
             const formData = new FormData();
             formData.append("loi_id", "689257757e0972ac6bf4ebbe")
-            formData.append("lease_title", values.title);
+            formData.append("lease_title", values.leaseTitle);
             formData.append("startDate", values.startDate);
             formData.append("endDate", values.endDate);
             formData.append("property_address", values.propertyAddress);
             formData.append("notes", values.notes);
-            formData.append("file", uploadedFile.file); 
+            formData.append("file", uploadedFile.file);
 
             const resultAction = await dispatch(uploadLeaseAsync(formData));
 
@@ -69,9 +70,7 @@ const UploadLeaseForm: React.FC = () => {
             setSubmitting(false);
         }
     };
-    const handleStartNewLOI = (): void => {
-        router.push('/dashboard/pages/uploadLeaseReview');
-    };
+  
 
     // uploadLeaseAsync
     return (
@@ -118,10 +117,8 @@ const UploadLeaseForm: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Submit Button */}
                             <SubmitButton
                                 isSubmitting={isSubmitting}
-                                onClick={handleStartNewLOI}
                             />
                         </Form>
                     )}
