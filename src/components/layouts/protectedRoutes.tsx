@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import ls from 'localstorage-slim';
-import { userAuthAsync } from '@/services/auth/asyncThunk';
 import { selectUser } from '@/redux/slices/userSlice';
 
 interface ProtectedRouteProps {
@@ -32,9 +31,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         }
 
         // If we have a token but no profile, verify the token
-        if (!profile?.id) {
-          await dispatch(userAuthAsync());
-        }
+      
       } catch (error) {
         console.error('Auth check failed:', error);
         router.replace(redirectTo);

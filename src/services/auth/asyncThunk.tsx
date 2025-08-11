@@ -28,19 +28,6 @@ interface ResetPasswordData {
   email: string;
 }
 
-export const userAuthAsync = createAsyncThunk(
-  "/auth",
-  async (data, { rejectWithValue }) => {
-    try {
-      const token: string = `${ls.get("access_token", { decrypt: true })}`;
-      HttpService.setToken(token);
-      const response = await authBaseService.auth(data);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response.data.message);
-    }
-  }
-);
 
 export const userSignUpAsync = createAsyncThunk(
   "/auth/sign-Up",

@@ -37,40 +37,46 @@ const UploadLeaseForm: React.FC = () => {
 
     const handleSubmit = async (
         values: LeaseFormValues,
-        { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
+        { setSubmitting }: { setSubmitting: (v: boolean) => void }
     ): Promise<void> => {
         try {
             if (!uploadedFile) {
-                alert("Please upload a document before submitting.");
+                alert('Please upload a document before submitting.');
                 return;
             }
-            console.log("lease", values)
-            
+
             const formData = new FormData();
-            formData.append("loi_id", "689257757e0972ac6bf4ebbe")
-            formData.append("lease_title", values.leaseTitle);
-            formData.append("startDate", values.startDate);
-            formData.append("endDate", values.endDate);
-            formData.append("property_address", values.propertyAddress);
-            formData.append("notes", values.notes);
-            formData.append("file", uploadedFile.file);
+            formData.append('loi_id', values.leaseId);
+            formData.append('lease_title', values.leaseTitle);
+            formData.append('startDate', values.startDate);
+            formData.append('endDate', values.endDate);
+            formData.append('property_address', values.propertyAddress);
+            formData.append('notes', values.notes);
+            formData.append('file', uploadedFile.file);
 
-            const resultAction = await dispatch(uploadLeaseAsync(formData));
+            // unwrap gives you the typed payload or throws on reject
+            const payload = await dispatch(uploadLeaseAsync(formData)).unwrap();
 
-            if (uploadLeaseAsync.fulfilled.match(resultAction)) {
-                alert("Lease uploaded successfully!");
-                router.push("/dashboard/pages/uploadLeaseReview");
-            } else {
-                alert("Failed to upload lease. Please try again.");
-            }
+            // IDs from your sample response
+            const leaseId = payload.Lease._id;
+            const clauseDocId = payload.Clauses._id;
+
+            // navigate with IDs (Pages Router)
+            router.push({
+                pathname: '/dashboard/pages/lease/review/[leaseId]',
+                query: {
+                    leaseId,
+                    clauseDocId,                     // clauses document id
+                },
+            });
         } catch (err) {
-            console.error("Upload error", err);
-            alert("An error occurred during upload.");
+            console.error('Upload error', err);
+            alert(typeof err === 'string' ? err : 'Failed to upload lease. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
-  
+    ;
 
     // uploadLeaseAsync
     return (

@@ -121,7 +121,6 @@ export const validationSchema = Yup.object({
     .min(Yup.ref('startDate'), 'End date must be after start date')
     .typeError('Please enter a valid date'),
   propertyAddress: Yup.string()
-    .min(10, 'Property address must be at least 10 characters')
     .max(200, 'Property address must be less than 200 characters')
     .required('Property address is required'),
   notes: Yup.string()

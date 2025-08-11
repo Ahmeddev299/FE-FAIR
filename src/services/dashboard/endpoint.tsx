@@ -11,6 +11,10 @@ class DashboardBaseService extends HttpService {
   auth = (data: any): Promise<any> => this.get(this.prefix + ``, data);
    dashboardStats = (): Promise<any> =>
       this.get(this.prefix + `/`, {})
+
+    getloiData = (): Promise<any> =>
+      this.get(this.prefix + `/get_all_loi_for_lease_submittion`, {})
 }
 
 export const dashboardStatusService = new DashboardBaseService();
+

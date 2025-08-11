@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios, { 
-  AxiosInstance, 
-  AxiosRequestConfig, 
-  AxiosResponse, 
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
   AxiosError,
-  CancelTokenSource 
+  CancelTokenSource
 } from "axios";
 import Config from "../config/index";
 import ls from "localstorage-slim";
@@ -17,10 +17,22 @@ interface ApiResponse<T = any> {
   status: number;
 }
 
-// Custom error interface
-interface CustomError extends Error {
+// Custom error class instead of type intersection
+class CustomError extends Error {
   status?: number;
   code?: string;
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message);
+    this.name = 'CustomError';
+    this.status = status;
+    this.code = code;
+    
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, CustomError);
+    }
+  }
 }
 
 export class HttpService {
@@ -120,21 +132,7 @@ export class HttpService {
         }
 
         // Handle network errors
-        if (!error.response) {
-          const networkError: CustomError = new Error('Network error. Please check your connection.');
-          networkError.code = 'NETWORK_ERROR';
-          return Promise.reject(networkError);
-        }
 
-        // Handle other HTTP errors
-        const customError: CustomError = new Error(
-          error.response?.data?.message || 
-          error.message || 
-          'An unexpected error occurred'
-        );
-        customError.status = error.response?.status;
-        
-        return Promise.reject(customError);
       }
     );
   }
@@ -178,13 +176,13 @@ export class HttpService {
    * @return Promise
    */
   protected get = async <T = any>(
-    url: string, 
-    params?: object, 
+    url: string,
+    params?: object,
     options: AxiosRequestConfig = {}
   ): Promise<T> => {
     try {
       const cancelToken = this.createCancelToken(`GET-${url}`);
-      
+
       const response = await this.axiosInstance.get<T>(url, {
         params,
         cancelToken: cancelToken.token,
@@ -192,7 +190,7 @@ export class HttpService {
       });
 
       this.cancelTokenSources.delete(`GET-${url}`);
-      return response.data;
+      return response?.data;
     } catch (error: any) {
       this.cancelTokenSources.delete(`GET-${url}`);
       throw error;
@@ -207,13 +205,13 @@ export class HttpService {
    * @return Promise
    */
   protected post = async <T = any>(
-    url: string, 
-    body?: object, 
+    url: string,
+    body?: object,
     options: AxiosRequestConfig = {}
   ): Promise<T> => {
     try {
       const cancelToken = this.createCancelToken(`POST-${url}`);
-      
+
       const response = await this.axiosInstance.post<T>(url, body, {
         cancelToken: cancelToken.token,
         ...options,
@@ -240,7 +238,7 @@ export class HttpService {
   ): Promise<AxiosResponse<T>> => {
     try {
       const cancelToken = this.createCancelToken(`CUSTOM-POST-${url}`);
-      
+
       const response = await axios.post<T>(url, body, {
         cancelToken: cancelToken.token,
         ...options,
@@ -262,13 +260,13 @@ export class HttpService {
    * @return Promise
    */
   protected put = async <T = any>(
-    url: string, 
-    body?: object, 
+    url: string,
+    body?: object,
     options: AxiosRequestConfig = {}
   ): Promise<T> => {
     try {
       const cancelToken = this.createCancelToken(`PUT-${url}`);
-      
+
       const response = await this.axiosInstance.put<T>(url, body, {
         cancelToken: cancelToken.token,
         ...options,
@@ -290,13 +288,13 @@ export class HttpService {
    * @return Promise
    */
   protected patch = async <T = any>(
-    url: string, 
-    body?: object, 
+    url: string,
+    body?: object,
     options: AxiosRequestConfig = {}
   ): Promise<T> => {
     try {
       const cancelToken = this.createCancelToken(`PATCH-${url}`);
-      
+
       const response = await this.axiosInstance.patch<T>(url, body, {
         cancelToken: cancelToken.token,
         ...options,
@@ -322,7 +320,7 @@ export class HttpService {
   ): Promise<T> => {
     try {
       const cancelToken = this.createCancelToken(`DELETE-${url}`);
-      
+
       const response = await this.axiosInstance.delete<T>(url, {
         cancelToken: cancelToken.token,
         ...options,

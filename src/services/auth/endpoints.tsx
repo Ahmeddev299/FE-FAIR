@@ -8,7 +8,6 @@ class AuthBaseService extends HttpService {
    * User
    * @paramdata
    */
-  auth = (data: any): Promise<any> => this.get(this.prefix + ``, data);
   signUp = (data: any): Promise<any> =>
     this.post(this.prefix + `/sign_up`, data);
   signIn = (data: any): Promise<any> =>

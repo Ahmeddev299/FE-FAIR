@@ -1,4 +1,4 @@
-import { getDashboardStatsAsync } from "@/services/dashboard/asyncThunk";
+import { getDashboardStatsAsync, getloiDataAsync } from "@/services/dashboard/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 
 // Initial state
@@ -69,7 +69,24 @@ const dashboardSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = false;
       })
-  },
+
+         // Fetch Dashboard Data
+      .addCase(getloiDataAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.isSuccess = false;
+      })
+      .addCase(getloiDataAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.error = null;
+        
+        const  data  = action.payload;
+        console.log("data", action.payload
+        )
+        state.myLOIs = data?.my_loi || [];
+      })
+    }
 });
 
 
