@@ -12,7 +12,7 @@ export const submitLOIAsync = createAsyncThunk(
       const token: string = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
       const response = await loiBaseService.submitLOI(data);
-      
+
       // Additional check for API-level errors
       if (response.success === false && response.status === 400) {
         return rejectWithValue(response.message);
@@ -62,7 +62,7 @@ export const getLOIDetailsById = createAsyncThunk(
       HttpService.setToken(token);
 
       // Assuming your API accepts loiId as a query param
-const response = await loiBaseService.singledraftLOI(loiId);
+      const response = await loiBaseService.singledraftLOI(loiId);
 
       if (!response.success || response.status === 400) {
         return rejectWithValue(response.message);

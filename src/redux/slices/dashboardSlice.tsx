@@ -1,7 +1,7 @@
+// store/slices/dashboardSlice.ts (Fixed error handling)
 import { getDashboardStatsAsync, getloiDataAsync } from "@/services/dashboard/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 
-// Initial state
 const initialState = {
   // Data
   totalLease: 0,
@@ -20,7 +20,7 @@ const initialState = {
   isLoadingLeases: false,
   isLoadingLOIs: false,
   
-  // Error statesp
+  // Error states
   error: null,
   leaseError: null,
   loiError: null,
@@ -32,14 +32,19 @@ const initialState = {
   lastUpdated: null,
 };
 
-// Dashboard slice
 const dashboardSlice = createSlice({
   name: 'dashboard',
   initialState,
   reducers: {
-
+    clearErrors: (state) => {
+      state.error = null;
+      state.leaseError = null;
+      state.loiError = null;
     },
-
+    clearSuccess: (state) => {
+      state.isSuccess = false;
+    }
+  },
   extraReducers: (builder) => {
     builder
       // Fetch Dashboard Data
@@ -52,43 +57,45 @@ const dashboardSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.error = null;
+        state.lastUpdated = new Date().toISOString();
         
-        const  data  = action.payload;
-        console.log("data", action.payload
-        )
-        state.totalLease = data?.total_lease;
-        state.totalLOI = data?.total_loi;
+        const data = action.payload;
+        console.log("Dashboard data:", data);
+        
+        state.totalLease = data?.total_lease || 0;
+        state.totalLOI = data?.total_loi || 0;
         state.myLeases = data?.my_lease || [];
         state.myLOIs = data?.my_loi || [];
-        state.leasePage = data?.lease_page;
-        state.loiPage = data?.loi_page;
-        state.leaseLimit = data?.lease_limit;
-        state.loiLimit = data?.loi_limit;
+        state.leasePage = data?.lease_page || 1;
+        state.loiPage = data?.loi_page || 1;
+        state.leaseLimit = data?.lease_limit || 5;
+        state.loiLimit = data?.loi_limit || 5;
       })
       .addCase(getDashboardStatsAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.isSuccess = false;
+        state.error = action.payload as string || "Failed to fetch dashboard data";
       })
-
-         // Fetch Dashboard Data
+      
+      // Fetch LOI Data
       .addCase(getloiDataAsync.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-        state.isSuccess = false;
+        state.isLoadingLOIs = true;
+        state.loiError = null;
       })
       .addCase(getloiDataAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.error = null;
+        state.isLoadingLOIs = false;
+        state.loiError = null;
         
-        const  data  = action.payload;
-        console.log("data", action.payload
-        )
+        const data = action.payload;
+        console.log("LOI data:", data);
         state.myLOIs = data?.my_loi || [];
       })
-    }
+      .addCase(getloiDataAsync.rejected, (state, action) => {
+        state.isLoadingLOIs = false;
+        state.loiError = action.payload as string || "Failed to fetch LOI data";
+      });
+  }
 });
 
-
-
+export const { clearErrors, clearSuccess } = dashboardSlice.actions;
 export default dashboardSlice.reducer;

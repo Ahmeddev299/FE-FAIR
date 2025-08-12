@@ -1,13 +1,12 @@
+// services/dashboard/asyncThunk.ts (Updated with better error handling)
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { dashboardStatusService  } from "./endpoint";
+import { dashboardStatusService } from "./endpoint";
 import ls from "localstorage-slim";
 
-// Updated thunk that works with the new HTTP service
 export const getDashboardStatsAsync = createAsyncThunk(
   "dashboard/stats",
   async (_, { rejectWithValue }) => {
     try {
-      // No need to manually set token - it's handled by interceptors now
       const token = ls.get("access_token", { decrypt: true });
       
       if (!token) {
@@ -18,13 +17,10 @@ export const getDashboardStatsAsync = createAsyncThunk(
       
       console.log("Dashboard stats response:", response);
 
-      // The HTTP service now handles most error cases automatically
-      // But you can still add custom business logic validation here
       if (!response) {
         return rejectWithValue("No data received from server");
       }
 
-      // If your API returns a wrapper object with success/data properties
       if (response.success === false) {
         return rejectWithValue(response.message || "Request failed");
       }
@@ -33,7 +29,6 @@ export const getDashboardStatsAsync = createAsyncThunk(
     } catch (error: any) {
       console.error("Dashboard stats error:", error);
       
-      // The enhanced HTTP service provides better error information
       if (error.code === 'NETWORK_ERROR') {
         return rejectWithValue("Network error. Please check your connection.");
       }
@@ -65,7 +60,6 @@ export const getloiDataAsync = createAsyncThunk(
   "dashboard/alllois",
   async (_, { rejectWithValue }) => {
     try {
-      // No need to manually set token - it's handled by interceptors now
       const token = ls.get("access_token", { decrypt: true });
       
       if (!token) {
@@ -74,24 +68,20 @@ export const getloiDataAsync = createAsyncThunk(
 
       const response = await dashboardStatusService.getloiData();
       
-      console.log("Dashboard  all loi  response:", response);
+      console.log("Dashboard all loi response:", response);
 
-      // The HTTP service now handles most error cases automatically
-      // But you can still add custom business logic validation here
       if (!response) {
         return rejectWithValue("No data received from server");
       }
 
-      // If your API returns a wrapper object with success/data properties
       if (response.success === false) {
         return rejectWithValue(response.message || "Request failed");
       }
 
       return response.data || response;
     } catch (error: any) {
-      console.error("Dashboard stats error:", error);
+      console.error("Dashboard LOI error:", error);
       
-      // The enhanced HTTP service provides better error information
       if (error.code === 'NETWORK_ERROR') {
         return rejectWithValue("Network error. Please check your connection.");
       }
@@ -105,7 +95,7 @@ export const getloiDataAsync = createAsyncThunk(
       }
       
       if (error.status === 404) {
-        return rejectWithValue("Dashboard statistics not found.");
+        return rejectWithValue("LOI data not found.");
       }
       
       if (error.status >= 500) {
@@ -113,7 +103,7 @@ export const getloiDataAsync = createAsyncThunk(
       }
       
       return rejectWithValue(
-        error.message || "Failed to fetch dashboard statistics"
+        error.message || "Failed to fetch LOI data"
       );
     }
   }

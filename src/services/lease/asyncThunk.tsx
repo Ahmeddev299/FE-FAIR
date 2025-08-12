@@ -167,5 +167,26 @@ export const terminateLeaseAsync = createAsyncThunk(
       }
     }
   }
-
 )
+
+// in asyncThunk.ts or wherever you define thunks
+export const getLeaseDetailsById = createAsyncThunk(
+  "lease/fetchSingleDraft",
+  async (leaseId: string, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+
+      // Assuming your API accepts leaseId as a query param
+      const response = await leaseBaseService.getSingleLeaseDetail(leaseId);
+
+      if (!response.success || response.status === 400) {
+        return rejectWithValue(response.message);
+      }
+
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to fetch draft LOI");
+    }
+  }
+);

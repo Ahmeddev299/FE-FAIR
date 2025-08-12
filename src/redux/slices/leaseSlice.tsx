@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
 import Toast from "@/components/Toast";
-import { uploadLeaseAsync, getUserLeasesAsync ,getClauseDetailsAsync  } from "@/services/lease/asyncThunk";
+import { uploadLeaseAsync, getUserLeasesAsync ,getClauseDetailsAsync, getLeaseDetailsById  } from "@/services/lease/asyncThunk";
+import { getLOIDetailsById } from "@/services/loi/asyncThunk";
 
 export const leaseSlice = createSlice({
   name: "lease",
@@ -76,6 +77,19 @@ export const leaseSlice = createSlice({
       state.currentLease = action.payload;
     })
     .addCase(getClauseDetailsAsync.rejected, (state, action) => {
+      state.isLoading = false;
+      state.leaseError = action.payload as string;
+    });
+     builder
+    .addCase(getLeaseDetailsById.pending, (state) => {
+      state.isLoading = true;
+      state.leaseError = null;
+    })
+    .addCase(getLeaseDetailsById.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.currentLease = action.payload;
+    })
+    .addCase(getLeaseDetailsById.rejected, (state, action) => {
       state.isLoading = false;
       state.leaseError = action.payload as string;
     });

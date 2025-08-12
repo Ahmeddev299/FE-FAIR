@@ -21,7 +21,14 @@ class LeaseBaseService extends HttpService {
       `clause/read_single_clause/${encodeURIComponent(leaseId)}/${encodeURIComponent(clauseDocId)}`
     );
   }
+    getSingleLeaseDetail(leaseId: string): Promise<any> {
+      console.log("lease",leaseId)
+    return this.get(
+      `clause/get_lease/${leaseId}}`
+    );
+  }
 
+  // `/get_single_loi/${id}`
 
 }
 
