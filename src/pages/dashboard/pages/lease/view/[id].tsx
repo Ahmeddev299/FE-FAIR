@@ -4,9 +4,27 @@ import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { getLeaseDetailsById, getClauseDetailsAsync } from "@/services/lease/asyncThunk";
+import { getLeaseDetailsById } from "@/services/lease/asyncThunk";
 import { ArrowLeft } from "lucide-react";
-import { useParams } from "next/navigation";
+
+/* -------------------- helpers -------------------- */
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
+const buildUrl = (u?: string) => {
+  if (!u) return "";
+  if (/^https?:\/\//i.test(u)) return u;
+  return `${API_BASE}${u.startsWith("/") ? "" : "/"}${u}`;
+};
+const getFileType = (u?: string) => {
+  if (!u) return "other";
+  const ext = u.split("?")[0].split("#")[0].split(".").pop()?.toLowerCase();
+  if (ext === "pdf") return "pdf";
+  if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext || "")) return "image";
+  return "other";
+};
+const cleanId = (raw?: string | string[]) => {
+  const s = Array.isArray(raw) ? raw[0] : raw || "";
+  return s.trim().replace(/[{}]/g, ""); // strip stray braces
+};
 
 const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
   const s = (value || "").toLowerCase();
@@ -21,30 +39,77 @@ const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
   return <span className={map[s] || `${base} bg-gray-100 text-gray-800`}>{value || "Active"}</span>;
 };
 
+/* small inline viewer for a single file */
+const DocumentViewer: React.FC<{ url?: string }> = ({ url }) => {
+  const full = buildUrl(url);
+  if (!full) return null;
+  const kind = getFileType(full);
+
+  if (kind === "pdf") {
+    return (
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <a href={full} target="_blank" rel="noreferrer" className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+            Open PDF
+          </a>
+          <a href={full} download className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+            Download
+          </a>
+        </div>
+        <div className="mt-2 border rounded-lg overflow-hidden">
+          <iframe src={full} className="w-full" style={{ height: 600 }} title="Lease Document" />
+        </div>
+      </div>
+    );
+  }
+
+  if (kind === "image") {
+    return (
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <a href={full} target="_blank" rel="noreferrer" className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+            Open Image
+          </a>
+          <a href={full} download className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+            Download
+          </a>
+        </div>
+        <img src={full} alt="Lease Attachment" className="rounded-lg border max-h-[600px] object-contain" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-2">
+      <a href={full} target="_blank" rel="noreferrer" className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+        Open File
+      </a>
+      <a href={full} download className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+        Download
+      </a>
+    </div>
+  );
+};
+
+/* -------------------- page -------------------- */
 export default function LeaseDetailPage() {
   const router = useRouter();
- const params = useParams();
- const id = params?.id as string;
-console.log("id",id)
+  const id = useMemo(() => cleanId(router.query.id), [router.query.id]);
+
   const dispatch = useAppDispatch();
-  const { isLoading, leaseError, currentLease, currentLeaseClauses } = useAppSelector((s: any) => s.lease);
+  const { isLoading, leaseError, currentLease } = useAppSelector((s: any) => s.lease);
 
   useEffect(() => {
-    if (!id) return;
-    dispatch(getLeaseDetailsById(id));
-    // fetch clauses too (comment out if your single lease already includes clauses)
+    if (id) dispatch(getLeaseDetailsById(id));
   }, [dispatch, id]);
 
   const title = currentLease?.lease_title || currentLease?.title || "Untitled Lease";
   const address = currentLease?.property_address || currentLease?.propertyAddress || "—";
-  const updated = currentLease?.updatedAt || currentLease?.last_updated_date;
-
-  // normalize clauses no matter how they come
-  const clauses: string[] = Array.isArray(currentLeaseClauses)
-    ? currentLeaseClauses.map((c: any) => (typeof c === "string" ? c : c?.text || JSON.stringify(c)))
-    : Array.isArray(currentLease?.clauses)
-    ? currentLease?.clauses
-    : Object.keys(currentLease?.clauses || {}).map((k) => `${k}: ${(currentLease?.clauses || {})[k]}`);
+  const updated = currentLease?.last_updated_date || currentLease?.updatedAt;
+  const docUrl =
+    currentLease?.url ||
+    currentLease?.document_url ||
+    (Array.isArray(currentLease?.documents) && currentLease.documents[0]?.url);
 
   return (
     <DashboardLayout>
@@ -67,6 +132,7 @@ console.log("id",id)
 
         {!isLoading && !leaseError && currentLease && (
           <div className="bg-white border rounded-xl p-6 space-y-6">
+            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{title}</h1>
@@ -75,14 +141,19 @@ console.log("id",id)
               <StatusPill value={currentLease?.status} />
             </div>
 
+            {/* Meta */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Start Date</div>
-                <div className="text-sm">{currentLease?.startDate ? new Date(currentLease.startDate).toLocaleDateString() : "—"}</div>
+                <div className="text-sm">
+                  {currentLease?.startDate ? new Date(currentLease.startDate).toLocaleDateString() : "—"}
+                </div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">End Date</div>
-                <div className="text-sm">{currentLease?.endDate ? new Date(currentLease.endDate).toLocaleDateString() : "—"}</div>
+                <div className="text-sm">
+                  {currentLease?.endDate ? new Date(currentLease.endDate).toLocaleDateString() : "—"}
+                </div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Last Updated</div>
@@ -90,10 +161,13 @@ console.log("id",id)
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Status</div>
-                <div className="mt-1"><StatusPill value={currentLease?.status} /></div>
+                <div className="mt-1">
+                  <StatusPill value={currentLease?.status} />
+                </div>
               </div>
             </div>
 
+            {/* Notes */}
             {currentLease?.notes && (
               <div>
                 <div className="text-sm font-medium mb-2">Notes</div>
@@ -101,12 +175,11 @@ console.log("id",id)
               </div>
             )}
 
-            {clauses?.length > 0 && (
+            {/* Document */}
+            {docUrl && (
               <div>
-                <div className="text-sm font-medium mb-2">Clauses</div>
-                <ul className="list-disc pl-5 text-sm space-y-1">
-                  {clauses.map((c, i) => <li key={i}>{c}</li>)}
-                </ul>
+                <div className="text-sm font-medium mb-2">Document</div>
+                <DocumentViewer url={docUrl} />
               </div>
             )}
           </div>

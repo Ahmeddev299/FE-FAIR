@@ -7,28 +7,28 @@ interface ConfigType {
 }
 
 const local: ConfigType = {
-  API_ENDPOINT: "https://5df74e551a16.ngrok-free.app",
+  API_ENDPOINT: "https://e2442b887ddd.ngrok-free.app",
   API_TIMEOUT: 10000,
   MAX_RETRIES: 3,
   DEBUG: true,
 };
 
 const dev: ConfigType = {
-  API_ENDPOINT: "https://5df74e551a16.ngrok-free.app",
+  API_ENDPOINT: "https://e2442b887ddd.ngrok-free.app",
   API_TIMEOUT: 15000,
   MAX_RETRIES: 2,
   DEBUG: true,
 };
 
 const stag: ConfigType = {
-  API_ENDPOINT: "https://5df74e551a16.ngrok-free.app", // Different from prod
+  API_ENDPOINT: "https://e2442b887ddd.ngrok-free.app", // Different from prod
   API_TIMEOUT: 20000,
   MAX_RETRIES: 2,
   DEBUG: false,
 };
 
 const prod: ConfigType = {
-  API_ENDPOINT: "https://5df74e551a16.ngrok-free.app", // Production URL
+  API_ENDPOINT: "https://e2442b887ddd.ngrok-free.app", // Production URL
   API_TIMEOUT: 30000,
   MAX_RETRIES: 1,
   DEBUG: false,

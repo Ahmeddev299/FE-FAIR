@@ -202,7 +202,7 @@ export const loiSlice = createSlice({
         state.loiError = action.payload;
         Toast.fire({ icon: "error", title: action.payload });
       })
-      
+
       .addCase(getDraftLOIsAsync.pending, (state) => {
         state.isLoading = true;
       })
@@ -220,11 +220,11 @@ export const loiSlice = createSlice({
       .addCase(getLOIDetailsById.fulfilled, (state, action) => {
         state.isLoading = false;
         state.currentLOI = action.payload; // ✅ Prefill redux state with fetched LOI
+        console.log("action.payload", action.payload)
       })
       .addCase(getLOIDetailsById.rejected, (state, action) => {
         state.isLoading = false;
-        state.loiError = action.payload as string;
-        Toast.fire({ icon: "error", title: action.payload as string });
+
       });
 
   },

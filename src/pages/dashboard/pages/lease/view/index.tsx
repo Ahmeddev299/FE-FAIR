@@ -137,200 +137,201 @@ export default function LeaseListPage() {
   };
   return (
     <DashboardLayout>
-      {isLoading && <LoadingOverlay isVisible message="Loading leases..." size="large" />}
+      {isLoading ? (<LoadingOverlay isVisible message="Loading leases..." size="large" />) : (
 
-      <div className="p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Leases</h1>
-            <p className="text-sm text-gray-500">Search, filter, and sort your leases.</p>
+        <div className="p-4 sm:p-6">
+          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Leases</h1>
+              <p className="text-sm text-gray-500">Search, filter, and sort your leases.</p>
+            </div>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="mb-4 bg-white border rounded-xl p-3 sm:p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  value={q}
-                  onChange={(e) => { setQ(e.target.value); setPage(1); }}
-                  placeholder="Search by lease title or address..."
-                  className="w-full pl-9 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {q && (
-                  <button onClick={() => { setQ(""); setPage(1); }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    <X className="w-4 h-4" />
+          {/* Filters */}
+          <div className="mb-4 bg-white border rounded-xl p-3 sm:p-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={q}
+                    onChange={(e) => { setQ(e.target.value); setPage(1); }}
+                    placeholder="Search by lease title or address..."
+                    className="w-full pl-9 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {q && (
+                    <button onClick={() => { setQ(""); setPage(1); }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    value={status}
+                    onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+                    className="w-full pl-9 pr-3 py-2 border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Available">Available</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Active">Active</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Terminated">Terminated</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-500">Rows</label>
+                <select
+                  value={limit}
+                  onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+                  className="border rounded-lg px-2 py-2"
+                >
+                  {[10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
+                {(q || status || sortBy !== "updatedAt" || sortDir !== "desc") && (
+                  <button onClick={clearFilters} className="ml-auto text-sm text-gray-600 hover:underline">
+                    Reset
                   </button>
                 )}
               </div>
             </div>
-
-            <div>
-              <div className="relative">
-                <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <select
-                  value={status}
-                  onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-                  className="w-full pl-9 pr-3 py-2 border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Status</option>
-                  <option value="Available">Available</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Active">Active</option>
-                  <option value="In Review">In Review</option>
-                  <option value="Terminated">Terminated</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-500">Rows</label>
-              <select
-                value={limit}
-                onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
-                className="border rounded-lg px-2 py-2"
-              >
-                {[10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-              </select>
-              {(q || status || sortBy !== "updatedAt" || sortDir !== "desc") && (
-                <button onClick={clearFilters} className="ml-auto text-sm text-gray-600 hover:underline">
-                  Reset
-                </button>
-              )}
-            </div>
           </div>
-        </div>
 
-        {/* Error */}
-        {leaseError && (
-          <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-            {String(leaseError)}
-          </div>
-        )}
+          {/* Error */}
+          {leaseError && (
+            <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+              {String(leaseError)}
+            </div>
+          )}
 
-        {/* Table */}
-        <div className="bg-white border rounded-xl">
-          <div className="hidden lg:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead>
-                <tr className="text-left text-xs font-semibold text-gray-500 uppercase">
-                  <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("lease_title")}>
-                    <div className="inline-flex items-center gap-1">
-                      Lease Title <SortIcon active={sortBy === "lease_title"} dir={sortDir} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("property_address")}>
-                    <div className="inline-flex items-center gap-1">
-                      Property Address <SortIcon active={sortBy === "property_address"} dir={sortDir} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("status")}>
-                    <div className="inline-flex items-center gap-1">
-                      Status <SortIcon active={sortBy === "status"} dir={sortDir} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("updatedAt")}>
-                    <div className="inline-flex items-center gap-1">
-                      Last Updated <SortIcon active={sortBy === "updatedAt"} dir={sortDir} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={`sk-${i}`}>
-                    {Array.from({ length: 5 }).map((__, j) => (
-                      <td key={j} className="px-5 py-4">
-                        <div className={`h-${j === 4 ? 8 : 4} ${j === 4 ? 'w-20' : ''} bg-gray-100 rounded animate-pulse`} />
-                      </td>
-                    ))}
+          {/* Table */}
+          <div className="bg-white border rounded-xl">
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead>
+                  <tr className="text-left text-xs font-semibold text-gray-500 uppercase">
+                    <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("lease_title")}>
+                      <div className="inline-flex items-center gap-1">
+                        Lease Title <SortIcon active={sortBy === "lease_title"} dir={sortDir} />
+                      </div>
+                    </th>
+                    <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("property_address")}>
+                      <div className="inline-flex items-center gap-1">
+                        Property Address <SortIcon active={sortBy === "property_address"} dir={sortDir} />
+                      </div>
+                    </th>
+                    <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("status")}>
+                      <div className="inline-flex items-center gap-1">
+                        Status <SortIcon active={sortBy === "status"} dir={sortDir} />
+                      </div>
+                    </th>
+                    <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("updatedAt")}>
+                      <div className="inline-flex items-center gap-1">
+                        Last Updated <SortIcon active={sortBy === "updatedAt"} dir={sortDir} />
+                      </div>
+                    </th>
+                    <th className="px-5 py-3" />
                   </tr>
-                ))}
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={`sk-${i}`}>
+                      {Array.from({ length: 5 }).map((__, j) => (
+                        <td key={j} className="px-5 py-4">
+                          <div className={`h-${j === 4 ? 8 : 4} ${j === 4 ? 'w-20' : ''} bg-gray-100 rounded animate-pulse`} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
 
-                {!isLoading && pageRows.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-500">
-                      No records found
-                    </td>
-                  </tr>
-                )}
-
-                {!isLoading && pageRows.map((row: any) => {
-                  const id = row._id || row.lease_id;
-                  const title = row.lease_title || row.title;
-                  const addr = row.property_addess || row.propertyAddress;
-                  const updated = row.last_uppdated_date || row.endDate || row.startDate;
-                  return (
-                    <tr key={id} className="hover:bg-gray-50">
-                      <td className="px-5 py-4 text-sm font-medium text-gray-900">{truncateWords(title, 4)}</td>
-                      <td className="px-5 py-4 text-sm text-gray-600">{truncateWords(addr, 5)}</td>
-                      <td className="px-5 py-4"><StatusPill value={row.status} /></td>
-                      <td className="px-5 py-4 text-sm text-gray-600">
-                        {updated ? new Date(updated).toLocaleString() : "—"}
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <button onClick={() => openDetail(id)} className="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50">
-                          See details
-                        </button>
+                  {!isLoading && pageRows.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-500">
+                        <LoadingOverlay isVisible message="Loading leases..." />
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  )}
 
-          {/* Mobile cards */}
-          <div className="lg:hidden p-3 space-y-3">
-            {!isLoading && pageRows.length === 0 && (
-              <div className="text-center text-sm text-gray-500 py-6">No records found</div>
-            )}
-            {isLoading && Array.from({ length: 5 }).map((_, i) => (
-              <div key={`msk-${i}`} className="p-4 border rounded-lg">
-                <div className="h-4 bg-gray-100 rounded animate-pulse mb-2" />
-                <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
-              </div>
-            ))}
-            {!isLoading && pageRows.map((row: any) => {
-              const id = row.lease_id ?? row._id ?? row.id;
-              console.log("id", id)
-              const title = row.lease_title || row.title;
-              const addr = row.property_address || row.propertyAddress;
-              const updated = row.updatedAt || row.endDate || row.startDate;
-              return (
-                <div key={id} className="p-4 border rounded-lg">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="font-medium text-gray-900">{truncateWords(title, 6)}</div>
-                    <StatusPill value={row.status} />
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">{truncateWords(addr, 10)}</div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {updated ? new Date(updated).toLocaleString() : "—"}
-                  </div>
-                  <div className="mt-3">
-                    <button onClick={() => openDetail(id)} className="w-full px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
-                      See details
-                    </button>
-                  </div>
+                  {!isLoading && pageRows.map((row: any) => {
+                    const id = row._id || row.lease_id;
+                    const title = row.lease_title || row.title;
+                    const addr = row.property_addess || row.propertyAddress;
+                    const updated = row.last_uppdated_date || row.endDate || row.startDate;
+                    return (
+                      <tr key={id} className="hover:bg-gray-50">
+                        <td className="px-5 py-4 text-sm font-medium text-gray-900">{truncateWords(title, 4)}</td>
+                        <td className="px-5 py-4 text-sm text-gray-600">{truncateWords(addr, 5)}</td>
+                        <td className="px-5 py-4"><StatusPill value={row.status} /></td>
+                        <td className="px-5 py-4 text-sm text-gray-600">
+                          {updated ? new Date(updated).toLocaleString() : "—"}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <button onClick={() => openDetail(id)} className="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50">
+                            See details
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="lg:hidden p-3 space-y-3">
+              {!isLoading && pageRows.length === 0 && (
+                <div className="text-center text-sm text-gray-500 py-6">No records found</div>
+              )}
+              {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                <div key={`msk-${i}`} className="p-4 border rounded-lg">
+                  <div className="h-4 bg-gray-100 rounded animate-pulse mb-2" />
+                  <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
                 </div>
-              );
-            })}
-          </div>
+              ))}
+              {!isLoading && pageRows.map((row: any) => {
+                const id = row.lease_id ?? row._id ?? row.id;
+                console.log("id", id)
+                const title = row.lease_title || row.title;
+                const addr = row.property_address || row.propertyAddress;
+                const updated = row.updatedAt || row.endDate || row.startDate;
+                return (
+                  <div key={id} className="p-4 border rounded-lg">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="font-medium text-gray-900">{truncateWords(title, 6)}</div>
+                      <StatusPill value={row.status} />
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">{truncateWords(addr, 10)}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {updated ? new Date(updated).toLocaleString() : "—"}
+                    </div>
+                    <div className="mt-3">
+                      <button onClick={() => openDetail(id)} className="w-full px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+                        See details
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-          {/* Pager */}
-          <div className="px-4 py-3 border-t flex items-center justify-between">
-            <div className="text-sm text-gray-500">Page {page} of {totalPages} • {total} items</div>
-            <div className="flex gap-2">
-              <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1.5 border rounded disabled:opacity-50">Prev</button>
-              <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="px-3 py-1.5 border rounded disabled:opacity-50">Next</button>
+            {/* Pager */}
+            <div className="px-4 py-3 border-t flex items-center justify-between">
+              <div className="text-sm text-gray-500">Page {page} of {totalPages} • {total} items</div>
+              <div className="flex gap-2">
+                <button disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="px-3 py-1.5 border rounded disabled:opacity-50">Prev</button>
+                <button disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} className="px-3 py-1.5 border rounded disabled:opacity-50">Next</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </DashboardLayout>
   );
 }

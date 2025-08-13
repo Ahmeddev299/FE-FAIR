@@ -4,6 +4,7 @@ import { loiBaseService } from "./enpoints";
 import type { LOIApiPayload } from "@/types/loi"; // adjust path accordingly
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
+import Toast from "@/components/Toast";
 
 export const submitLOIAsync = createAsyncThunk(
   "/loi/submit",
@@ -61,8 +62,11 @@ export const getLOIDetailsById = createAsyncThunk(
       const token = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
 
-      // Assuming your API accepts loiId as a query param
       const response = await loiBaseService.singledraftLOI(loiId);
+
+      if (response.success || response.status === 200) {
+        Toast.fire({ icon: "success", title: response.message as string });
+      }
 
       if (!response.success || response.status === 400) {
         return rejectWithValue(response.message);
@@ -70,7 +74,7 @@ export const getLOIDetailsById = createAsyncThunk(
 
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.message || "Failed to fetch draft LOI");
+      return rejectWithValue(error?.response);
     }
   }
 );

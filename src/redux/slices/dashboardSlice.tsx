@@ -79,19 +79,19 @@ const dashboardSlice = createSlice({
       
       // Fetch LOI Data
       .addCase(getloiDataAsync.pending, (state) => {
-        state.isLoadingLOIs = true;
+        state.isLoading = true;
         state.loiError = null;
       })
       .addCase(getloiDataAsync.fulfilled, (state, action) => {
-        state.isLoadingLOIs = false;
+        state.isLoading = false;
         state.loiError = null;
         
-        const data = action.payload;
+        const data = action.payload
         console.log("LOI data:", data);
         state.myLOIs = data?.my_loi || [];
       })
       .addCase(getloiDataAsync.rejected, (state, action) => {
-        state.isLoadingLOIs = false;
+        state.isLoading = false;
         state.loiError = action.payload as string || "Failed to fetch LOI data";
       });
   }

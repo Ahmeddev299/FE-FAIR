@@ -1,60 +1,79 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
-import { ArrowLeft, ExternalLink, Download, Edit3 } from "lucide-react";
+import { ArrowLeft, Edit3 } from "lucide-react";
 import { getLOIDetailsById } from "@/services/loi/asyncThunk";
-import { useAppDispatch } from "@/hooks/hooks";
-import { useParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 
-type LoiDetail = {
-  id?: string;
-  _id?: string;
-  title?: string;
-  propertyAddress?: string;
-  status?: string;
-  tenantName?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  terms?: string;
-  documents?: { id?: string; _id?: string; name?: string; url?: string }[];
-  // add any other fields your API returns
+type ShapedLoi = {
+  id: string;
+  title: string;
+  address: string;
+  status: string;            // from submit_status
+  created: string | null;    // ISO
+  updated: string | null;    // ISO
+  userName: string;
+  party: {
+    landlord_name?: string;
+    landlord_email?: string;
+    tenant_name?: string;
+    tenant_email?: string;
+  };
+  leaseTerms?: any;
+  additionalDetails?: any;
+  propertyDetails?: any;
 };
 
 const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
   const s = (value || "").toLowerCase();
   const base = "inline-flex px-2 py-1 text-xs font-medium rounded-full";
   const map: Record<string, string> = {
+    draft: `${base} bg-gray-100 text-gray-800`,
     available: `${base} bg-green-100 text-green-800`,
     pending: `${base} bg-yellow-100 text-yellow-800`,
     active: `${base} bg-blue-100 text-blue-800`,
     "in review": `${base} bg-purple-100 text-purple-800`,
     terminated: `${base} bg-red-100 text-red-800`,
   };
-  return <span className={map[s] || `${base} bg-gray-100 text-gray-800`}>{value || "Active"}</span>;
+  return <span className={map[s] || `${base} bg-gray-100 text-gray-800`}>{value || "—"}</span>;
+};
+
+const shapeLoi = (raw: any): ShapedLoi | null => {
+  if (!raw) return null;
+  return {
+    id: String(raw.id ?? raw._id ?? "").trim(),
+    title: raw.title ?? "",
+    address: raw.propertyAddress ?? raw.property_address ?? "",
+    status: raw.submit_status ?? raw.status ?? "",
+    created: raw.created_at ?? raw.createdAt ?? null,
+    updated: raw.updated_at ?? raw.updatedAt ?? null,
+    userName: raw.user_name ?? "",
+    party: raw.partyInfo ?? {},
+    leaseTerms: raw.leaseTerms,
+    additionalDetails: raw.additionalDetails,
+    propertyDetails: raw.propertyDetails,
+  };
 };
 
 export default function SingleLoiPage() {
   const router = useRouter();
-
-//   const id = useMemo(() => (Array.isArray(rawId) ? rawId[0] : rawId), [rawId]);
   const dispatch = useAppDispatch();
-const params = useParams();
-const loiId = params?.id as string;
-console.log("loiId",)
-  const [data, setData] = useState<LoiDetail | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [err, setErr] = useState<string | null>(null);
+  const { id: queryId } = router.query;
 
+  // redux state (adjust slice name if different)
+  const { currentLOI, isLoading, loiError } = useAppSelector((s: any) => s.loi);
+  const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
+
+  // fetch on mount/id change
   useEffect(() => {
-    dispatch(getLOIDetailsById(loiId))
-  }, [loiId]);
-
-  const downloadUrl = data?.documents?.[0]?.url; // customize if you have a specific field
+    const id = Array.isArray(queryId) ? queryId[0] : queryId;
+    if (id) dispatch(getLOIDetailsById(String(id)));
+  }, [dispatch, queryId]);
 
   return (
     <DashboardLayout>
-      {loading && <LoadingOverlay isVisible message="Loading LOI..." size="large" />}
+      {isLoading && <LoadingOverlay isVisible message="Loading LOI..." size="large" />}
 
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex items-center gap-2">
@@ -67,120 +86,148 @@ console.log("loiId",)
           </button>
         </div>
 
-        {/* Error */}
-        {err && (
+        {/* {loiError && (
           <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3 mb-4">
-            {err}
+            {String(loiError)}
           </div>
         )}
 
-        {/* Empty */}
-        {!loading && !err && !data && (
+        {!isLoading && !loiError && !loi && (
           <div className="text-sm text-gray-600 bg-white border rounded-lg p-6">
             LOI not found.
           </div>
-        )}
+        )} */}
 
-        {/* Content */}
-        {!loading && !err && data && (
+        {!isLoading && !loiError && loi && (
           <div className="bg-white border rounded-xl p-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-                  {data.title || "Untitled LOI"}
+                  {loi.title || "Untitled LOI"}
                 </h1>
                 <div className="mt-1 text-sm text-gray-500">
-                  {data.propertyAddress || "—"}
+                  {loi.address || "—"}
                 </div>
+                {loi.userName && (
+                  <div className="mt-1 text-xs text-gray-400">Owner: {loi.userName}</div>
+                )}
               </div>
               <div className="flex items-center gap-2">
-                <StatusPill value={data.status} />
+                <StatusPill value={loi.status} />
                 <button
-                  onClick={() => router.push(`/dashboard/pages/loi/edit/${data._id || data.id}`)}
+                  onClick={() => router.push(`/dashboard/pages/loi/edit/${loi.id}`)}
                   className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
                   title="Edit LOI"
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit
                 </button>
-                {downloadUrl && (
-                  <a
-                    href={downloadUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
-                    title="Open document"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Open Doc
-                  </a>
-                )}
-                {downloadUrl && (
-                  <a
-                    href={downloadUrl}
-                    download
-                    className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
-                    title="Download document"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download
-                  </a>
-                )}
               </div>
             </div>
 
             {/* Meta grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-3 rounded-lg bg-gray-50">
+                <div className="text-xs text-gray-500">Landlord</div>
+                <div className="text-sm text-gray-900">
+                  {loi.party?.landlord_name || "—"}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {loi.party?.landlord_email || ""}
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Tenant</div>
-                <div className="text-sm text-gray-900">{data.tenantName || "—"}</div>
+                <div className="text-sm text-gray-900">
+                  {loi.party?.tenant_name || "—"}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {loi.party?.tenant_email || ""}
+                </div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Created</div>
                 <div className="text-sm text-gray-900">
-                  {data.createdAt ? new Date(data.createdAt).toLocaleString() : "—"}
+                  {loi.created ? new Date(loi.created).toLocaleString() : "—"}
                 </div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Last Updated</div>
                 <div className="text-sm text-gray-900">
-                  {data.updatedAt ? new Date(data.updatedAt).toLocaleString() : "—"}
+                  {loi.updated ? new Date(loi.updated).toLocaleString() : "—"}
                 </div>
-              </div>
-              <div className="p-3 rounded-lg bg-gray-50">
-                <div className="text-xs text-gray-500">Status</div>
-                <div className="mt-1"><StatusPill value={data.status} /></div>
               </div>
             </div>
 
-            {/* Terms / Notes */}
-            {data.terms && (
+            {/* Lease Terms */}
+            {loi.leaseTerms && (
               <div>
-                <div className="text-sm font-medium text-gray-900 mb-2">Key Terms</div>
-                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-800 whitespace-pre-wrap">
-                  {data.terms}
+                <div className="text-sm font-medium text-gray-900 mb-2">Lease Terms</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Lease Type</div>
+                    <div>{loi.leaseTerms?.leaseType || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Duration</div>
+                    <div>{loi.leaseTerms?.leaseDuration || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Start Date</div>
+                    <div>{loi.leaseTerms?.startDate ? new Date(loi.leaseTerms.startDate).toLocaleDateString() : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Monthly Rent</div>
+                    <div>{loi.leaseTerms?.monthlyRent || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Security Deposit</div>
+                    <div>{loi.leaseTerms?.securityDeposit || "—"}</div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Documents */}
-            {Array.isArray(data.documents) && data.documents.length > 0 && (
+            {/* Property Details */}
+            {loi.propertyDetails && (
               <div>
-                <div className="text-sm font-medium text-gray-900 mb-2">Documents</div>
-                <ul className="list-disc pl-5 text-sm text-blue-700 space-y-1">
-                  {data.documents.map((doc) => (
-                    <li key={doc._id || doc.id}>
-                      {doc.url ? (
-                        <a href={doc.url} target="_blank" rel="noreferrer" className="hover:underline">
-                          {doc.name || "Document"}
-                        </a>
-                      ) : (
-                        <span className="text-gray-500">{doc.name || "Document"}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="text-sm font-medium text-gray-900 mb-2">Property Details</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Type</div>
+                    <div>{loi.propertyDetails?.propertyType || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Size</div>
+                    <div>{loi.propertyDetails?.propertySize || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Intended Use</div>
+                    <div>{loi.propertyDetails?.intendedUse || "—"}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Additional Details */}
+            {loi.additionalDetails && (
+              <div>
+                <div className="text-sm font-medium text-gray-900 mb-2">Additional Details</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Renewal Option</div>
+                    <div>{loi.additionalDetails?.renewalOption ? "Yes" : "No"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Tenant Improvement</div>
+                    <div>{loi.additionalDetails?.tenantImprovement || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Special Conditions</div>
+                    <div>{loi.additionalDetails?.specialConditions || "—"}</div>
+                  </div>
+                </div>
               </div>
             )}
           </div>

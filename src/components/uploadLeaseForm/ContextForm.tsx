@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormikContext } from 'formik';
 import { CustomField } from './CustomFeilds';
 import { getloiDataAsync } from '@/services/dashboard/asyncThunk';
+import { LoadingOverlay } from '../loaders/overlayloader';
 
 type LOI = {
   id: string;
@@ -76,7 +77,7 @@ export const ContextForm: React.FC = () => {
           value={values.leaseId}
         >
           <option value="">-- Select a Lease --</option>
-          {isLoading && <option disabled>Loading...</option>}
+          {isLoading && <LoadingOverlay isVisible={true}/>}
           {myLOIs?.map((loi: LOI) => (
             console.log("loi", loi),
             <option key={loi.id} value={loi.id}>

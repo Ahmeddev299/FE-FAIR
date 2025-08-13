@@ -24,7 +24,7 @@ class LeaseBaseService extends HttpService {
     getSingleLeaseDetail(leaseId: string): Promise<any> {
       console.log("lease",leaseId)
     return this.get(
-      `clause/get_lease/${leaseId}}`
+      `clause/get_lease/${leaseId}`
     );
   }
 

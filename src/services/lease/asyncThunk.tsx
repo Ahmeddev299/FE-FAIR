@@ -4,6 +4,7 @@ import { leaseBaseService } from "./endpoint";
 import type { LOIApiPayload } from "@/types/loi"; // adjust path accordingly
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
+import Toast from "@/components/Toast";
 
 // types (optional but nice)
 
@@ -70,6 +71,9 @@ export const getUserLeasesAsync = createAsyncThunk(
       console.log("async runnig"),
         HttpService.setToken(token);
       const response = await leaseBaseService.userleasedetails(); // API call
+       if (response?.success || response?.status === 200) {
+        Toast.fire({ icon: "success", title: response.message as string });
+      }
       console.log("response", response)
       if (!response.success || response.status === 400) {
         return rejectWithValue(response.message);
@@ -82,36 +86,6 @@ export const getUserLeasesAsync = createAsyncThunk(
   }
 );
 
-// // in asyncThunk.ts or wherever you define thunks
-// export const getClauseDetailsAsync = createAsyncThunk(
-//   'user/clauses',
-//   async ({ leaseId, clauseDocId }, { rejectWithValue }) => {
-//     try {
-
-
-//       // ── EITHER: path params ─────────────────────────────────────────
-//     const res = await leaseBaseService.getclausedetails(leaseId, clauseDocId);
-//                 console.log("async runnig")
-
-//       // If your HttpService.get already returns response.data, res is the payload.
-//       const data = (res as any).data ?? res;
-//       console.log("res",res)
-
-//       if (data?.success === false || data?.status === 400) {
-//         return rejectWithValue(data?.message || 'Request failed');
-//       }
-//       // If the API wraps it as {status, message, success, data: {...}}
-//       return (data.data ?? data) as GetClauseDetailsResponse;
-//     } catch (err: any) {
-//       return rejectWithValue(
-//         err?.response?.data?.message || err?.message || 'Failed to fetch clauses'
-//       );
-//     }
-//   }
-// );
-
-// in asyncThunk.ts or wherever you define thunks
-// asyncThunk.ts
 export const getClauseDetailsAsync = createAsyncThunk(
   'lease/getClauseDetails',
   async (
@@ -186,7 +160,7 @@ export const getLeaseDetailsById = createAsyncThunk(
 
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.message || "Failed to fetch draft LOI");
+      return rejectWithValue(error?.response?.data?.message);
     }
   }
 );
