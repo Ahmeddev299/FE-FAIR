@@ -86,20 +86,8 @@ export default function SingleLoiPage() {
           </button>
         </div>
 
-        {/* {loiError && (
-          <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3 mb-4">
-            {String(loiError)}
-          </div>
-        )}
-
-        {!isLoading && !loiError && !loi && (
-          <div className="text-sm text-gray-600 bg-white border rounded-lg p-6">
-            LOI not found.
-          </div>
-        )} */}
-
         {!isLoading && !loiError && loi && (
-          <div className="bg-white border rounded-xl p-6 space-y-6">
+          <div className="bg-white  rounded-xl p-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>

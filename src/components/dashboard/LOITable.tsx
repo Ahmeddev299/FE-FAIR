@@ -53,7 +53,7 @@ export const LOITable: React.FC<LOITableProps> = ({
   const view = (row: LoiItem) => {
     const id = row._id || row.id;
     if (!id) return;
-    router.push(`/dashboard/lois/${id}`);
+    router.push(`/dashboard/pages/loi/view/${id}`);
   };
 
   return (

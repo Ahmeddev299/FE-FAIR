@@ -131,7 +131,7 @@ export default function LeaseDetailPage() {
         )}
 
         {!isLoading && !leaseError && currentLease && (
-          <div className="bg-white border rounded-xl p-6 space-y-6">
+          <div className="bg-white rounded-xl p-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>

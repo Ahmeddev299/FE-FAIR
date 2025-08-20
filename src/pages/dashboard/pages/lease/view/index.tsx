@@ -148,7 +148,7 @@ export default function LeaseListPage() {
           </div>
 
           {/* Filters */}
-          <div className="mb-4 bg-white border rounded-xl p-3 sm:p-4">
+          <div className="mb-4 bg-white rounded  p-3 sm:p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="md:col-span-2">
                 <div className="relative">
@@ -212,7 +212,7 @@ export default function LeaseListPage() {
           )}
 
           {/* Table */}
-          <div className="bg-white border rounded-xl">
+          <div className="bg-white rounded">
             <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
                 <thead>

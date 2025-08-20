@@ -47,7 +47,7 @@ function MainPage() {
                                     lois={myLOIs}
                                     isLoading={isLoading || isLoadingLOIs}
                                     error={loiError as any}
-                                    onViewAll={() => router.push("/dashboard/pages/loi/view")}
+                                    onViewAll={() => router.push(`/dashboard/pages/loi/view`)}
 
                                     onAddNew={handleStartNewLOI}
                                     onClearError={() => dispatch(clearErrors())}

@@ -148,7 +148,7 @@ export default function LoiListPage() {
           </div>
 
           {/* Filters */}
-          <div className="mb-4 bg-white border rounded-xl p-3 sm:p-4">
+          <div className="mb-4 bg-white  rounded p-3 sm:p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {/* Search */}
               <div className="md:col-span-2">
@@ -210,7 +210,7 @@ export default function LoiListPage() {
           </div>
 
           {/* Table card */}
-          <div className="bg-white border rounded-xl">
+          <div className="bg-white  rounded">
             {/* Desktop table */}
             <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
