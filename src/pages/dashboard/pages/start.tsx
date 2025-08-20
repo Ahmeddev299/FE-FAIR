@@ -6,10 +6,8 @@ import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
 import Image from 'next/image';
 import { formatDate } from '@/utils/dateFormatter';
-import LoiDetailsModal from '@/components/models/loiDetailsModel';
 import { Letter, LOIStatus } from '@/types/loi';
 import { LoadingOverlay } from '@/components/loaders/overlayloader';
-
 
 export default function LetterOfIntentDashboard() {
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
@@ -41,12 +39,11 @@ export default function LetterOfIntentDashboard() {
     router.push(`/dashboard/pages/loi/view/${id}`);
   };
 
-
   return (
     <DashboardLayout>
       {isLoading ? (<LoadingOverlay isVisible />) : (
         <div className="min-h-screen">
-          <div className="max-w-9xl mx-auto px-2 sm:px-6 lg:px-0 py-8">
+          <div className="max-w-9xl mx-auto px-2 sm:px-6 lg:px-p0 py-8">
             {/* Header */}
             <div className="bg-white p-4 rounded-lg shadow-sm mb-8">
               <h1 className="text-3xl lg:w-[1086px] font-bold text-[24px] text-gray-900 mb-2">Start a New Letter of Intent</h1>

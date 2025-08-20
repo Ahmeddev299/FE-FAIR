@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle, X, Loader2, Wifi, WifiOff } from 'lucide-react';
+import React from 'react';
 
 // Loading Overlay Component
 export const LoadingOverlay = ({ isVisible, message = "Loading...", size = "default" }) => {

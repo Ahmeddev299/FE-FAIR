@@ -20,6 +20,7 @@ import { AIBenefits } from '@/components/uploadLeaseForm/AIBenefits';
 import { HelpSection } from '@/components/uploadLeaseForm/HelpSection';
 import { SubmitButton } from '@/components/buttons/submitButton';
 import { uploadLeaseAsync } from '@/services/lease/asyncThunk';
+import Toast from '@/components/Toast';
 
 const UploadLeaseForm: React.FC = () => {
     const [uploadedFile, setUploadedFile] = useState<FileData | null>(null);
@@ -71,7 +72,7 @@ const UploadLeaseForm: React.FC = () => {
             });
         } catch (err) {
             console.error('Upload error', err);
-            alert(typeof err === 'string' ? err : 'Failed to upload lease. Please try again.');
+        Toast.fire({ icon: "error", title: err });
         } finally {
             setSubmitting(false);
         }

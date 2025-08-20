@@ -17,7 +17,7 @@ import { PropertyDetailsStep } from '@/components/steps/PropertyDetailsStep';
 import { AdditionalTermsStep } from '@/components/steps/AdditionalTermsSteps';
 import { ReviewSubmitStep } from '@/components/steps/ReviewSubmitStep';
 import { unwrapResult } from '@reduxjs/toolkit';
-// Import other step components...
+import { useRouter } from 'next/router';
 
 interface Props {
   mode?: 'edit' | 'create';
@@ -29,9 +29,10 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const { currentStep, nextStep, prevStep, isStepComplete, steps } = useFormStepper();
   const [initialData, setInitialData] = useState<FormValues | null>(null);
   const [loading, setLoading] = useState(mode === 'edit');
-   const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false); // New state for final submission
   const [lastSaved, setLastSaved] = useState<string | null>(null);
-
+  const router = useRouter(); // For Next.js
   useEffect(() => {
     if (mode === 'edit' && loiId) {
       (async () => {
@@ -53,30 +54,49 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
     try {
       if (currentStep === steps.length) {
         console.log("currentStep", currentStep)
-        const apiPayload = transformToApiPayload(formValues , loiId);
+        setSubmitting(true); // Set loading state for final submission
+        const apiPayload = transformToApiPayload(formValues, loiId);
         await dispatch(submitLOIAsync(apiPayload)).unwrap();
         console.log('LOI submitted successfully!');
+        setLastSaved(new Date().toLocaleTimeString());
+        router.push({
+          pathname: '/dashboard/pages/start',
+          query: {
+            success: 'loi_submitted',
+          }
+        });
       } else {
         nextStep();
       }
     } catch (error) {
       console.error('Failed to submit LOI:', error);
+    } finally {
+      setSubmitting(false); // Reset loading state
     }
   };
 
   const saveAsDraft = async (formValues: FormValues) => {
     try {
-      const draftPayload = transformToApiPayload(formValues , loiId);
+      setSaving(true); // Set loading state for draft save
+      const draftPayload = transformToApiPayload(formValues, loiId);
       await dispatch(submitLOIAsync({ ...draftPayload, submit_status: 'Draft' })).unwrap();
       console.log('LOI saved as draft!');
+      router.push({
+        pathname: '/dashboard/pages/start',
+        query: {
+          success: 'loi_submitted',
+        }
+      });
+      setLastSaved(new Date().toLocaleTimeString());
     } catch (error) {
       console.error('Failed to save draft:', error);
+    } finally {
+      setSaving(false); // Reset loading state
     }
   };
 
   const renderStepContent = (formValues: FormValues) => {
     switch (currentStep) {
-
       case 1: return <BasicInformationStep />;
       case 2: return <LeaseTermsStep />;
       case 3: return <PropertyDetailsStep />;
@@ -110,7 +130,8 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
                 onSaveDraft={() => saveAsDraft(values)}
                 isLoading={saving}
                 lastSaved={lastSaved}
-              />              <StepperNavigation
+              />
+              <StepperNavigation
                 steps={steps}
                 currentStep={currentStep}
                 isStepComplete={isStepComplete}
@@ -122,17 +143,14 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
               <FormNavigation
                 currentStep={currentStep}
                 totalSteps={steps.length}
-                isStepValid={isValid} // ✅ Formik/Yup aware
+                isStepValid={isValid}
+                isSubmitting={submitting} // Pass submitting state
                 onPrevStep={prevStep}
                 onSubmit={async () => {
                   const errors = await validateForm();
 
                   if (Object.keys(errors).length === 0) {
-                    if (currentStep === steps.length) {
-                      await handleSubmit(values);
-                    } else {
-                      nextStep();
-                    }
+                    await handleSubmit(values);
                   }
                 }}
               />
@@ -145,4 +163,3 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
 };
 
 export default CreateLoiForm;
-

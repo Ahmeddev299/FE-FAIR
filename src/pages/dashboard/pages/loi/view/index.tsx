@@ -234,12 +234,12 @@ export default function LoiListPage() {
                         <SortIcon active={sortBy === "status"} dir={sortDir} />
                       </div>
                     </th>
-                    <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("updatedAt")}>
+                    {/* <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("updatedAt")}>
                       <div className="inline-flex items-center gap-1">
                         Last Updated
                         <SortIcon active={sortBy === "updatedAt"} dir={sortDir} />
                       </div>
-                    </th>
+                    </th> */}
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>
@@ -267,9 +267,9 @@ export default function LoiListPage() {
                         {truncateWords(row.propertyAddress, 5)}
                       </td>
                       <td className="px-5 py-4"><StatusPill value={row.status} /></td>
-                      <td className="px-5 py-4 text-sm text-gray-600">
+                      {/* <td className="px-5 py-4 text-sm text-gray-600">
                         {row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "—"}
-                      </td>
+                      </td> */}
                       <td className="px-5 py-4 text-right">
                         <button
                           onClick={() => openDetail(row._id || row.id)}

@@ -70,13 +70,13 @@ export const ContextForm: React.FC = () => {
         {/* LOI Select */}
         <CustomField
           name="leaseId"
-          label="Select Lease"
+          label="Select LOI"
           as="select"
           required
           onChange={handleSelect} // IMPORTANT: forward onChange to Formik
           value={values.leaseId}
         >
-          <option value="">-- Select a Lease --</option>
+          <option value="">-- Select a LOI --</option>
           {isLoading && <LoadingOverlay isVisible={true}/>}
           {myLOIs?.map((loi: LOI) => (
             console.log("loi", loi),

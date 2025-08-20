@@ -14,7 +14,7 @@ class LeaseBaseService extends HttpService {
   userleasedetails = (): Promise<any> =>
     this.get(`termination/lease_of_user_for_termination`, {})
   terminatelease = (data: any, options = {}): Promise<any> =>
-    this.post(this.prefix + `/termination`, data, options);
+    this.post(`/termination`, data, options);
   // leaseBaseService.ts
   getClauseDetails(leaseId: string, clauseDocId: string): Promise<any> {
     return this.get(
