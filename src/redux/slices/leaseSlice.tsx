@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
 import Toast from "@/components/Toast";
-import { uploadLeaseAsync, getUserLeasesAsync, getClauseDetailsAsync, getLeaseDetailsById } from "@/services/lease/asyncThunk";
-import { getLOIDetailsById } from "@/services/loi/asyncThunk";
+import { 
+  uploadLeaseAsync,
+  getallUserLeasesAsync,
+  getUserLeasesAsync,
+  getClauseDetailsAsync,
+  getLeaseDetailsById 
+} from "@/services/lease/asyncThunk";
 
 export const leaseSlice = createSlice({
   name: "lease",
@@ -40,9 +45,10 @@ export const leaseSlice = createSlice({
     },
     setError: (state, action) => {
       state.leaseError = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
+    // Upload lease
     builder
       .addCase(uploadLeaseAsync.pending, (state) => {
         state.isLoading = true;
@@ -52,31 +58,49 @@ export const leaseSlice = createSlice({
         state.isLoading = false;
         state.submitSuccess = true;
         Toast.fire({ icon: "success", title: "Lease uploaded successfully!" });
-
       })
       .addCase(uploadLeaseAsync.rejected, (state, action) => {
         state.isLoading = false;
-        state.leaseError = action.payload;
+        state.leaseError = action.payload as string;
+        Toast.fire({ icon: "error", title: action.payload as string });
+      });
 
-        Toast.fire({ icon: "error", title: action.payload });
-
-      })
+    // Get paginated user leases (/clause/get_user_leases)
+    builder
       .addCase(getUserLeasesAsync.pending, (state) => {
         state.isLoading = true;
         state.leaseError = "";
       })
       .addCase(getUserLeasesAsync.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.leaseList = action.payload;
+        state.leaseList = action.payload?.leases ?? action.payload;
+        state.metaData = action.payload?.meta ?? {};
       })
       .addCase(getUserLeasesAsync.rejected, (state, action) => {
         state.isLoading = false;
+        state.leaseError = action.payload as string;
+      });
+
+    // Get all user leases (if you have a separate API)
+    builder
+      .addCase(getallUserLeasesAsync.pending, (state) => {
+        state.isLoading = true;
         state.leaseError = "";
       })
+      .addCase(getallUserLeasesAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.leaseList = action.payload;
+      })
+      .addCase(getallUserLeasesAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.leaseError = action.payload as string;
+      });
+
+    // Clause details
     builder
       .addCase(getClauseDetailsAsync.pending, (state) => {
         state.isLoading = true;
-        state.leaseError = null;
+        state.leaseError = "";
       })
       .addCase(getClauseDetailsAsync.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -86,10 +110,12 @@ export const leaseSlice = createSlice({
         state.isLoading = false;
         state.leaseError = action.payload as string;
       });
+
+    // Lease details by ID
     builder
       .addCase(getLeaseDetailsById.pending, (state) => {
         state.isLoading = true;
-        state.leaseError = null;
+        state.leaseError = "";
       })
       .addCase(getLeaseDetailsById.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -102,10 +128,7 @@ export const leaseSlice = createSlice({
   },
 });
 
-export const {
-  setLoading,
-  setError,
-} = leaseSlice.actions;
+export const { setLoading, setError } = leaseSlice.actions;
 
 export const selectLease = (state: any) => state.lease;
 

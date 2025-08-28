@@ -25,9 +25,11 @@ interface ClauseDetailModalProps {
     handleAddComment: () => void;
 }
 
-export default function ClauseDetailModal({ onClose, newComment,
+export default function ClauseDetailModal({ onClose, newComment, clause,
     setNewComment, handleAddComment }: ClauseDetailModalProps) {
     // Lock scroll when modal is open
+
+    console.log("clause", clause)
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {

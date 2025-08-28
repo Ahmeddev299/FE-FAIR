@@ -160,3 +160,34 @@ export type SetFieldValue = (field: string, value: File | null) => void;
 export interface ExtendedFormikErrors {
   document?: string;
 }
+
+export type ClauseStatus = 'Edited' | 'Suggested' | 'Approved' | 'Review';
+export type RiskLevel = 'High' | 'Medium' | 'Low';
+
+export interface Clause {
+  id: number | string;
+  name: string;
+  description?: string;
+  status: ClauseStatus;
+  risk: RiskLevel;
+  comments?: number;
+  unresolved?: boolean;
+}
+
+export interface Lease {
+  id: number | string;
+  title: string;               // e.g. "Common Area Maintena"
+  property_address?: string;   // may be blank
+  clauses: Clause[];
+  // optional server-calculated progress
+  approvedCount?: number;
+  totalCount?: number;
+  unresolvedCount?: number;
+}
+
+export interface Paginated<T> {
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
+}

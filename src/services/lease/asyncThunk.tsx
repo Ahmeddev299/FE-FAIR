@@ -109,7 +109,6 @@ export const getClauseDetailsAsync = createAsyncThunk(
   }
 );
 
-
 export const terminateLeaseAsync = createAsyncThunk(
   "lease/terminate",
   async (formData: FormData, { rejectWithValue }) => {
@@ -164,3 +163,24 @@ export const getLeaseDetailsById = createAsyncThunk(
     }
   }
 );
+
+export const getallUserLeasesAsync = createAsyncThunk(
+  "lease/listForClauses",
+  async ({ page = 1, limit = 5 }: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+
+      const response = await leaseBaseService.getUserLeases({ page, limit });
+
+      if (!response?.success || response?.status === 400) {
+        return rejectWithValue(response?.message ?? "Failed to fetch leases");
+      }
+
+      return response.data; // expect { leases: [...], page, limit, total } or similar
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to fetch leases");
+    }
+  }
+);
+
