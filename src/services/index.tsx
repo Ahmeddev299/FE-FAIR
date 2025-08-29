@@ -9,32 +9,6 @@ import axios, {
 import Config from "../config/index";
 import ls from "localstorage-slim";
 
-// Response interface for consistent API responses
-interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message: string;
-  status: number;
-}
-
-// Custom error class instead of type intersection
-class CustomError extends Error {
-  status?: number;
-  code?: string;
-
-  constructor(message: string, status?: number, code?: string) {
-    super(message);
-    this.name = 'CustomError';
-    this.status = status;
-    this.code = code;
-    
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, CustomError);
-    }
-  }
-}
-
 export class HttpService {
   private axiosInstance: AxiosInstance;
   private cancelTokenSources: Map<string, CancelTokenSource> = new Map();

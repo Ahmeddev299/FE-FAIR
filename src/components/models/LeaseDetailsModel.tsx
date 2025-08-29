@@ -1,13 +1,28 @@
 // LeaseDetailsModal.tsx
 import { X, Pencil, MessageSquare } from "lucide-react";
+import type { Clause, Lease } from "@/types/loi"; // 👈 reuse your shared types
 
-export default function LeaseDetailsModel({ lease, onClose, onEdit, onComment }) {
+interface LeaseDetailsModalProps {
+  lease: Lease;
+  onClose: () => void;
+  onEdit: (clause: Clause) => void;
+  onComment: (clause: Clause) => void;
+}
+
+export default function LeaseDetailsModal({
+  lease,
+  onClose,
+  onEdit,
+  onComment,
+}: LeaseDetailsModalProps) {
   if (!lease) return null;
 
   const { clauses } = lease;
 
-  // filter out metadata key like "_clause_log_id"
-  const clauseEntries = Object.entries(clauses).filter(([key]) => !key.startsWith("_"));
+  // filter out metadata keys like "_clause_log_id"
+  const clauseEntries = Object.entries(clauses).filter(
+    ([key]) => !key.startsWith("_")
+  ) as [string, Clause][]; // 👈 tell TS that entries are [name, Clause]
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
@@ -31,20 +46,20 @@ export default function LeaseDetailsModel({ lease, onClose, onEdit, onComment })
                 <h3 className="font-medium">{name}</h3>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => onEdit(clause)}
+                    onClick={() => onEdit(clause)} // 👈 now clause: Clause
                     className="px-2 py-1 text-xs flex items-center gap-1 rounded border hover:bg-gray-100"
                   >
                     <Pencil className="h-3 w-3" /> Edit
                   </button>
                   <button
-                    onClick={() => onComment(clause)}
+                    onClick={() => onComment(clause)} // 👈 clause is typed
                     className="px-2 py-1 text-xs flex items-center gap-1 rounded border hover:bg-gray-100"
                   >
                     <MessageSquare className="h-3 w-3" /> Comment
                   </button>
                 </div>
               </div>
-              <p className="text-sm text-gray-700 mb-1">
+              {/* <p className="text-sm text-gray-700 mb-1">
                 <strong>Clause:</strong> {clause.clause_details}
               </p>
               <p className="text-sm text-gray-700 mb-1">
@@ -52,9 +67,10 @@ export default function LeaseDetailsModel({ lease, onClose, onEdit, onComment })
               </p>
               <p className="text-sm text-gray-700 mb-1">
                 <strong>Current:</strong> {clause.current_version}
-              </p>
+              </p> */}
               <p className="text-sm text-gray-500">
-                <strong>Status:</strong> {clause.status} | <strong>Risk:</strong> {clause.risk}
+                <strong>Status:</strong> {clause.status} |{" "}
+                <strong>Risk:</strong> {clause.risk}
               </p>
             </div>
           ))}

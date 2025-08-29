@@ -4,8 +4,10 @@ import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { selectLease } from "@/redux/slices/leaseSlice";
 import { getLeaseDetailsById } from "@/services/lease/asyncThunk";
 import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
 
 /* -------------------- helpers -------------------- */
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "");
@@ -74,7 +76,7 @@ const DocumentViewer: React.FC<{ url?: string }> = ({ url }) => {
             Download
           </a>
         </div>
-        <img src={full} alt="Lease Attachment" className="rounded-lg border max-h-[600px] object-contain" />
+        <Image src={full} alt="Lease Attachment" className="rounded-lg border max-h-[600px] object-contain" width={50} height={50} />
       </div>
     );
   }
@@ -97,7 +99,7 @@ export default function LeaseDetailPage() {
   const id = useMemo(() => cleanId(router.query.id), [router.query.id]);
 
   const dispatch = useAppDispatch();
-  const { isLoading, leaseError, currentLease } = useAppSelector((s: any) => s.lease);
+const { isLoading, leaseError, currentLease } = useAppSelector(selectLease);
 
   useEffect(() => {
     if (id) dispatch(getLeaseDetailsById(id));

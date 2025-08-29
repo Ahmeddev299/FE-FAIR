@@ -30,11 +30,6 @@ interface Party {
     required: boolean;
 }
 
-// interface Tab {
-//     label: string;
-//     key: string;
-// }
-
 type SignatureTab = 'draw' | 'type';
 
 const ElectronicSignatureInterface: React.FC = () => {
@@ -276,20 +271,6 @@ const ElectronicSignatureInterface: React.FC = () => {
                                     <span>Downtown Office Lease Agreement</span>
                                 </div>
 
-                                {/* Center: Pagination */}
-                                {/* <div className="flex items-center space-x-3 text-gray-600">
-                                    <button className="flex items-center space-x-1 hover:text-gray-800 hover:underline">
-                                        <ChevronLeft className="w-4 h-4" />
-                                        <span>Previous</span>
-                                    </button>
-                                    <span>Page <strong className="text-gray-800">1</strong> of <strong className="text-gray-800">12</strong></span>
-                                    <button className="flex items-center space-x-1 hover:text-gray-800 hover:underline">
-                                        <span>Next</span>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </button>
-                                </div> */}
-
-                                {/* Right: Zoom Controls */}
                                 <div className="flex items-center space-x-2 text-gray-600">
                                     <button onClick={handleZoomOut} className="hover:text-gray-800">
                                         <ZoomOut className="w-4 h-4" />

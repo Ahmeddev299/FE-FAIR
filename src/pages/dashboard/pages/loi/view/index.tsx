@@ -79,23 +79,23 @@ export default function LoiListPage() {
   // ----- local UI state -----
   const [page, setPage] = useState(qsPage);
   const [q, setQ] = useState(qsQ);
-  const [debouncedQ, setDebouncedQ] = useState(qsQ); // debounce search
+  // const [debouncedQ, setDebouncedQ] = useState(qsQ); // debounce search
   const [status, setStatus] = useState(qsStatus);
   const [sortBy, setSortBy] = useState<SortBy>(qsSortBy);
   const [sortDir, setSortDir] = useState<SortDir>(qsSortDir);
   const [limit, setLimit] = useState(qsLimit);
 
   // ----- store selectors (adjust paths to your slice) -----
-  const { myLeases, myLOIs, isLoading, } =
+  const {  myLOIs, isLoading, } =
     useAppSelector((state) => state.dashboard);  // items: array of: { _id|id, title, propertyAddress, status, updatedAt }
 
   const total = myLOIs.length;
   console.log("isLoading", isLoading)
   // ----- debounced search -----
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 350);
-    return () => clearTimeout(t);
-  }, [q]);
+  // useEffect(() => {
+  //   const t = setTimeout(() => setDebouncedQ(q), 350);
+  //   return () => clearTimeout(t);
+  // }, [q]);
 
   // ----- fetch when params change -----
   useEffect(() => {

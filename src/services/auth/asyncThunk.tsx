@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { authBaseService } from "./endpoints"; // Import your authService
-import { HttpService } from "../index";
-import ls from "localstorage-slim";
 
 interface LoginUserData {
   email: string;

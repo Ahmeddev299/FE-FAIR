@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { leaseBaseService } from "./endpoint";
-import type { LOIApiPayload } from "@/types/loi"; // adjust path accordingly
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
@@ -13,8 +12,6 @@ type UploadLeaseResponse = {
   Clauses: { _id: string; history: Record<string, ClauseEntry>; };
 };
 
-type GetClauseDetailsArgs = { leaseId: string; clauseDocId?: string };
-
 // Optional typing based on your API sample
 type ClauseEntry = {
   status: string;
@@ -25,20 +22,6 @@ type ClauseEntry = {
   comment: any[];
   created_at: string;
   updated_at: string;
-};
-type GetClauseDetailsResponse = {
-  Lease: {
-    _id: string;
-    name: string;
-    lease_title: string;
-    startDate?: string;
-    endDate?: string;
-    property_address?: string;
-  };
-  Clauses: {
-    _id: string;
-    history: Record<string, ClauseEntry>;
-  };
 };
 
 export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(

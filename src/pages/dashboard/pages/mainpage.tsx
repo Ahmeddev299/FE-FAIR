@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { getDashboardStatsAsync, clearErrors } from '@/services/dashboard/asyncThunk';
+import { getDashboardStatsAsync } from '@/services/dashboard/asyncThunk';
+import { clearErrors } from '@/redux/slices/dashboardSlice';
 import { LoadingOverlay } from '@/components/loaders/overlayloader';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { LOITable } from '@/components/dashboard/LOITable';
@@ -35,7 +36,7 @@ function MainPage() {
     return (
         <DashboardLayout>
             {isLoading ? (
-                <LoadingOverlay isVisible message="Fetching dashboard statistics..." size="large" />
+                <LoadingOverlay isVisible  />
             ) : (
                 <div className="flex-1 overflow-auto">
                     <DashboardHeader userName="John" />

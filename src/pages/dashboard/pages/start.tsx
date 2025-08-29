@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { CheckCircle, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks'; // adjust based on your setup
 import { getDraftLOIsAsync } from '@/services/loi/asyncThunk'; // adjust path to where your thunk is located
@@ -10,8 +10,7 @@ import { Letter, LOIStatus } from '@/types/loi';
 import { LoadingOverlay } from '@/components/loaders/overlayloader';
 
 export default function LetterOfIntentDashboard() {
-  const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const router = useRouter();
   const dispatch = useAppDispatch()
   const { loiList, isLoading } = useAppSelector((state) => state.loi);
@@ -216,15 +215,11 @@ export default function LetterOfIntentDashboard() {
                             <div className="flex items-center space-x-1">
                               <button
                                 className="p-1 hover:bg-gray-100 rounded"
-                                onClick={() => {
-                                  setSelectedLetter(letter);
-                                  setIsModalOpen(true);
-                                }}
+                                onClick={() => openDetail(letter.id)}
                               >
-                                <Eye className="w-4 h-4 text-gray-500"
-                                  onClick={() => openDetail(letter.id)}
-                                />
+                                <Eye className="w-4 h-4 text-gray-500" />
                               </button>
+
 
                               <button className="p-1 hover:bg-gray-100 rounded"
                                 onClick={() => router.push(`/dashboard/pages/loi/edit/${letter?.id}`)}

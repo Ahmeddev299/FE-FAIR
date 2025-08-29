@@ -6,6 +6,26 @@ import { ArrowLeft, Edit3 } from "lucide-react";
 import { getLOIDetailsById } from "@/services/loi/asyncThunk";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 
+type LeaseTerms = {
+  leaseType?: string;
+  leaseDuration?: string;
+  startDate?: string;
+  monthlyRent?: string;
+  securityDeposit?: string;
+};
+
+type AdditionalDetails = {
+  renewalOption?: boolean;
+  tenantImprovement?: string;
+  specialConditions?: string;
+};
+
+type PropertyDetails = {
+  propertyType?: string;
+  propertySize?: string;
+  intendedUse?: string;
+};
+
 type ShapedLoi = {
   id: string;
   title: string;
@@ -20,9 +40,9 @@ type ShapedLoi = {
     tenant_name?: string;
     tenant_email?: string;
   };
-  leaseTerms?: any;
-  additionalDetails?: any;
-  propertyDetails?: any;
+  leaseTerms?: LeaseTerms;
+  additionalDetails?: AdditionalDetails;
+  propertyDetails?: PropertyDetails;
 };
 
 const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
@@ -39,22 +59,26 @@ const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
   return <span className={map[s] || `${base} bg-gray-100 text-gray-800`}>{value || "—"}</span>;
 };
 
-const shapeLoi = (raw: any): ShapedLoi | null => {
-  if (!raw) return null;
+const shapeLoi = (raw: unknown): ShapedLoi | null => {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as Record<string, unknown>;
+  const partyInfo = (r.partyInfo as ShapedLoi["party"]) || {};
+
   return {
-    id: String(raw.id ?? raw._id ?? "").trim(),
-    title: raw.title ?? "",
-    address: raw.propertyAddress ?? raw.property_address ?? "",
-    status: raw.submit_status ?? raw.status ?? "",
-    created: raw.created_at ?? raw.createdAt ?? null,
-    updated: raw.updated_at ?? raw.updatedAt ?? null,
-    userName: raw.user_name ?? "",
-    party: raw.partyInfo ?? {},
-    leaseTerms: raw.leaseTerms,
-    additionalDetails: raw.additionalDetails,
-    propertyDetails: raw.propertyDetails,
+    id: String((r.id ?? r._id ?? "") as string).trim(),
+    title: (r.title as string) ?? "",
+    address: (r.propertyAddress as string) ?? (r.property_address as string) ?? "",
+    status: (r.submit_status as string) ?? (r.status as string) ?? "",
+    created: (r.created_at as string) ?? (r.createdAt as string) ?? null,
+    updated: (r.updated_at as string) ?? (r.updatedAt as string) ?? null,
+    userName: (r.user_name as string) ?? "",
+    party: partyInfo,
+    leaseTerms: r.leaseTerms as LeaseTerms | undefined,
+    additionalDetails: r.additionalDetails as AdditionalDetails | undefined,
+    propertyDetails: r.propertyDetails as PropertyDetails | undefined,
   };
 };
+
 
 export default function SingleLoiPage() {
   const router = useRouter();
@@ -73,7 +97,7 @@ export default function SingleLoiPage() {
 
   return (
     <DashboardLayout>
-      {isLoading && <LoadingOverlay isVisible message="Loading LOI..." size="large" />}
+      {isLoading && <LoadingOverlay isVisible />}
 
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex items-center gap-2">

@@ -14,10 +14,21 @@ const TerminateLease: React.FC = () => {
     const [supportingNotes, setSupportingNotes] = useState<string>('');
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-      const router = useRouter(); // For Next.js
+    const router = useRouter(); // For Next.js
+
+    const toErrorMessage = (e: unknown): string => {
+        if (e instanceof Error) return e.message;
+        if (typeof e === "string") return e;
+        try {
+            return JSON.stringify(e);
+        } catch {
+            return "Something went wrong";
+        }
+    };
+
 
     const dispatch = useAppDispatch();
-    const { leaseList: leases, isLoading } = useAppSelector((state) => state.lease);
+    const { leaseList: leases, isLoading } = useAppSelector((s) => s.lease);
 
     const [selectedLeaseId, setSelectedLeaseId] = useState("");
 
@@ -47,28 +58,28 @@ const TerminateLease: React.FC = () => {
             if (uploadedFile) {
                 formData.append("document", uploadedFile);
             }
-            
+
             await dispatch(terminateLeaseAsync(formData)).unwrap();
-            
+
             // Reset form on success
             setSelectedLeaseId("");
             setTerminationReason("");
             setTerminationDate("");
             setSupportingNotes("");
             setUploadedFile(null);
-            
+
             // You might want to show a success message or redirect here
-        Toast.fire({ icon: "success", title: "Lease Terminate Sucessfull" });
-            
-         router.push({
-        pathname: '/dashboard/pages/tenantStorage',
-        query: {
-          success: 'loi_submitted',
-        }
-      });
+            Toast.fire({ icon: "success", title: "Lease Terminate Sucessfull" });
+
+            router.push({
+                pathname: '/dashboard/pages/tenantStorage',
+                query: {
+                    success: 'loi_submitted',
+                }
+            });
         } catch (error) {
             console.error("Error terminating lease:", error);
-        Toast.fire({ icon: "error", title: error });
+            Toast.fire({ icon: "error", title: toErrorMessage(error) });
         } finally {
             setIsSubmitting(false);
         }
@@ -89,12 +100,12 @@ const TerminateLease: React.FC = () => {
 
     return (
         <DashboardLayout>
-            {isLoading ? (<LoadingOverlay isVisible />)  :( <div className="min-h-screen bg-white">
+            {isLoading ? (<LoadingOverlay isVisible />) : (<div className="min-h-screen bg-white">
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200 px-4 py-4">
                     <div className="max-w-4xl mx-auto">
                         <div className="flex items-center space-x-6">
-                            <button 
+                            <button
                                 className="flex items-center text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={isSubmitting}
                             >
@@ -117,7 +128,7 @@ const TerminateLease: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
                         {/* Form Section */}
                         <div className="lg:col-span-2 space-y-8">
-                            
+
                             {/* Lease Selection */}
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                                 <div className="p-6">
@@ -139,8 +150,8 @@ const TerminateLease: React.FC = () => {
                                             >
                                                 <option value="" disabled>Select a lease</option>
                                                 {leases?.data?.map((lease) => (
-                                                    <option key={lease?.lease_id} value={lease?.lease_id}>
-                                                        {lease?.lease_title}
+                                                    <option key={lease.lease_id} value={lease.lease_id}>
+                                                        {lease.lease_title}
                                                     </option>
                                                 ))}
                                             </select>
@@ -211,20 +222,16 @@ const TerminateLease: React.FC = () => {
                                 <div className="p-6">
                                     <h2 className="text-xl font-semibold text-gray-900 mb-6">Supporting Documents (Optional)</h2>
 
-                                    <div className={`border-2 border-dashed rounded-lg p-8 text-center ${
-                                        isFormDisabled 
-                                            ? 'border-gray-200 bg-gray-50' 
-                                            : 'border-gray-300 hover:border-gray-400'
-                                    }`}>
-                                        <Upload className={`h-12 w-12 mx-auto mb-4 ${
-                                            isFormDisabled ? 'text-gray-300' : 'text-gray-400'
-                                        }`} />
-                                        <h3 className={`text-lg font-medium mb-2 ${
-                                            isFormDisabled ? 'text-gray-400' : 'text-gray-900'
-                                        }`}>Upload Supporting Documents</h3>
-                                        <p className={`text-sm mb-4 ${
-                                            isFormDisabled ? 'text-gray-400' : 'text-gray-600'
+                                    <div className={`border-2 border-dashed rounded-lg p-8 text-center ${isFormDisabled
+                                        ? 'border-gray-200 bg-gray-50'
+                                        : 'border-gray-300 hover:border-gray-400'
                                         }`}>
+                                        <Upload className={`h-12 w-12 mx-auto mb-4 ${isFormDisabled ? 'text-gray-300' : 'text-gray-400'
+                                            }`} />
+                                        <h3 className={`text-lg font-medium mb-2 ${isFormDisabled ? 'text-gray-400' : 'text-gray-900'
+                                            }`}>Upload Supporting Documents</h3>
+                                        <p className={`text-sm mb-4 ${isFormDisabled ? 'text-gray-400' : 'text-gray-600'
+                                            }`}>
                                             Attach any supporting notice or termination letter (PDF/DOC)
                                         </p>
                                         <label className={`cursor-pointer ${isFormDisabled ? 'cursor-not-allowed' : ''}`}>
@@ -235,17 +242,15 @@ const TerminateLease: React.FC = () => {
                                                 onChange={handleFileUpload}
                                                 disabled={isFormDisabled}
                                             />
-                                            <span className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium ${
-                                                isFormDisabled 
-                                                    ? 'border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed'
-                                                    : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-                                            }`}>
+                                            <span className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium ${isFormDisabled
+                                                ? 'border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed'
+                                                : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                                                }`}>
                                                 Choose File
                                             </span>
                                         </label>
-                                        <p className={`text-xs mt-2 ${
-                                            isFormDisabled ? 'text-gray-400' : 'text-gray-500'
-                                        }`}>Or drag and drop files here</p>
+                                        <p className={`text-xs mt-2 ${isFormDisabled ? 'text-gray-400' : 'text-gray-500'
+                                            }`}>Or drag and drop files here</p>
                                     </div>
 
                                     {uploadedFile && (
@@ -299,16 +304,16 @@ const TerminateLease: React.FC = () => {
 
                             {/* Loading Overlay for entire form */}
                             {isSubmitting && (
-                                    <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
-                                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                                    </div>
-                               
+                                <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+                                    <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                                </div>
+
                             )}
                         </div>
                     </div>
                 </div>
             </div>)}
-           
+
         </DashboardLayout>
     );
 };

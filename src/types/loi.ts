@@ -77,13 +77,13 @@ export interface LOIApiPayload {
 
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
 export interface Letter {
-  id: number;
+  id: string;  // ← instead of number
   title: string;
-  propertyAddress: string;
-  updated_at: string;
+  propertyAddress?: string;
+  updated_at?: string;
   submit_status: LOIStatus;
-  assignee: string;
 }
+
 
 export interface PartyInfo {
   landlord_name: string;
@@ -146,14 +146,18 @@ export interface FileData {
   file: File;
 }
 
+// in @/types/loi.ts
 export interface LeaseFormValues {
-  title: string,
-  startDate: string,
-  endDate: string,
-  propertyAddress: '',
-  notes: '',
-  document: ''
+  title: string;
+  startDate: string;
+  endDate: string;
+  propertyAddress: string;
+  notes: string;
+  document: string;
+  leaseId?: string;     // optional
+  leaseTitle?: string;  // optional (but you already have `title`)
 }
+
 export type SetFieldValue = (field: string, value: File | null) => void;
 
 // Extended FormikErrors to handle File type properly

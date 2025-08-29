@@ -222,9 +222,8 @@ export const loiSlice = createSlice({
         state.currentLOI = action.payload; // ✅ Prefill redux state with fetched LOI
         console.log("action.payload", action.payload)
       })
-      .addCase(getLOIDetailsById.rejected, (state, action) => {
+      .addCase(getLOIDetailsById.rejected, (state) => {
         state.isLoading = false;
-
       });
 
   },

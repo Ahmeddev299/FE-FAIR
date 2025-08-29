@@ -2,7 +2,7 @@
 import React from 'react';
 
 // Loading Overlay Component
-export const LoadingOverlay = ({ isVisible, message = "Loading...", size = "default" }) => {
+export const LoadingOverlay = ({ isVisible }) => {
   if (!isVisible) return null;
 
   return (
