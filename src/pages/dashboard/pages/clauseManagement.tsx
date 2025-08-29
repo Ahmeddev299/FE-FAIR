@@ -22,7 +22,7 @@ import { getallUserLeasesAsync } from '@/services/lease/asyncThunk';
 import { updateClauseAsync } from '@/services/clause/asyncThunk';
 
 // ⭐️ use your store types so dispatch/select are typed (adjust the path if your store file differs)
-import type { RootState, AppDispatch } from '@/store';
+import type { RootState, AppDispatch } from '@/redux/store'
 
 type StatusFilter = 'All Status' | ClauseStatus;
 type RiskFilter = 'All Risk Levels' | RiskLevel;

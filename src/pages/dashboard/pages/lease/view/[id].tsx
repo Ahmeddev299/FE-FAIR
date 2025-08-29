@@ -115,7 +115,7 @@ const { isLoading, leaseError, currentLease } = useAppSelector(selectLease);
 
   return (
     <DashboardLayout>
-      {isLoading && <LoadingOverlay isVisible message="Loading lease..." size="large" />}
+      {isLoading && <LoadingOverlay isVisible  />}
 
       <div className="p-4 sm:p-6">
         <button onClick={() => router.back()} className="text-blue-600 text-sm inline-flex items-center gap-2 mb-4">

@@ -16,6 +16,11 @@ function MainPage() {
     const { myLeases, myLOIs, isLoading, isLoadingLOIs, isLoadingLeases, loiError, leaseError } =
         useAppSelector((state) => state.dashboard);
 
+    // helper at the top (inside the component file, outside JSX)
+    const toErrorMessage = (err: unknown): string | null =>
+        err == null ? null : typeof err === 'string' ? err : String(err);
+
+
     useEffect(() => {
         dispatch(getDashboardStatsAsync());
     }, [dispatch]);
@@ -36,7 +41,7 @@ function MainPage() {
     return (
         <DashboardLayout>
             {isLoading ? (
-                <LoadingOverlay isVisible  />
+                <LoadingOverlay isVisible />
             ) : (
                 <div className="flex-1 overflow-auto">
                     <DashboardHeader userName="John" />
@@ -47,7 +52,7 @@ function MainPage() {
                                 <LOITable
                                     lois={myLOIs}
                                     isLoading={isLoading || isLoadingLOIs}
-                                    error={loiError as any}
+                                    error={toErrorMessage(loiError)}
                                     onViewAll={() => router.push(`/dashboard/pages/loi/view`)}
 
                                     onAddNew={handleStartNewLOI}
@@ -56,7 +61,7 @@ function MainPage() {
                                 <LeaseTable
                                     leases={myLeases}
                                     isLoading={isLoading || isLoadingLeases}
-                                    error={leaseError as any}
+                                    error={toErrorMessage(leaseError)}
                                     onViewAll={() => router.push("/dashboard/pages/lease/view")}
                                     onAddNew={uploadLeaseNewLOI}
                                     onClearError={() => dispatch(clearErrors())}

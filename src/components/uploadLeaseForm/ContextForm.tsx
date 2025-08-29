@@ -130,14 +130,7 @@ import { CustomField } from './CustomFeilds';
 import { getloiDataAsync } from '@/services/dashboard/asyncThunk';
 import { LoadingOverlay } from '../loaders/overlayloader';
 import type { RootState, AppDispatch } from '@/redux/store';  // ✅ assumes you have store types
-
-type LOI = {
-  id: string;
-  title?: string;
-  propertyAddress?: string;
-  startDate?: string; // ISO (yyyy-mm-dd)
-  endDate?: string;   // ISO (yyyy-mm-dd)
-};
+import { LoiSummary } from '@/redux/slices/dashboardSlice';
 
 type FormValues = {
   leaseId: string;
@@ -162,14 +155,14 @@ export const ContextForm: React.FC = () => {
 
   const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;
-    const selected = myLOIs?.find((x: LOI) => x.id === id);
+    const selected = myLOIs?.find((x: LoiSummary) => (x.id ?? x._id) === id);
 
     if (selected) {
       setFieldValue('leaseId', id);
       setFieldValue('leaseTitle', selected.title || '');
       setFieldValue('propertyAddress', selected.propertyAddress || '');
-      setFieldValue('startDate', (selected.startDate || '').slice(0, 10));
-      setFieldValue('endDate', (selected.endDate || '').slice(0, 10));
+      setFieldValue('startDate', (selected.startDate || ''));
+      setFieldValue('endDate', (selected.endDate || ''));
     } else {
       setFieldValue('leaseTitle', '');
       setFieldValue('propertyAddress', '');

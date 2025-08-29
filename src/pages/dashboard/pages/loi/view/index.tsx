@@ -85,17 +85,10 @@ export default function LoiListPage() {
   const [sortDir, setSortDir] = useState<SortDir>(qsSortDir);
   const [limit, setLimit] = useState(qsLimit);
 
-  // ----- store selectors (adjust paths to your slice) -----
-  const {  myLOIs, isLoading, } =
-    useAppSelector((state) => state.dashboard);  // items: array of: { _id|id, title, propertyAddress, status, updatedAt }
+  const { myLOIs, isLoading, } =
+    useAppSelector((state) => state.dashboard); 
 
   const total = myLOIs.length;
-  console.log("isLoading", isLoading)
-  // ----- debounced search -----
-  // useEffect(() => {
-  //   const t = setTimeout(() => setDebouncedQ(q), 350);
-  //   return () => clearTimeout(t);
-  // }, [q]);
 
   // ----- fetch when params change -----
   useEffect(() => {
@@ -129,7 +122,7 @@ export default function LoiListPage() {
 
   return (
     <DashboardLayout>
-      {isLoading ? <LoadingOverlay isVisible message="Loading LOIs..." size="large" /> : (
+      {isLoading ? <LoadingOverlay isVisible /> : (
         <div className="p-4 sm:p-6">
           {/* Header */}
           <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
@@ -252,13 +245,13 @@ export default function LoiListPage() {
                     <tr>
 
                       <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-500">
-                        <LoadingOverlay isVisible message="Loading lois..." />
+                        <LoadingOverlay isVisible />
                       </td>
 
                     </tr>
                   )}
 
-                  {tableRows.map((row: any) => (
+                  {tableRows.map((row) => (
                     <tr key={row._id || row.id} className="hover:bg-gray-50">
                       <td className="px-5 py-4 text-sm font-medium text-gray-900">
                         {truncateWords(row.title, 4)}
@@ -292,28 +285,26 @@ export default function LoiListPage() {
                 <div className="text-center text-sm text-gray-500 py-6">No records found</div>
               )}
 
-              {tableRows.map((row: any) => (
-                <div key={row._id || row.id} className="p-4 border rounded-lg">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="font-medium text-gray-900">{truncateWords(row.title, 6)}</div>
-                    <StatusPill value={row.status} />
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {truncateWords(row.propertyAddress, 10)}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "—"}
-                  </div>
-                  <div className="mt-3">
+              {tableRows.map((row) => (
+                <tr key={row._id || row.id} className="hover:bg-gray-50">
+                  <td className="px-5 py-4 text-sm font-medium text-gray-900">
+                    {truncateWords(row.title, 4)}
+                  </td>
+                  <td className="px-5 py-4 text-sm text-gray-600">
+                    {truncateWords(row.propertyAddress, 5)}
+                  </td>
+                  <td className="px-5 py-4"><StatusPill value={row.status} /></td>
+                  <td className="px-5 py-4 text-right">
                     <button
                       onClick={() => openDetail(row._id || row.id)}
-                      className="w-full px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+                      className="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50"
                     >
                       See details
                     </button>
-                  </div>
-                </div>
+                  </td>
+                </tr>
               ))}
+
             </div>
 
             {/* Footer / Pager */}

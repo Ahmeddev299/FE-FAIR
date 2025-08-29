@@ -51,10 +51,11 @@ export const getUserLeasesAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = `${ls.get("access_token", { decrypt: true })}`;
-      console.log("async runnig"),
-        HttpService.setToken(token);
+      console.log("async running");
+      HttpService.setToken(token);
+
       const response = await leaseBaseService.userleasedetails(); // API call
-       if (response?.success || response?.status === 200) {
+      if (response?.success || response?.status === 200) {
         Toast.fire({ icon: "success", title: response.message as string });
       }
       console.log("response", response)

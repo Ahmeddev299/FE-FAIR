@@ -14,10 +14,11 @@ const LoiDetailsModal: React.FC<LoiDetailsModalProps> = ({ isOpen, onClose, data
     <h3 className="text-md font-semibold text-gray-800 mt-6 mb-2 border-b pb-1">{text}</h3>
   );
 
-  const twoColItem = (label: string, value: string | number | boolean | null) => (
+  // Accept undefined too
+  const twoColItem = (label: string, value: string | number | boolean | null | undefined) => (
     <div className="grid grid-cols-2 gap-2 text-sm py-1">
       <span className="text-gray-500 font-medium">{label}</span>
-      <span className="text-gray-700">{value || '—'}</span>
+      <span className="text-gray-700">{value ?? '—'}</span>
     </div>
   );
 
@@ -27,6 +28,7 @@ const LoiDetailsModal: React.FC<LoiDetailsModalProps> = ({ isOpen, onClose, data
         <button
           className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl"
           onClick={onClose}
+          aria-label="Close"
         >
           &times;
         </button>
@@ -37,7 +39,6 @@ const LoiDetailsModal: React.FC<LoiDetailsModalProps> = ({ isOpen, onClose, data
         {twoColItem('Title', data.title)}
         {twoColItem('Property Address', data.propertyAddress)}
         {twoColItem('Status', data.submit_status)}
-
       </div>
     </div>
   );

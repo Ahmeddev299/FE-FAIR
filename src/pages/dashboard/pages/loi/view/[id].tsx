@@ -5,6 +5,7 @@ import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { ArrowLeft, Edit3 } from "lucide-react";
 import { getLOIDetailsById } from "@/services/loi/asyncThunk";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { RootState } from "@/redux/store";
 
 type LeaseTerms = {
   leaseType?: string;
@@ -19,6 +20,7 @@ type AdditionalDetails = {
   tenantImprovement?: string;
   specialConditions?: string;
 };
+
 
 type PropertyDetails = {
   propertyType?: string;
@@ -86,8 +88,8 @@ export default function SingleLoiPage() {
   const { id: queryId } = router.query;
 
   // redux state (adjust slice name if different)
-  const { currentLOI, isLoading, loiError } = useAppSelector((s: any) => s.loi);
-  const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
+const { currentLOI, isLoading, loiError } = useAppSelector((state: RootState) => state.loi);
+const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
 
   // fetch on mount/id change
   useEffect(() => {

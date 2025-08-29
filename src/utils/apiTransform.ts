@@ -2,7 +2,7 @@
 import { FormValues } from '../types/loi';
 
 
-export const transformToApiPayload = (values: FormValues, loiId: String) => {
+export const transformToApiPayload = (values: FormValues, loiId: string) => {
 
   const selectedUtilities = Object.entries(values.utilities)
     .filter(([, value]) => value === true)

@@ -96,11 +96,12 @@ export class HttpService {
               // return this.axiosInstance(originalRequest);
             }
           } catch (refreshError) {
-            // Refresh failed, redirect to login
+            if (Config.DEBUG) {
+              console.error("Token refresh failed:", refreshError);
+            }
             this.clearAuthData();
-            // You might want to emit an event or call a callback here
-            // to redirect user to login page
           }
+
 
           this.clearAuthData();
         }
