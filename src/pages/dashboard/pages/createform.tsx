@@ -78,12 +78,9 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const handleSubmit = async (formValues: FormValues) => {
   try {
     if (currentStep === steps.length) {
-      if (!loiId) {
-        throw new Error("LOI ID is missing, cannot submit.");
-      }
 
       setSubmitting(true);
-      const apiPayload = transformToApiPayload(formValues, loiId); // loiId is safe now
+      const apiPayload = transformToApiPayload(formValues); // loiId is safe now
       await dispatch(submitLOIAsync(apiPayload)).unwrap();
 
       console.log("LOI submitted successfully!");
@@ -128,11 +125,11 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   try {
     setSaving(true);
 
-    if (!loiId) {
-      throw new Error("LOI ID is missing, cannot save draft.");
-    }
+    // if (!loiId) {
+    //   throw new Error("LOI ID is missing, cannot save draft.");
+    // }
 
-    const draftPayload = transformToApiPayload(formValues, loiId);
+    const draftPayload = transformToApiPayload(formValues);
     await dispatch(
       submitLOIAsync({ ...draftPayload, submit_status: "Draft" })
     ).unwrap();

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Field, ErrorMessage } from 'formik';
 import { Info } from 'lucide-react';
+import { PartyDropdowns } from './Dropdpwn';
 
 export const BasicInformationStep: React.FC = () => (
   <div className="space-y-6">
@@ -15,7 +16,7 @@ export const BasicInformationStep: React.FC = () => (
           <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">1</div>
           LOI & Property Details
         </h3>
-        
+
         <div>
           <label className="block text-sm font-medium mb-2">LOI Title *</label>
           <Field
@@ -40,50 +41,15 @@ export const BasicInformationStep: React.FC = () => (
       </div>
 
       {/* Party Information */}
-      <div className="space-y-6 border border-gray-300 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">2</div>
-          Party Information
-        </h3>
+      <PartyDropdowns
+        landlordIdName="landlordId"
+        landlordNameName="landlordName"
+        landlordEmailName="landlordEmail"
+        tenantIdName="tenantId"
+        tenantNameName="tenantName"
+        tenantEmailName="tenantEmail"
+      />
 
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold">Landlord Information</h4>
-          <Field
-            name="landlordName"
-            type="text"
-            placeholder="Property Owner or Management Company"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <ErrorMessage name="landlordName" component="div" className="text-red-500 text-sm mt-1" />
-          
-          <Field
-            name="landlordEmail"
-            type="email"
-            placeholder="enter landlord email"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <ErrorMessage name="landlordEmail" component="div" className="text-red-500 text-sm mt-1" />
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold">Tenant Information</h4>
-          <Field
-            name="tenantName"
-            type="text"
-            placeholder="Your Company Name"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <ErrorMessage name="tenantName" component="div" className="text-red-500 text-sm mt-1" />
-          
-          <Field
-            name="tenantEmail"
-            type="email"
-            placeholder="tenant@example.com"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <ErrorMessage name="tenantEmail" component="div" className="text-red-500 text-sm mt-1" />
-        </div>
-      </div>
     </div>
 
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

@@ -61,7 +61,7 @@ export default function LeaseListPage() {
   const dispatch = useAppDispatch();
 
   // use typed selector
-  const { leaseList, isLoading, leaseError } = useAppSelector(selectLease);
+  const { leaseList, isLoading } = useAppSelector(selectLease);
 
   // QS-aware UI state
   const qsPage = Number(router.query.page ?? 1);
@@ -265,11 +265,11 @@ export default function LeaseListPage() {
           </div>
 
           {/* Error */}
-          {leaseError && (
+          {/* {leaseError && (
             <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
               {String(leaseError)}
             </div>
-          )}
+          )} */}
 
           {/* Table */}
           <div className="bg-white rounded">
@@ -282,11 +282,11 @@ export default function LeaseListPage() {
                         Lease Title <SortIcon active={sortBy === "lease_title"} dir={sortDir} />
                       </div>
                     </th>
-                    <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("property_address")}>
+                    {/* <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("property_address")}>
                       <div className="inline-flex items-center gap-1">
                         Property Address <SortIcon active={sortBy === "property_address"} dir={sortDir} />
                       </div>
-                    </th>
+                    </th> */}
                     <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("status")}>
                       <div className="inline-flex items-center gap-1">
                         Status <SortIcon active={sortBy === "status"} dir={sortDir} />
@@ -324,24 +324,24 @@ export default function LeaseListPage() {
                     pageRows.map((row) => {
                       const id = row._id || row.lease_id || row.id || "";
                       const title = row.lease_title || row.title || "";
-                      const addr = row.property_address || row.propertyAddress || "";
+                      // const addr = row.property_address || row.propertyAddress || "";
                       const updated = row.updatedAt || row.last_uppdated_date || row.endDate || row.startDate;
 
                       return (
                         <tr key={id} className="hover:bg-gray-50">
                           <td className="px-5 py-4 text-sm font-medium text-gray-900">{truncateWords(title, 4)}</td>
-                          <td className="px-5 py-4 text-sm text-gray-600">{truncateWords(addr, 5)}</td>
+                          {/* <td className="px-5 py-4 text-sm text-gray-600">{truncateWords(addr, 5)}</td> */}
                           <td className="px-5 py-4">
                             <StatusPill value={row.status} />
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-600">
                             {updated ? new Date(updated).toLocaleString() : "—"}
-                          </td>
-                          <td className="px-5 py-4 text-right">
+                        </td>
+                          {/* <td className="px-5 py-4 text-right">
                             <button onClick={() => openDetail(id)} className="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50">
                               See details
                             </button>
-                          </td>
+                          </td> */}
                         </tr>
                       );
                     })}

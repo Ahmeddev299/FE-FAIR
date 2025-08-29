@@ -33,6 +33,7 @@ export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
       const response = await leaseBaseService.submitLease(formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      console.log("response", response)
 
       if (response?.success === false && response?.status === 400) {
         return rejectWithValue(response.message as any);

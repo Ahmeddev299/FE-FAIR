@@ -4,9 +4,15 @@ import { HttpService } from "../index";
 class AuthBaseService extends HttpService {
   private readonly prefix: string = "auth";
 
+  // NEW: fetch lists
+  getAllLandlords = (): Promise<any> =>
+    this.get(this.prefix + `/get_all_landlord`);
+
+  getAllTenants = (): Promise<any> =>
+    this.get(this.prefix + `/get_all_tenants`);
+
   /**
-   * User
-   * @paramdata
+   * User auth endpoints (existing)
    */
   signUp = (data: any): Promise<any> =>
     this.post(this.prefix + `/sign_up`, data);

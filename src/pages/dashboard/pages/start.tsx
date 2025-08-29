@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { CheckCircle, Search, MoreHorizontal, Edit, Trash2, Eye } from 'lucide-react';
+import { CheckCircle, Search, Edit, Eye } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks'; // adjust based on your setup
 import { getDraftLOIsAsync } from '@/services/loi/asyncThunk'; // adjust path to where your thunk is located
 import { DashboardLayout } from '@/components/layouts';
@@ -170,7 +170,7 @@ export default function LetterOfIntentDashboard() {
                       <div className="col-span-3">Property Address</div>
                       <div className="col-span-2">Last Edited</div>
                       <div className="col-span-2">Status</div>
-                      <div className="col-span-1">Actions</div>
+                      {/* <div className="col-span-1">Actions</div> */}
                     </div>
                   </div>
 
@@ -226,12 +226,10 @@ export default function LetterOfIntentDashboard() {
                               >
                                 <Edit className="w-4 h-4 text-gray-500" />
                               </button>
-                              <button className="p-1 hover:bg-gray-100 rounded">
+                              {/* <button className="p-1 hover:bg-gray-100 rounded">
                                 <Trash2 className="w-4 h-4 text-gray-500" />
-                              </button>
-                              <button className="p-1 hover:bg-gray-100 rounded">
-                                <MoreHorizontal className="w-4 h-4 text-gray-500" />
-                              </button>
+                              </button> */}
+                            
                             </div>
                           </div>
                         </div>

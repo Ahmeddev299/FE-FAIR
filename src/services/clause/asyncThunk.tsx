@@ -3,29 +3,59 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { clauseBaseService } from "./endpoints";
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
-import Toast from "@/components/Toast";
 
 // Approve / Reject / Edit Clause
-export const updateClauseAsync = createAsyncThunk(
+export type UpdateClauseTag = "approved" | "reject";
+
+export const updateClauseAsync = createAsyncThunk<
+  { leaseId: string; clauseKey: string; tag: UpdateClauseTag; server?: any },
+  { leaseId: string; clauseKey: string; tag: UpdateClauseTag | "approve" | "rejected" },
+  { rejectValue: string }
+>(
   "clause/update",
-  async (
-    { leaseId, clauseId, action, payload }: { leaseId: string; clauseId: string; action: "approve" | "reject" | "edit"; payload?: any },
-    { rejectWithValue }
-  ) => {
+  async ({ leaseId, clauseKey, tag }, { rejectWithValue }) => {
+    // normalize frontend variants → API’s expected set
+    const normalizedTag: UpdateClauseTag =
+      tag === "approve" ? "approved" :
+        tag === "rejected" ? "reject" :
+          (tag as UpdateClauseTag);
+
+    // basic guards
+    if (!leaseId) return rejectWithValue("Lease id is missing");
+    if (!clauseKey) return rejectWithValue("Clause key (name) is required");
+    if (!["approved", "reject"].includes(normalizedTag))
+      return rejectWithValue("Invalid tag. Use 'approved' or 'reject'.");
+
     try {
-      const token = `${ls.get("access_token", { decrypt: true })}`;
-      HttpService.setToken(token);
+      const res = await clauseBaseService.updateClauseStatus(leaseId, {
+        clause_key: clauseKey,
+        tag: normalizedTag,
+      });
 
-      const response = await clauseBaseService.updateClause(leaseId, clauseId, { action, ...payload });
+      // handle common API shapes
+      const success =
+        res?.success === true ||
+        res?.status === 200 ||
+        res?.ok === true ||
+        res?.message?.toLowerCase?.().includes("updated") ||
+        !!res?.data;
 
-      if (!response.success || response.status === 400) {
-        return rejectWithValue(response.message);
+      if (!success) {
+        const msg =
+          res?.message ||
+          res?.error ||
+          "Failed to update clause status on the server.";
+        return rejectWithValue(msg);
       }
 
-      Toast.fire({ icon: "success", title: "Clause updated successfully" });
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.message || error.message || "Failed to update clause");
+      return { leaseId, clauseKey, tag: normalizedTag, server: res };
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Network error while updating clause.";
+      return rejectWithValue(msg);
     }
   }
 );

@@ -13,9 +13,14 @@ class ClauseBaseService extends HttpService {
   }
 
   // Approve / reject / edit
-  updateClause(leaseId: string, clauseId: string, data: any): Promise<any> {
-    return this.put(`clause/update_lease/${leaseId}/${clauseId}`, data);
-  }
+  updateClauseStatus = (
+    leaseId: string,
+    payload: { clause_key: string; tag: "approved" | "reject" }
+  ): Promise<any> =>
+    this.put(
+      `clause/landlord_clause_update_accept_reject_lease/${leaseId}`,
+      payload
+    );
 }
 
 export const clauseBaseService = new ClauseBaseService();

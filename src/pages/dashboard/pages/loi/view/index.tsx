@@ -319,9 +319,7 @@ export default function LoiListPage() {
           </div>
         </div>
       )
-
       }
-
 
     </DashboardLayout>
   );

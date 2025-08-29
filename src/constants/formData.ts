@@ -205,11 +205,14 @@ const mapUtilitiesToBoolean = (list?: readonly string[]) => ({
 });
 
 /** Optional: normalize amenity text to a clean string for FormValues.parkingSpaces */
-const normalizeParkingSpaces = (amenities?: string): string => {
-  // Keep it simple: pass-through, or extract digits if your API sends "2 spaces"
+const normalizeParkingSpaces = (amenities?: unknown): string => {
   if (!amenities) return '';
-  const m = amenities.match(/\d+/);
-  return m ? m[0] : amenities;
+
+  // Ensure it's treated as a string
+  const str = String(amenities).trim();
+
+  const m = str.match(/\d+/);
+  return m ? m[0] : str;
 };
 
 export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => ({

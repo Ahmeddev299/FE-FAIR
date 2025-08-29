@@ -148,10 +148,10 @@ export const ContextForm: React.FC = () => {
 
   // fetch once (avoid refetch if already in store)
   useEffect(() => {
-    if (!myLOIs || myLOIs.length === 0) {
+   
       dispatch(getloiDataAsync());
-    }
-  }, [dispatch, myLOIs]); // ✅ include myLOIs to silence exhaustive-deps
+    
+  }, [dispatch]); // ✅ include myLOIs to silence exhaustive-deps
 
   const handleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = e.target.value;

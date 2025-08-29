@@ -112,9 +112,9 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                 <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
+                {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                   Action
-                </th>
+                </th> */}
               </tr>
             </thead>
 
@@ -164,7 +164,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                         <span className={getStatusPill(row.status)}>{row.status || "Active"}</span>
                       </td>
                       <td className="px-4 py-4">
-                        <button
+                        {/* <button
                           onClick={() => view(row)}
                           className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
                           disabled={!row._id && !row.id}
@@ -172,7 +172,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                         >
                           <Eye className="w-4 h-4" />
                           <span>View</span>
-                        </button>
+                        </button> */}
                       </td>
                     </tr>
                   );

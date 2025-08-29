@@ -116,7 +116,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                     <div className="space-y-4">
                       {items.map((c, idx) => {
                         const key = (c.id ?? idx).toString();
-                        const displayTitle = c.title ?? `Clause #${idx + 1}`;
+                        const displayTitle = c.name ?? `Clause #${idx + 1}`;
                         const hasText = typeof c.text === 'string' && c.text.length > 0;
                         const hasStatus = typeof c.status === 'string' && c.status.length > 0;
 
