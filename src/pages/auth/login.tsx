@@ -189,7 +189,7 @@ const Login = () => {
 
                 <div className="text-right mb-4">
                   <Link
-                    href="/auth/resetpassword"
+                    href="/auth/forgot-password"
                     className="text-sm md:text-base text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
                   >
                     Forgot Password?

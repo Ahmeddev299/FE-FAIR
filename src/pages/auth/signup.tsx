@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { Formik, Form } from 'formik';
 import { useAppDispatch } from '@/hooks/hooks';
@@ -83,6 +83,7 @@ const SignUp = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [authError, setAuthError] = useState('');
+  const emailRef = useRef<string>("");
 
     const roles = [
         'admin',
@@ -96,7 +97,7 @@ const SignUp = () => {
 
     const registerUser = async (userData: Partial<SignUpUserData>) => {
         console.log("userData 57", userData);
-        
+
         const formData: SignUpFormData = {
             fullName: `${userData.firstName} ${userData.lastName}`,
             firstName: userData.firstName as string,
@@ -117,31 +118,33 @@ const SignUp = () => {
 
     const handleSuccess = (response: unknown, formikActions: FormikHelpers<SignUpUserData>) => {
         console.log("response", response);
-        
+
         const signUpResponse = response as SignUpResponse;
-        
+    const email = emailRef.current;               // ← get the email here
+
         Toast.fire({
             icon: "success",
             title: signUpResponse.message || 'Registration successful',
             text: `Registration Success, ${signUpResponse?.data?.user?.firstName || 'User'}!`
         });
-        
+
         // Reset form
         formikActions.setSubmitting(false);
         formikActions.resetForm();
-        
-        router.push('/auth/login');
+
+
+        router.push(`/auth/verify-otp?flow=signup&email=${encodeURIComponent(email)}`);
     };
 
     const handleError = (error: unknown, formikActions: FormikHelpers<SignUpUserData>) => {
         console.error('Signup error:', error);
-        
+
         if (error && typeof error === 'object' && 'message' in error) {
             setAuthError((error as { message: string }).message);
         } else {
             setAuthError('Signup failed. Try again.');
         }
-        
+
         formikActions.setSubmitting(false);
     };
 
@@ -164,7 +167,7 @@ const SignUp = () => {
                     {authError && <Alert type="error" message={authError} className="mb-6" />}
 
                     <SocialAuthButton
-                    
+
                         onClick={handleGoogleAuth}
                         icon={GoogleIcon}
                         className="mb-6"
@@ -176,10 +179,13 @@ const SignUp = () => {
 
                     <Formik
                         initialValues={authInitialValues.signup}
+
                         validationSchema={SignupSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ isSubmitting }) => (
+                        {({ isSubmitting ,values }) => (
+                            emailRef.current = values.email || "",
+                            
                             <Form className="space-y-4">
                                 <FormikInput
                                     label="First Name"

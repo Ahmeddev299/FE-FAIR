@@ -7,6 +7,7 @@ import {
   userSignUpAsync,
   userVerifyOTPAsync,
   socialSignInAsync,
+  signupVerifyOtpAsync,
 } from "@/services/auth/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 import ls from "localstorage-slim";
@@ -80,7 +81,7 @@ export const userSlice = createSlice({
       .addCase(userSignUpAsync.pending, (state: any) => {
         state.isLoading = true;
       })
-      .addCase(userSignUpAsync.fulfilled, (state: any, ) => {
+      .addCase(userSignUpAsync.fulfilled, (state: any,) => {
         state.isLoading = false;
         state.signUpSuccess = true;
       })
@@ -121,57 +122,54 @@ export const userSlice = createSlice({
         state.authError = action.payload;
         Toast.fire({ icon: "error", title: action.payload });
       })
-      .addCase(userForgetRequestAsync.pending, (state: any) => {
-        state.isLoading = true;
+      // 1) REQUEST OTP
+      .addCase(userForgetRequestAsync.pending, (state: any) => { state.isLoading = true; })
+      .addCase(userForgetRequestAsync.fulfilled, (state: any, a: any) => {
+        state.isLoading = false; state.emailSent = true;
+        const obj = { email: a.payload.email };
+        ls.set("request", obj, { encrypt: true });
       })
-      .addCase(userForgetRequestAsync.fulfilled, (state: any, action: any) => {
-        state.isLoading = false;
-        state.emailSent = true;
-        const obj = { email: action.payload.data?.email };
-        ls.set("request", obj, {
-          encrypt: true,
-        });
+      .addCase(userForgetRequestAsync.rejected, (state: any, a: any) => {
+        state.isLoading = false; state.authError = a.payload; Toast.fire({ icon: "error", title: a.payload });
       })
-      .addCase(userForgetRequestAsync.rejected, (state: any, action: any) => {
-        state.isLoading = false;
-        state.authError = action.payload;
-        Toast.fire({ icon: "error", title: action.payload });
-      })
-      .addCase(userVerifyOTPAsync.pending, (state: any) => {
-        state.isLoading = true;
-      })
+
+      // 2) VERIFY OTP
+      .addCase(userVerifyOTPAsync.pending, (state: any) => { state.isLoading = true; })
       .addCase(userVerifyOTPAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
         Toast.fire({ icon: "success", title: action.payload.message });
-        const obj: any = ls.get("request", {
-          decrypt: true,
-        });
-        obj["otp"] = state.otp;
-        ls.set("request", obj, {
-          encrypt: true,
-        });
-        Router.push("/reset-password");
+        const obj: any = ls.get("request", { decrypt: true }) || {};
+        obj["otp"] = action.payload.otp;        // ✅ from payload
+        obj["verifiedAt"] = Date.now();         // ✅ track time
+        ls.set("request", obj, { encrypt: true });
+        state.otp = action.payload.otp;
+        Router.push("/auth/reset-password");
       })
-      .addCase(userVerifyOTPAsync.rejected, (state: any, action: any) => {
-        state.isLoading = false;
-        state.authError = action.payload;
-        Toast.fire({ icon: "error", title: action.payload });
+      .addCase(userVerifyOTPAsync.rejected, (state: any, a: any) => {
+        state.isLoading = false; state.authError = a.payload; Toast.fire({ icon: "error", title: a.payload });
       })
-      .addCase(userResetPasswordAsync.pending, (state: any) => {
-        state.isLoading = true;
-      })
-      .addCase(userResetPasswordAsync.fulfilled, (state: any) => {
-        state.isLoading = false;
-        state.otp = "";
+      // 3) SET NEW PASSWORD
+      .addCase(userResetPasswordAsync.pending, (s: any) => { s.isLoading = true; })
+      .addCase(userResetPasswordAsync.fulfilled, (s: any, a: any) => {
+        s.isLoading = false; s.otp = ""; s.resetSuccess = true;
         ls.remove("request");
-        state.resetSuccess = true;
+        Toast.fire({ icon: "success", title: a.payload?.message || "Password updated" });
+        Router.push("/auth/login");
       })
-      .addCase(userResetPasswordAsync.rejected, (state: any, action: any) => {
+      .addCase(userResetPasswordAsync.rejected, (s: any, a: any) => {
+        s.isLoading = false; s.authError = a.payload; Toast.fire({ icon: "error", title: a.payload });
+      })
+      .addCase(signupVerifyOtpAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
-        state.authError = action.payload;
-        Toast.fire({ icon: "error", title: action.payload });
-      });
-  },
+        state.signupEmailVerified = true;
+        state.signupEmail = action.payload.email;
+      })
+    .addCase(signupVerifyOtpAsync.rejected, (state: any, action: any) => {
+      state.isLoading = false;
+      state.authError = action.payload;
+    })
+
+},
 });
 
 export const {
