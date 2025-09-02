@@ -1,24 +1,8 @@
 // src/components/models/ClauseDetailsModel.tsx
 import React, { useEffect } from 'react';
 import { X, History, Check, MessageSquare, AlertTriangle } from 'lucide-react';
-import type { Clause as LoiClause } from '@/types/loi';
+import { ExtendedClause } from '@/types/loi';
 
-// Extend shared Clause with optional fields this modal uses
-type ExtendedClause = LoiClause & {
-  lastEdited?: string;
-  editor?: string;
-  originalText?: string;
-  aiSuggestion?: string;
-  currentVersion?: string;
-
-  // Add these so we don't need "as any"
-  status?: string;
-  risk?: string;
-
-  // Optional display helpers
-  title?: string;
-  name?: string;
-};
 
 interface ClauseDetailsModelProps {
   onClose: () => void;

@@ -27,7 +27,7 @@ function MainPage() {
 
     const handleStartNewLOI = () => {
         console.log("running");
-        router.push('/dashboard/pages/createform');
+        router.push('/dashboard/pages/start');
     };
 
     const uploadLeaseNewLOI = () => {
@@ -38,6 +38,9 @@ function MainPage() {
         router.push('/dashboard/pages/terminateLease');
     };
 
+    const uploadLOI =() =>{
+        router.push('/dashboard/pages/createform')
+    }
     return (
         <DashboardLayout>
             {isLoading ? (
@@ -73,6 +76,7 @@ function MainPage() {
                                     onStartNewLOI={handleStartNewLOI}
                                     onUploadLease={uploadLeaseNewLOI}
                                     onTerminateLease={terminateLease}
+                                    uploadLOI={uploadLOI}
                                 />
                             </div>
                         </div>

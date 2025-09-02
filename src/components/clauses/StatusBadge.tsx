@@ -1,6 +1,6 @@
-// StatusBadge.tsx
-import { Check, Edit, Sparkles, AlertCircle } from 'lucide-react';
-import type { ClauseStatus } from '@/types/loi';
+// src/components/clauses/StatusBadge.tsx
+import { Check, Edit, Sparkles, AlertCircle, Clock } from "lucide-react";
+import type { ClauseStatus } from "@/types/loi";
 
 type Props = {
   status?: ClauseStatus | string;
@@ -8,18 +8,23 @@ type Props = {
 
 // Parse loose strings like "approved", "needs review", etc. -> ClauseStatus
 const parseStatusString = (value?: string): ClauseStatus => {
-  if (!value) return 'Review';
+  if (!value) return "Pending";
   const v = value.toLowerCase();
-  if (v.includes('approve')) return 'Approved';
-  if (v.includes('edit')) return 'Edited';
-  if (v.includes('suggest')) return 'Suggested';
-  if (v.includes('review')) return 'Review';
-  return 'Review';
+  if (v.includes("approve")) return "Approved";
+  if (v.includes("edit")) return "Edited";
+  if (v.includes("suggest")) return "Suggested";
+  if (v.includes("review")) return "Review";
+  if (v.includes("pending") || v.includes("wait") || v.includes("queue")) return "Pending";
+  return "Pending"; // safe default
 };
 
-// Normalize to ClauseStatus without using `any`
+// Normalize to ClauseStatus
 const toStatus = (s?: ClauseStatus | string): ClauseStatus =>
-  s === 'Approved' || s === 'Edited' || s === 'Suggested' || s === 'Review'
+  s === "Approved" ||
+  s === "Edited" ||
+  s === "Suggested" ||
+  s === "Review" ||
+  s === "Pending"
     ? s
     : parseStatusString(s);
 
@@ -27,10 +32,11 @@ export default function StatusBadge({ status }: Props) {
   const safe: ClauseStatus = toStatus(status);
 
   const map = {
-    Edited:    { cls: 'bg-purple-100 text-purple-700',  Icon: Edit },
-    Suggested: { cls: 'bg-blue-100 text-blue-700',      Icon: Sparkles },
-    Approved:  { cls: 'bg-green-100 text-green-700',    Icon: Check },
-    Review:    { cls: 'bg-orange-100 text-orange-700',  Icon: AlertCircle },
+    Edited:    { cls: "bg-purple-100 text-purple-700",  Icon: Edit },
+    Suggested: { cls: "bg-blue-100 text-blue-700",      Icon: Sparkles },
+    Approved:  { cls: "bg-green-100 text-green-700",    Icon: Check },
+    Review:    { cls: "bg-orange-100 text-orange-700",  Icon: AlertCircle },
+    Pending:   { cls: "bg-gray-100 text-gray-700",      Icon: Clock },
   } satisfies Record<ClauseStatus, { cls: string; Icon: typeof Check }>;
 
   const { cls, Icon } = map[safe];

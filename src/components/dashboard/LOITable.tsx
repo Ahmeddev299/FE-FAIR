@@ -27,8 +27,8 @@ interface LOITableProps {
 const getStatusPill = (status?: string) => {
   const s = (status || "").toLowerCase();
   const base = "inline-flex px-2 py-1 text-xs font-medium rounded-full";
-  if (s === "available") return `${base} bg-green-100 text-green-800`;
-  if (s === "pending") return `${base} bg-yellow-100 text-yellow-800`;
+  if (s === " Active") return `${base} bg-green-100 text-green-800`;
+  if (s === "sent") return `${base} bg-yellow-100 text-yellow-800`;
   if (s === "active") return `${base} bg-blue-100 text-blue-800`;
   if (s === "in review") return `${base} bg-purple-100 text-purple-800`;
   if (s === "terminated") return `${base} bg-red-100 text-red-800`;

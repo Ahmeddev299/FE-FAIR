@@ -135,19 +135,22 @@ export const getLeaseDetailsById = createAsyncThunk(
       const token = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
 
-      // Assuming your API accepts leaseId as a query param
       const response = await leaseBaseService.getSingleLeaseDetail(leaseId);
+      console.log("response 140", response);
 
-      if (!response.success || response.status === 400) {
-        return rejectWithValue(response.message);
+      // Only reject if it actually failed
+      if (response.status !== 200 || !response.success) {
+        return rejectWithValue(response.message || "Failed to fetch lease");
       }
 
+      // return the lease object
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.message);
+      return rejectWithValue(error?.response?.data?.message || "Failed to fetch lease");
     }
   }
 );
+
 
 export const getallUserLeasesAsync = createAsyncThunk(
   "lease/listForClauses",

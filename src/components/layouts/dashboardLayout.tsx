@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Bell, ChevronDown } from 'lucide-react';
 import { ProtectedRoute } from '../layouts/protectedRoutes';
 import { LogoutModal } from '../models/logoutModel';
+import Link from 'next/link';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -18,6 +19,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const backgroundImage = '/logo.png';
+
+  const activePath = router.asPath; // e.g. '/dashboard/pages/start'v
+
+  const isActive = (href: string) =>
+    activePath === href || activePath.startsWith(href + '/');
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -36,7 +42,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { name: 'Dashboard', href: '/dashboard/pages/mainpage', icon: '/mage_dashboard-2.png', current: router.pathname === '/dashboard' },
     { name: 'Start LOI', href: '/dashboard/pages/start', icon: '/f7_doc-text.png', current: router.pathname === '/profile' },
     { name: 'Upload Lease', href: '/dashboard/pages/uploadLeaseform', icon: '/upload.png', current: router.pathname === '/news-alerts' },
-    { name: 'Clause Management', href: '/dashboard/pages/clauseManagement', icon: '/img4.png', current: router.pathname === '/bills' },
+    { name: 'Leases', href: '/dashboard/pages/clauseManagement', icon: '/img4.png', current: router.pathname === '/bills' },
     { name: 'E-Signature', href: '/dashboard/pages/tenanteSignature', icon: '/img5.png', current: router.pathname === '/reports' },
     { name: 'Terminate Lease', href: '/dashboard/pages/terminateLease', icon: '/img7.png', current: router.pathname === '/settings' },
     { name: 'Storage', href: '/dashboard/pages/tenantStorage', icon: '/img8.png', current: router.pathname === '/settings' },
@@ -67,20 +73,23 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               height={100}
             />
             <div className="mt-5 flex-grow flex flex-col">
-              <nav className="flex-1 px-2 pb-4 space-y-1">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className={`${item.current
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                      } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
-                  >
-                    <Image src={item.icon as string} alt={item.name} width={32} height={32} className="mr-3" />
-                    {item.name}
-                  </a>
-                ))}
+              <nav className="flex-1 px-4 pb-4 space-y-1">
+                {navigation.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`${active
+                        ? 'bg-[#3B82F6] text-white  border-blue-500'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        } group flex items-center px-2 py-2 text-[16px] font-medium transition-colors duration-150`}
+                    >
+                      <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-2" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   {userSetting.map((item) => (
                     <a
@@ -134,20 +143,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
                 {/* Mobile Navigation */}
                 <nav className="flex-1 px-2 space-y-1">
-                  {navigation.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      className={`${item.current
-                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-150`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <Image src={item.icon} alt={item.name} width={40} height={40} className="mr-3" />
-                      {item.name}
-                    </a>
-                  ))}
+                  {navigation.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`${active
+                          ? 'bg-blue-100 border-blue-500'
+                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                          } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
+                      >
+                        <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-3" />
+                        {item.name}
+                      </Link>
+                    );
+                  })}
 
                   {/* Mobile User Settings */}
                   <div className="border-t border-gray-200 pt-2 mt-4">

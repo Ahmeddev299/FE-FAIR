@@ -301,6 +301,7 @@ export const leaseSlice = createSlice({
       })
       .addCase(getLeaseDetailsById.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.leaseError = "";
         state.currentLease = action.payload as CurrentLease;
       })
       .addCase(getLeaseDetailsById.rejected, (state, action) => {

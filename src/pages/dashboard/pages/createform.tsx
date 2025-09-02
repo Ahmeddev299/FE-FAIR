@@ -28,7 +28,6 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
   const { currentStep, nextStep, prevStep, isStepComplete, steps } = useFormStepper();
   const [initialData, setInitialData] = useState<FormValues | null>(null);
-  const [loading, setLoading] = useState(mode === 'edit');
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false); // New state for final submission
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -43,9 +42,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
           setInitialData(EDIT_INITIAL_VALUES(loiDetails));
         } catch (err) {
           console.error('Error fetching LOI details', err);
-        } finally {
-          setLoading(false);
-        }
+        } 
       })();
     }
   }, [mode, loiId]);
@@ -147,7 +144,6 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   }
 };
 
-
   const renderStepContent = (formValues: FormValues) => {
     switch (currentStep) {
       case 1: return <BasicInformationStep />;
@@ -158,14 +154,6 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
       default: return null;
     }
   };
-
-  if (loading && mode === 'edit') {
-    return (
-      <DashboardLayout>
-        <div className="text-center py-20 text-gray-500">Loading form data...</div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout>

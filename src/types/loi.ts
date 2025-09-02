@@ -165,7 +165,24 @@ export interface ExtendedFormikErrors {
   document?: string;
 }
 
-export type ClauseStatus = 'Edited' | 'Suggested' | 'Approved' | 'Review';
+// Extend shared Clause with optional fields this modal uses
+export type ExtendedClause = Clause & {
+  lastEdited?: string;
+  editor?: string;
+  originalText?: string;
+  aiSuggestion?: string;
+  currentVersion?: string;
+
+  // Add these so we don't need "as any"
+  status?: string;
+  risk?: string;
+
+  // Optional display helpers
+  title?: string;
+  name?: string;
+};
+
+export type ClauseStatus = 'Edited' | 'Suggested' | 'Approved' | 'Review' | 'Pending';
 export type RiskLevel = 'High' | 'Medium' | 'Low';
 
 export interface Clause {
