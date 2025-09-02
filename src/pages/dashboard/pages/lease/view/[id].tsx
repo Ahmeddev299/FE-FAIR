@@ -56,7 +56,7 @@ interface Lease {
   clauses?: ClauseMap | ClauseRaw[];
 }
 
-  interface ClauseItem extends ClauseRaw {
+interface ClauseItem extends ClauseRaw {
   id?: string;                // <-- optional; many APIs DO give per-clause ids
   title: string;
 }
@@ -332,60 +332,60 @@ export default function LeaseDetailPage() {
     setNewComment("");
   };
 
-  
-// helper to create a stable id if the clause doesn't have one
-const makeClauseId = (leaseId: string, c: { id?: string; title?: string }, idx?: number) =>
-  c.id || (c.title ? `${leaseId}::${c.title}` : `${leaseId}::idx-${idx ?? 0}`);
 
-// const normalizeStatus = (value?: string): ClauseStatus => {
-//   const v = (value ?? "Pending").toLowerCase().replace(/\s+/g, "_");
-//   // Adjust this list to exactly match your ClauseStatus union
-//   const allowed: ClauseStatus[] = [
-//     "Approved",
-//     "Edited",
-//     "Suggested",
-//     "Pending"
-//   ];
-//   return (allowed.includes(v as ClauseStatus) ? (v as ClauseStatus) : "Pending");
-// };
+  // helper to create a stable id if the clause doesn't have one
+  const makeClauseId = (leaseId: string, c: { id?: string; title?: string }, idx?: number) =>
+    c.id || (c.title ? `${leaseId}::${c.title}` : `${leaseId}::idx-${idx ?? 0}`);
 
-// normalizers
-const normalizeStatus = (value?: string): ClauseStatus => {
-  const v = (value ?? "Pending").toLowerCase().replace(/\s+/g, "_");
+  // const normalizeStatus = (value?: string): ClauseStatus => {
+  //   const v = (value ?? "Pending").toLowerCase().replace(/\s+/g, "_");
+  //   // Adjust this list to exactly match your ClauseStatus union
+  //   const allowed: ClauseStatus[] = [
+  //     "Approved",
+  //     "Edited",
+  //     "Suggested",
+  //     "Pending"
+  //   ];
+  //   return (allowed.includes(v as ClauseStatus) ? (v as ClauseStatus) : "Pending");
+  // };
+
+  // normalizers
+  const normalizeStatus = (value?: string): ClauseStatus => {
+    const v = (value ?? "Pending").toLowerCase().replace(/\s+/g, "_");
     const allowed: ClauseStatus[] = [
-    "Approved",
-    "Edited",
-    "Suggested",
-    "Pending"
-  ];
-  return (allowed.includes(v as ClauseStatus) ? (v as ClauseStatus) : "Pending");
-};
+      "Approved",
+      "Edited",
+      "Suggested",
+      "Pending"
+    ];
+    return (allowed.includes(v as ClauseStatus) ? (v as ClauseStatus) : "Pending");
+  };
 
-const normalizeRisk = (value?: string): RiskLevel => {
-  const v = (value ?? "").toLowerCase();
-  if (/high|8\/10|9\/10|10\/10/.test(v)) return "High";
-  if (/med|medium|5\/10|6\/10|7\/10/.test(v)) return "Medium";
-  return "Low"; // default so it's never undefined
-};
-
-
-type RiskLevel = Clause["risk"]; // -> "High" | "Medium" | "Low"
+  const normalizeRisk = (value?: string): RiskLevel => {
+    const v = (value ?? "").toLowerCase();
+    if (/high|8\/10|9\/10|10\/10/.test(v)) return "High";
+    if (/med|medium|5\/10|6\/10|7\/10/.test(v)) return "Medium";
+    return "Low"; // default so it's never undefined
+  };
 
 
-// your mapper must return an ExtendedClause that satisfies LoiClause
-const toModalClause = (c: ClauseItem, idx?: number): ExtendedClause => ({
-  id: makeClauseId(id, c, idx),
-  status: normalizeStatus(c.status),     // <- ClauseStatus
-  risk: normalizeRisk(c.risk as string), // <- "High" | "Medium" | "Low" (never undefined)
+  type RiskLevel = Clause["risk"]; // -> "High" | "Medium" | "Low"
 
-  // extra modal fields
-  title: c.title,
-  name: c.title,
-  originalText: c.clause_details,
-  aiSuggestion: c.ai_suggested_clause_details,
-  currentVersion: c.current_version,
-  editor: "",
-});
+
+  // your mapper must return an ExtendedClause that satisfies LoiClause
+  const toModalClause = (c: ClauseItem, idx?: number): ExtendedClause => ({
+    id: makeClauseId(id, c, idx),
+    status: normalizeStatus(c.status),     // <- ClauseStatus
+    risk: normalizeRisk(c.risk as string), // <- "High" | "Medium" | "Low" (never undefined)
+
+    // extra modal fields
+    title: c.title,
+    name: c.title,
+    originalText: c.clause_details,
+    aiSuggestion: c.ai_suggested_clause_details,
+    currentVersion: c.current_version,
+    editor: "",
+  });
 
   return (
     <DashboardLayout>
@@ -398,14 +398,10 @@ const toModalClause = (c: ClauseItem, idx?: number): ExtendedClause => ({
         </button>
 
         {/* Loading */}
-        {isLoading && <LoadingOverlay isVisible />}
 
         {/* Error */}
         {!isLoading && leaseError && (
-          <div className="bg-rose-50 text-rose-700 border border-rose-200 rounded-xl p-4 mb-4">
-            {leaseError || "Failed to load lease."}
-          </div>
-        )}
+          <LoadingOverlay isVisible />)}
 
         {/* Empty */}
         {!isLoading && !leaseError && !currentLease && (

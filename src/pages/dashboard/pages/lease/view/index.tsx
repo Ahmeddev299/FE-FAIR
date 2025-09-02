@@ -1,7 +1,7 @@
 // src/pages/dashboard/pages/lease/view/index.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, Filter, X } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -10,10 +10,9 @@ import { selectLease } from "@/redux/slices/leaseSlice";
 
 type SortBy = "lease_title" | "property_address" | "status" | "updatedAt";
 type SortDir = "asc" | "desc";
-const DEFAULT_LIMIT = 10;
+const DEFAULT_LIMIT = 20;
 
 type LeaseRow = {
-  // allow multiple possible back-end shapes
   _id?: string;
   id?: string;
   lease_id?: string;
@@ -27,7 +26,7 @@ type LeaseRow = {
   status?: string;
 
   updatedAt?: string | number | Date;
-  last_uppdated_date?: string | number | Date; // if BE typo exists
+  last_uppdated_date?: string | number | Date; // backend typo safeguard
   startDate?: string | number | Date;
   endDate?: string | number | Date;
 };
@@ -59,11 +58,9 @@ const truncateWords = (text?: string, limit = 4) => {
 export default function LeaseListPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-
-  // use typed selector
   const { leaseList, isLoading } = useAppSelector(selectLease);
 
-  // QS-aware UI state
+  // read QS
   const qsPage = Number(router.query.page ?? 1);
   const qsQ = (router.query.q as string) || "";
   const qsStatus = (router.query.status as string) || "";
@@ -71,6 +68,7 @@ export default function LeaseListPage() {
   const qsSortDir = (router.query.sortDir as SortDir) || "desc";
   const qsLimit = Number(router.query.limit ?? DEFAULT_LIMIT);
 
+  // state
   const [page, setPage] = useState(qsPage);
   const [q, setQ] = useState(qsQ);
   const [debouncedQ, setDebouncedQ] = useState(qsQ);
@@ -79,17 +77,18 @@ export default function LeaseListPage() {
   const [sortDir, setSortDir] = useState<SortDir>(qsSortDir);
   const [limit, setLimit] = useState(qsLimit);
 
+  // data fetch
   useEffect(() => {
-    // fetch full list once; pagination/search/sort happen client-side
     dispatch(getUserLeasesAsync());
   }, [dispatch]);
 
+  // debounce search
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 300);
+    const t = setTimeout(() => setDebouncedQ(q), 250);
     return () => clearTimeout(t);
   }, [q]);
 
-  // filter + sort client-side (adjust to server params when your API supports it)
+  // filter/sort
   const filtered = useMemo<LeaseRow[]>(() => {
     const data: LeaseRow[] = (leaseList?.data as LeaseRow[]) || [];
     const needle = debouncedQ.toLowerCase();
@@ -108,19 +107,19 @@ export default function LeaseListPage() {
           sortBy === "lease_title"
             ? (a.lease_title || a.title || "")
             : sortBy === "property_address"
-            ? (a.property_address || a.propertyAddress || "")
-            : sortBy === "status"
-            ? (a.status || "")
-            : new Date(a.updatedAt || a.last_uppdated_date || a.endDate || a.startDate || 0).getTime();
+              ? (a.property_address || a.propertyAddress || "")
+              : sortBy === "status"
+                ? (a.status || "")
+                : new Date(a.updatedAt || a.last_uppdated_date || a.endDate || a.startDate || 0).getTime();
 
         const B: string | number =
           sortBy === "lease_title"
             ? (b.lease_title || b.title || "")
             : sortBy === "property_address"
-            ? (b.property_address || b.propertyAddress || "")
-            : sortBy === "status"
-            ? (b.status || "")
-            : new Date(b.updatedAt || b.last_uppdated_date || b.endDate || b.startDate || 0).getTime();
+              ? (b.property_address || b.propertyAddress || "")
+              : sortBy === "status"
+                ? (b.status || "")
+                : new Date(b.updatedAt || b.last_uppdated_date || b.endDate || b.startDate || 0).getTime();
 
         if (typeof A === "number" && typeof B === "number") {
           return sortDir === "asc" ? A - B : B - A;
@@ -129,31 +128,20 @@ export default function LeaseListPage() {
       });
   }, [leaseList?.data, debouncedQ, status, sortBy, sortDir]);
 
+  // paging
   const total = filtered.length;
   const start = (page - 1) * limit;
   const end = start + limit;
   const pageRows = filtered.slice(start, end);
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
+  // sync QS
   useEffect(() => {
-    // keep QS in sync
-    router.replace(
-      {
-        pathname: "/dashboard/pages/lease/view",
-        query: {
-          page,
-          limit,
-          q: debouncedQ || undefined,
-          status: status || undefined,
-          sortBy,
-          sortDir,
-        },
-      },
-      undefined,
-      { shallow: true }
-    );
+    router.replace("/dashboard/pages/lease/view", undefined, { shallow: true });
   }, [page, limit, debouncedQ, status, sortBy, sortDir, router]);
 
+
+  // handlers
   const onHeaderSort = (key: SortBy) => {
     if (key === sortBy) setSortDir(sortDir === "asc" ? "desc" : "asc");
     else {
@@ -163,17 +151,18 @@ export default function LeaseListPage() {
     setPage(1);
   };
 
-  const clearFilters = () => {
+  const openDetail = (id: string | number) => {
+    if (!id) return;
+    router.push(`/dashboard/pages/lease/view/${id}`);
+  };
+
+  const resetAll = () => {
     setQ("");
     setStatus("");
     setSortBy("updatedAt");
     setSortDir("desc");
+    setLimit(DEFAULT_LIMIT);
     setPage(1);
-  };
-
-  const openDetail = (id?: string | number) => {
-    if (!id) return;
-    router.push({ pathname: "/dashboard/pages/lease/view/[id]", query: { id } });
   };
 
   return (
@@ -182,96 +171,71 @@ export default function LeaseListPage() {
         <LoadingOverlay isVisible />
       ) : (
         <div className="p-4 sm:p-6">
-          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Leases</h1>
-              <p className="text-sm text-gray-500">Search, filter, and sort your leases.</p>
-            </div>
+          {/* SIMPLE HEADER */}
+          <div className="mb-4">
+            <h1 className="text-2xl font-semibold text-gray-900">Leases</h1>
           </div>
 
-          {/* Filters */}
-          <div className="mb-4 bg-white rounded  p-3 sm:p-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={q}
-                    onChange={(e) => {
-                      setQ(e.target.value);
-                      setPage(1);
-                    }}
-                    placeholder="Search by lease title or address..."
-                    className="w-full pl-9 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {q && (
-                    <button
-                      onClick={() => {
-                        setQ("");
-                        setPage(1);
-                      }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
+          {/* SIMPLE FILTER BAR */}
+          <div className="mb-4 bg-white rounded p-3 sm:p-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {/* Search */}
+              <input
+                value={q}
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search by lease title or address..."
+                className="md:col-span-3 w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-              <div>
-                <div className="relative">
-                  <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <select
-                    value={status}
-                    onChange={(e) => {
-                      setStatus(e.target.value);
-                      setPage(1);
-                    }}
-                    className="w-full pl-9 pr-3 py-2 border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">All Status</option>
-                    <option value="Available">Available</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Active">Active</option>
-                    <option value="In Review">In Review</option>
-                    <option value="Terminated">Terminated</option>
-                  </select>
-                </div>
-              </div>
+              {/* Status */}
+              <select
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Status</option>
+                <option value="Available">Available</option>
+                <option value="Pending">Pending</option>
+                <option value="Active">Active</option>
+                <option value="In Review">In Review</option>
+                <option value="Terminated">Terminated</option>
+              </select>
 
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-500">Rows</label>
-                <select
-                  value={limit}
-                  onChange={(e) => {
-                    setLimit(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="border rounded-lg px-2 py-2"
-                >
-                  {[10, 20, 50].map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-                {(q || status || sortBy !== "updatedAt" || sortDir !== "desc") && (
-                  <button onClick={clearFilters} className="ml-auto text-sm text-gray-600 hover:underline">
-                    Reset
-                  </button>
-                )}
-              </div>
+              {/* Rows */}
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                title="Rows per page"
+              >
+                {[10, 20, 50].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Reset link (small, optional) */}
+            {(q || status || sortBy !== "updatedAt" || sortDir !== "desc" || limit !== DEFAULT_LIMIT) && (
+              <div className="mt-2">
+                <button onClick={resetAll} className="text-sm text-gray-600 hover:underline">
+                  Reset
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Error */}
-          {/* {leaseError && (
-            <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
-              {String(leaseError)}
-            </div>
-          )} */}
-
-          {/* Table */}
+          {/* TABLE */}
           <div className="bg-white rounded">
             <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
@@ -282,11 +246,6 @@ export default function LeaseListPage() {
                         Lease Title <SortIcon active={sortBy === "lease_title"} dir={sortDir} />
                       </div>
                     </th>
-                    {/* <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("property_address")}>
-                      <div className="inline-flex items-center gap-1">
-                        Property Address <SortIcon active={sortBy === "property_address"} dir={sortDir} />
-                      </div>
-                    </th> */}
                     <th className="px-5 py-3 cursor-pointer select-none" onClick={() => onHeaderSort("status")}>
                       <div className="inline-flex items-center gap-1">
                         Status <SortIcon active={sortBy === "status"} dir={sortDir} />
@@ -301,21 +260,10 @@ export default function LeaseListPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {isLoading &&
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={`sk-${i}`}>
-                        {Array.from({ length: 5 }).map((__, j) => (
-                          <td key={j} className="px-5 py-4">
-                            <div className={`h-${j === 4 ? 8 : 4} ${j === 4 ? "w-20" : ""} bg-gray-100 rounded animate-pulse`} />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-
                   {!isLoading && pageRows.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-500">
-                        <LoadingOverlay isVisible  />
+                      <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-500">
+                        No records found
                       </td>
                     </tr>
                   )}
@@ -324,24 +272,25 @@ export default function LeaseListPage() {
                     pageRows.map((row) => {
                       const id = row._id || row.lease_id || row.id || "";
                       const title = row.lease_title || row.title || "";
-                      // const addr = row.property_address || row.propertyAddress || "";
                       const updated = row.updatedAt || row.last_uppdated_date || row.endDate || row.startDate;
 
                       return (
                         <tr key={id} className="hover:bg-gray-50">
-                          <td className="px-5 py-4 text-sm font-medium text-gray-900">{truncateWords(title, 4)}</td>
-                          {/* <td className="px-5 py-4 text-sm text-gray-600">{truncateWords(addr, 5)}</td> */}
+                          <td className="px-5 py-4 text-sm font-medium text-gray-900">{truncateWords(title, 6)}</td>
                           <td className="px-5 py-4">
                             <StatusPill value={row.status} />
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-600">
                             {updated ? new Date(updated).toLocaleString() : "—"}
-                        </td>
-                          {/* <td className="px-5 py-4 text-right">
-                            <button onClick={() => openDetail(id)} className="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50">
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <button
+                              onClick={() => openDetail(id)}
+                              className="px-3 py-1.5 border rounded-md text-sm hover:bg-gray-50"
+                            >
                               See details
                             </button>
-                          </td> */}
+                          </td>
                         </tr>
                       );
                     })}
@@ -349,35 +298,29 @@ export default function LeaseListPage() {
               </table>
             </div>
 
-            {/* Mobile cards */}
+            {/* MOBILE LIST */}
             <div className="lg:hidden p-3 space-y-3">
               {!isLoading && pageRows.length === 0 && (
                 <div className="text-center text-sm text-gray-500 py-6">No records found</div>
               )}
-              {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={`msk-${i}`} className="p-4 border rounded-lg">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse mb-2" />
-                    <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
-                  </div>
-                ))}
               {!isLoading &&
                 pageRows.map((row) => {
                   const id = row.lease_id ?? row._id ?? row.id ?? "";
                   const title = row.lease_title || row.title || "";
-                  const addr = row.property_address || row.propertyAddress || "";
                   const updated = row.updatedAt || row.last_uppdated_date || row.endDate || row.startDate;
 
                   return (
                     <div key={id} className="p-4 border rounded-lg">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="font-medium text-gray-900">{truncateWords(title, 6)}</div>
+                        <div className="font-medium text-gray-900">{truncateWords(title, 8)}</div>
                         <StatusPill value={row.status} />
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">{truncateWords(addr, 10)}</div>
                       <div className="text-xs text-gray-500 mt-1">{updated ? new Date(updated).toLocaleString() : "—"}</div>
                       <div className="mt-3">
-                        <button onClick={() => openDetail(id)} className="w-full px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+                        <button
+                          onClick={() => openDetail(id)}
+                          className="w-full px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+                        >
                           See details
                         </button>
                       </div>
@@ -386,7 +329,7 @@ export default function LeaseListPage() {
                 })}
             </div>
 
-            {/* Pager */}
+            {/* PAGER */}
             <div className="px-4 py-3 border-t flex items-center justify-between">
               <div className="text-sm text-gray-500">
                 Page {page} of {totalPages} • {total} items
