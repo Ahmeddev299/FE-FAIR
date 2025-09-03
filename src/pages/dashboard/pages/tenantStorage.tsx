@@ -25,7 +25,7 @@ const DocumentStorage: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('All Types');
   const [selectedDate, setSelectedDate] = useState<string>('All Dates');
   const [selectedTags, setSelectedTags] = useState<string>('All Tags');
-  const [selectedIndex, setSelectedIndex] = useState(0); // default to 'All Documents'
+  const [selectedIndex, setSelectedIndex] = useState(0); 
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [folders, setFolders] = useState<Folder[]>([
     { name: 'All Documents', count: 47, isExpanded: true, icon: '/folder.png' },

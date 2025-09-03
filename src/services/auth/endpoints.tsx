@@ -10,8 +10,8 @@ class AuthBaseService extends HttpService {
   socialSignIn = (data: any) => this.post(`${this.prefix}/google_login`, data);
 
   // NEW: fetch lists
-  getAllLandlords = (): Promise<any> => this.get(`${this.prefix} + /get_all_landlord`);
-  getAllTenants = (): Promise<any> => this.get(`${this.prefix} + /get_all_tenants`);
+  getAllLandlords = (): Promise<any> => this.get(`${this.prefix}/get_all_landlord`);
+  getAllTenants = (): Promise<any> => this.get(`${this.prefix}/get_all_tenants`);
 
   // Password reset FLOW (match backend)
   // 1) email -> send OTP
