@@ -88,7 +88,7 @@ export default function LoiListPage() {
   const { myLOIs, isLoading, } =
     useAppSelector((state) => state.dashboard); 
 
-  const total = myLOIs.length;
+const total = (myLOIs ?? []).length;
 
   // ----- fetch when params change -----
   useEffect(() => {

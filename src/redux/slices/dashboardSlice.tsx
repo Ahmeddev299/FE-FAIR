@@ -57,8 +57,8 @@ type DashboardState = {
   // Data
   totalLease: number;
   totalLOI: number;
-  myLeases: LeaseSummary[];
-  myLOIs: LoiSummary[];
+  myLeases: LeaseSummary[] | null;
+  myLOIs: LoiSummary[] | null;
 
   // Pagination
   leasePage: number;
@@ -86,8 +86,8 @@ type DashboardState = {
 const initialState: DashboardState = {
   totalLease: 0,
   totalLOI: 0,
-  myLeases: [],
-  myLOIs: [],
+  myLeases: null,
+  myLOIs: null,
   leasePage: 1,
   loiPage: 1,
   leaseLimit: 5,

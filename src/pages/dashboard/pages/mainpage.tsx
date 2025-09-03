@@ -15,7 +15,8 @@ function MainPage() {
     const dispatch = useAppDispatch();
     const { myLeases, myLOIs, isLoading, isLoadingLOIs, isLoadingLeases, loiError, leaseError } =
         useAppSelector((state) => state.dashboard);
-
+    console.log("isLoading", isLoading)
+    console.log("isLoadingLeases", isLoadingLeases)
     // helper at the top (inside the component file, outside JSX)
     const toErrorMessage = (err: unknown): string | null =>
         err == null ? null : typeof err === 'string' ? err : String(err);
@@ -38,7 +39,7 @@ function MainPage() {
         router.push('/dashboard/pages/terminateLease');
     };
 
-    const uploadLOI =() =>{
+    const uploadLOI = () => {
         router.push('/dashboard/pages/createform')
     }
     return (
@@ -47,7 +48,7 @@ function MainPage() {
                 <LoadingOverlay isVisible />
             ) : (
                 <div className="flex-1 overflow-auto">
-                    <DashboardHeader userName="John" />
+                    <DashboardHeader userName="ahmed" />
 
                     <div className="p-4 sm:p-6 lg:p-0 mt-4">
                         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">

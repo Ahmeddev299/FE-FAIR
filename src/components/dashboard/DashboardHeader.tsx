@@ -5,7 +5,7 @@ interface DashboardHeaderProps {
   userName?: string;
 }
 
-export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName = "John" }) => {
+export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName }) => {
   return (
     <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 p-4">
       <div className="flex items-center justify-between h-16 sm:h-20">
