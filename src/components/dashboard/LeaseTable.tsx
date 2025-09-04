@@ -7,15 +7,15 @@ type ClauseBlock = { status?: string };
 
 type Lease = {
   updated_at?: string;
-  updatedAt?: string;
   id?: string;
   _id?: string;
   lease_title?: string;
   title?: string;
   property_address?: string;
   propertyAddress?: string;
-  status?: string;
-  clauses?: Record<string, ClauseBlock>;
+  status?: string;                       // backend status (may be empty)
+  clauses?: Record<string, ClauseBlock>; // clause blocks with statuses
+  updatedAt?: string;
   lastUpdate?: string;
   startDate?: string;
   endDate?: string;
@@ -40,16 +40,16 @@ const getStatusPill = (status?: string) => {
   if (s === "expiring") return `${base} bg-orange-100 text-orange-800`;
   if (s === "in review") return `${base} bg-yellow-100 text-yellow-800`;
   if (s === "terminated") return `${base} bg-red-100 text-red-800`;
-  return `${base} bg-gray-100 text-gray-800`;
+  return `${base} bg-gray-100 text-gray-800`; // fallback
 };
 
 const statusLabel = (s?: string) => {
   const key = norm(s);
   const map: Record<string, string> = {
-    signed: "Signed",
-    expiring: "Expiring",
+    "signed": "Signed",
+    "expiring": "Expiring",
     "in review": "In Review",
-    terminated: "Terminated",
+    "terminated": "Terminated",
   };
   return map[key] ?? (key ? key.charAt(0).toUpperCase() + key.slice(1) : "—");
 };
@@ -68,25 +68,27 @@ const deriveLeaseStatus = (row: Lease): string => {
   const allowed = new Set(["signed", "expiring", "in review", "terminated"]);
 
   if (top === "terminated") return "terminated";
+
   if (willExpireWithin(row.endDate)) return "expiring";
+
   if (allowed.has(top)) return top;
 
   const blocks = row?.clauses ? Object.values(row.clauses) : [];
   if (blocks.length) {
-    const statuses = blocks.map((b) => norm(b.status)).filter(Boolean);
+    const statuses = blocks.map(b => norm(b.status)).filter(Boolean);
 
     if (statuses.length) {
-      const anyTerminated = statuses.some((s) =>
-        ["terminated", "rejected", "declined"].includes(s)
-      );
+
+      const anyTerminated = statuses.some(s => s === "terminated" || s === "rejected" || s === "declined");
       if (anyTerminated) return "terminated";
 
-      const allApproved = statuses.every((s) => s === "approved");
+      const allApproved = statuses.every(s => s === "approved");
       if (allApproved) return "signed";
 
-      const anyNotFinal = statuses.some((s) =>
-        ["in review", "in progress", "pending", "draft"].includes(s)
-      );
+      const anyNotFinal =
+        statuses.some(s =>
+          ["in review", "in progress", "pending", "draft"].includes(s)
+        );
       if (anyNotFinal) return "in review";
     }
   }
@@ -108,13 +110,13 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
   onClearError,
 }) => {
   const router = useRouter();
-  const safeLeases = leases ?? [];
-
   const view = (row: Lease) => {
-    const id = row._id || row.id;
+    const id = (row as Lease)._id || row.id;
     if (!id) return;
     router.push(`/dashboard/pages/lease/view/${id}`);
   };
+
+  const showLoading = isLoading || leases == null;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -123,7 +125,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-gray-900">My Leases</h2>
           <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
-            {isLoading ? "…" : safeLeases.length}
+            {isLoading ? "…" : leases?.length || 0}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -150,10 +152,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
         <div className="px-6 py-3 text-sm text-red-700 bg-red-50 border-b border-red-100 flex items-start justify-between">
           <span>{error}</span>
           {onClearError && (
-            <button
-              onClick={onClearError}
-              className="text-red-600 hover:underline"
-            >
+            <button onClick={onClearError} className="text-red-600 hover:underline">
               Dismiss
             </button>
           )}
@@ -161,7 +160,6 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
       )}
 
       <div className="p-6">
-        {/* Desktop Table */}
         <div className="hidden lg:block">
           <table className="min-w-full divide-y divide-gray-100 table-fixed">
             <thead>
@@ -185,13 +183,10 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
             </thead>
 
             <tbody className="divide-y divide-gray-100">
-              {isLoading &&
+              {showLoading &&
                 Array.from({ length: 3 }).map((_, i) => (
                   <tr key={`sk-${i}`}>
                     <td className="px-5 py-4">
-                      <div className="h-4 bg-gray-100 rounded animate-pulse" />
-                    </td>
-                    <td className="px-2 py-4">
                       <div className="h-4 bg-gray-100 rounded animate-pulse" />
                     </td>
                     <td className="px-2 py-4">
@@ -206,52 +201,35 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                   </tr>
                 ))}
 
-              {!isLoading && safeLeases.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-5 py-8 text-center text-gray-500 text-sm"
-                  >
-                    No records found
-                  </td>
-                </tr>
+              {!showLoading && Array.isArray(leases) && leases.length === 0 && (
+                <div className="text-center text-sm text-gray-500 py-6">No records found</div>
               )}
 
-              {!isLoading &&
-                safeLeases.map((row, i) => {
+
+              {!showLoading &&
+                leases?.map((row) => {
                   const title = row.lease_title || row.title;
                   const addr = row.property_address || row.propertyAddress;
                   const derived = deriveLeaseStatus(row);
-                  const lastUpdated = row.updated_at || row.updatedAt;
                   return (
-                    <tr
-                      key={row._id || row.id || i}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td
-                        className="px-5 py-4 text-sm font-medium text-gray-900"
-                        title={title || "N/A"}
-                      >
+                    <tr key={(row as Lease)._id || row.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-4 text-sm font-medium text-gray-900" title={title || "N/A"}>
                         {truncateWords(title, 3)}
                       </td>
-                      <td
-                        className="px-2 py-4 text-sm text-gray-500"
-                        title={addr}
-                      >
+                      <td className="px-2 py-4 text-sm text-gray-500" title={addr}>
                         {truncateWords(addr, 3)}
                       </td>
                       <td className="px-2 py-4">
-                        <span className={getStatusPill(derived)}>
-                          {statusLabel(derived)}
-                        </span>
+                        <span className={getStatusPill(derived)}>{statusLabel(derived)}</span>
                       </td>
-                      <td className="px-2 py-4 text-sm text-gray-700">
-                        {lastUpdated ? formatDate(lastUpdated) : "—"}
+                      <td className="py-4 text-sm text-gray-700 w-1/2">
+                        <span>{row?.updated_at && formatDate(row.updated_at)}</span>
                       </td>
                       <td className="px-4 py-4">
                         <button
                           onClick={() => view(row)}
                           className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                       
                         >
                           <Eye className="w-4 h-4" />
                           <span>View</span>
@@ -264,46 +242,33 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
           </table>
         </div>
 
-        {/* Mobile Cards */}
         <div className="lg:hidden space-y-3">
           {isLoading &&
             Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={`msk-${i}`}
-                className="p-4 border border-gray-200 rounded-lg"
-              >
+              <div key={`msk-${i}`} className="p-4 border border-gray-100  rounded-lg">
                 <div className="h-4 bg-gray-100 rounded animate-pulse mb-2" />
                 <div className="h-4 bg-gray-100 rounded animate-pulse w-1/2" />
               </div>
             ))}
 
-          {!isLoading && safeLeases.length === 0 && (
-            <div className="text-center text-sm text-gray-500 py-6">
-              No records found
-            </div>
+          {!isLoading && (!leases || leases.length === 0) && (
+            <div className="text-center text-sm text-gray-500 py-6">No records found</div>
           )}
 
-          {!isLoading &&
-            safeLeases.map((row, i) => {
+          {!isLoading &&  Array.isArray(leases) && leases.length > 0 && 
+            leases?.map((row) => {
               const title = row.lease_title || row.title;
               const addr = row.property_address || row.propertyAddress;
               const derived = deriveLeaseStatus(row);
               return (
-                <div
-                  key={row._id || row.id || i}
-                  className="p-4 border border-gray-200 rounded-lg"
-                >
+                <div key={(row as Lease)._id || row.id} className="p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-start justify-between mb-1">
                     <h3 className="mr-2 text-sm font-medium text-gray-900">
                       {truncateWords(title, 3)}
                     </h3>
-                    <span className={getStatusPill(derived)}>
-                      {statusLabel(derived)}
-                    </span>
+                    <span className={getStatusPill(derived)}>{statusLabel(derived)}</span>
                   </div>
-                  <div className="text-sm text-gray-500 mb-2">
-                    {truncateWords(addr, 4)}
-                  </div>
+                  <div className="text-sm text-gray-500 mb-2">{truncateWords(addr, 4)}</div>
                   <button
                     onClick={() => view(row)}
                     className="flex items-center gap-1 px-3 py-1 border rounded-md text-sm"
