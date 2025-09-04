@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { CheckCircle, Search, Edit, Eye } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks'; // adjust based on your setup
-import { getDraftLOIsAsync } from '@/services/loi/asyncThunk'; // adjust path to where your thunk is located
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks'; 
+import { getDraftLOIsAsync } from '@/services/loi/asyncThunk'; 
 import { DashboardLayout } from '@/components/layouts';
-import { useRouter } from 'next/router'; // or 'next/navigation' if using app directory
+import { useRouter } from 'next/router'; 
 import Image from 'next/image';
 import { formatDate } from '@/utils/dateFormatter';
 import { Letter, LOIStatus } from '@/types/loi';
@@ -43,14 +43,13 @@ export default function LetterOfIntentDashboard() {
       {isLoading ? (<LoadingOverlay isVisible />) : (
         <div className="min-h-screen">
           <div className="max-w-9xl mx-auto px-2 sm:px-6 lg:px-p0 py-8">
-            {/* Header */}
+           
             <div className="bg-white p-4 rounded-lg shadow-sm mb-8">
               <h1 className="text-3xl lg:w-[1086px] font-bold text-[24px] text-gray-900 mb-2">Start a New Letter of Intent</h1>
               <p className="text-gray-600">Initiate the LOI process by completing the steps below or reviewing previously saved drafts.</p>
             </div>
-            {/* Main Content Grid */}
+            
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 xl:gap-6">
-              {/* Left Side */}
               <div className="xl:col-span-2 w-full">
                 <div className="bg-[#EFF6FF] rounded-lg shadow-sm p-6 h-full">
                   <div className="flex items-center mb-6">
@@ -92,32 +91,27 @@ export default function LetterOfIntentDashboard() {
                 </div>
               </div>
 
-              {/* Right Side - Four Feature Cards */}
               <div className="flex flex-col gap-4 w-full">
                 {[
                   {
                     icon: '/ai-powered.png',
                     title: 'AI-Powered Assistance',
                     desc: 'Get intelligent suggestions and guidance throughout the process to ensure your LOI is comprehensive and professional.',
-
                   },
                   {
                     icon: '/loititle.png',
                     title: 'Step-by-Step Wizard',
                     desc: 'Complete your LOI with our intuitive guided workflow that walks you through each required section.',
-
                   },
                   {
                     icon: '/professional.png',
                     title: 'Professional Templates',
                     desc: 'Use industry-standard LOI templates tailored for commercial leases and real estate transactions.',
-
                   },
                   {
                     icon: '/step.png',
                     title: 'Need Help?',
                     desc: 'Our support team is here to assist you with any questions about the LOI process.',
-
                     support: true,
                   },
                 ].map((item, idx) => (
@@ -139,15 +133,12 @@ export default function LetterOfIntentDashboard() {
                   </div>
                 ))}
               </div>
-
             </div>
 
-            {/* My Draft LOIs Section */}
             <div className="bg-white rounded-lg shadow-sm mt-8">
               <div className="border-b border-gray-200 p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">My Draft LOIs</h2>
 
-                {/* Search and Filter */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -160,7 +151,6 @@ export default function LetterOfIntentDashboard() {
                 </div>
               </div>
 
-              {/* Table Scroll Wrapper */}
               <div className="overflow-x-auto">
                 <div className="min-w-[800px]">
                   {/* Table Header */}

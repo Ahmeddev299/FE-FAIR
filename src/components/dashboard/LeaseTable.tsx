@@ -13,8 +13,8 @@ type Lease = {
   title?: string;
   property_address?: string;
   propertyAddress?: string;
-  status?: string;                       // backend status (may be empty)
-  clauses?: Record<string, ClauseBlock>; // clause blocks with statuses
+  status?: string;                       
+  clauses?: Record<string, ClauseBlock>; 
   updatedAt?: string;
   lastUpdate?: string;
   startDate?: string;
@@ -204,7 +204,6 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
               {!showLoading && Array.isArray(leases) && leases.length === 0 && (
                 <div className="text-center text-sm text-gray-500 py-6">No records found</div>
               )}
-
 
               {!showLoading &&
                 leases?.map((row) => {
