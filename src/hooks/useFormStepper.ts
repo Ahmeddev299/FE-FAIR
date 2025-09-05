@@ -9,7 +9,6 @@ export const useFormStepper = () => {
     console.log('nextStep called, current:', currentStep);
     setCurrentStep(prev => {
       const next = Math.min(prev + 1, STEPS.length);
-      console.log('Moving from step', prev, 'to step', next);
       return next;
     });
   }, []);
@@ -18,13 +17,11 @@ export const useFormStepper = () => {
     console.log('prevStep called, current:', currentStep);
     setCurrentStep(prev => {
       const previous = Math.max(prev - 1, 1);
-      console.log('Moving from step', prev, 'to step', previous);
       return previous;
     });
   }, []);
 
   const goToStep = useCallback((step: number) => {
-    console.log('goToStep called with:', step);
     setCurrentStep(Math.max(1, Math.min(step, STEPS.length)));
   }, []);
 

@@ -29,16 +29,16 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const { currentStep, nextStep, prevStep, isStepComplete, steps } = useFormStepper();
   const [initialData, setInitialData] = useState<FormValues | null>(null);
   const [saving, setSaving] = useState(false);
-  const [submitting, setSubmitting] = useState(false); // New state for final submission
+  const [submitting, setSubmitting] = useState(false); 
   const [lastSaved, setLastSaved] = useState<string | null>(null);
-  const router = useRouter(); // For Next.js
+  const router = useRouter();
+
   useEffect(() => {
     if (mode === 'edit' && loiId) {
       (async () => {
         try {
           const resultAction = await dispatch(getLOIDetailsById(loiId));
           const loiDetails = unwrapResult(resultAction);
-          console.log("loiDetails", loiDetails)
           setInitialData(EDIT_INITIAL_VALUES(loiDetails));
         } catch (err) {
           console.error('Error fetching LOI details', err);
@@ -47,40 +47,13 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
     }
   }, [mode, loiId]);
 
-  // const handleSubmit = async (formValues: FormValues) => {
-  //   try {
-  //     if (currentStep === steps.length) {
-  //       console.log("currentStep", currentStep)
-  //       setSubmitting(true); // Set loading state for final submission
-  //       const apiPayload = transformToApiPayload(formValues, loiId);
-  //       await dispatch(submitLOIAsync(apiPayload)).unwrap();
-  //       console.log('LOI submitted successfully!');
-  //       setLastSaved(new Date().toLocaleTimeString());
-  //       router.push({
-  //         pathname: '/dashboard/pages/start',
-  //         query: {
-  //           success: 'loi_submitted',
-  //         }
-  //       });
-  //     } else {
-  //       nextStep();
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to submit LOI:', error);
-  //   } finally {
-  //     setSubmitting(false); // Reset loading state
-  //   }
-  // };
-
   const handleSubmit = async (formValues: FormValues) => {
   try {
     if (currentStep === steps.length) {
-
       setSubmitting(true);
-      const apiPayload = transformToApiPayload(formValues); // loiId is safe now
+      const apiPayload = transformToApiPayload(formValues);
       await dispatch(submitLOIAsync(apiPayload)).unwrap();
 
-      console.log("LOI submitted successfully!");
       setLastSaved(new Date().toLocaleTimeString());
 
       router.push({
@@ -97,35 +70,10 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   }
 };
 
-
-  // const saveAsDraft = async (formValues: FormValues) => {
-  //   try {
-  //     setSaving(true); // Set loading state for draft save
-  //     const draftPayload = transformToApiPayload(formValues, loiId);
-  //     await dispatch(submitLOIAsync({ ...draftPayload, submit_status: 'Draft' })).unwrap();
-  //     console.log('LOI saved as draft!');
-  //     router.push({
-  //       pathname: '/dashboard/pages/start',
-  //       query: {
-  //         success: 'loi_submitted',
-  //       }
-  //     });
-  //     setLastSaved(new Date().toLocaleTimeString());
-  //   } catch (error) {
-  //     console.error('Failed to save draft:', error);
-  //   } finally {
-  //     setSaving(false); // Reset loading state
-  //   }
-  // };
-
   const saveAsDraft = async (formValues: FormValues) => {
   try {
     setSaving(true);
-
-    // if (!loiId) {
-    //   throw new Error("LOI ID is missing, cannot save draft.");
-    // }
-
+    
     const draftPayload = transformToApiPayload(formValues);
     await dispatch(
       submitLOIAsync({ ...draftPayload, submit_status: "Draft" })
@@ -146,6 +94,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
 
   const renderStepContent = (formValues: FormValues) => {
     switch (currentStep) {
+    
       case 1: return <BasicInformationStep />;
       case 2: return <LeaseTermsStep />;
       case 3: return <PropertyDetailsStep />;
@@ -165,6 +114,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
           onSubmit={handleSubmit}
         >
           {({ values, isValid, validateForm }) => (
+
             <Form>
               <FormHeader
                 mode={mode}

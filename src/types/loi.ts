@@ -6,14 +6,19 @@ export interface FormValues {
   landlordEmail: string;
   tenantName: string;
   tenantEmail: string;
+  addFileNumber: boolean,
   rentAmount: string;
-    startDate: string,
+  rentEsclation: string
+  startDate: string,
   securityDeposit: string;
   propertyType: string;
   leaseDuration: string;
   propertySize: string;
   intendedUse: string;
   parkingSpaces: string;
+  exclusiveUse: string;
+  hasExtraSpace: boolean;
+  patio: string;
   utilities: {
     electricity: boolean;
     waterSewer: boolean;
@@ -21,7 +26,10 @@ export interface FormValues {
     internetCable: boolean;
     hvac: boolean;
     securitySystem: boolean;
+    other: boolean; // ✅ add this
   };
+  rightOfFirstRefusal: boolean;
+  leaseToPurchase: boolean;
   renewalOption: boolean;
   improvementAllowance: string;
   specialConditions: string;
@@ -32,7 +40,6 @@ export interface FormValues {
   propertyInspection: boolean;
   insuranceApproval: boolean;
   terms: boolean;
-  
 }
 
 export interface Step {
@@ -40,39 +47,51 @@ export interface Step {
   title: string;
   subtitle: string;
 }
-
-// types/loi.ts or near transformToApiPayload
+// types/loi.ts (or types/api.ts if you separate DTOs)
+export type SubmitStatus = 'Draft' | 'Submitted';
 
 export interface LOIApiPayload {
   title: string;
   propertyAddress: string;
+  addFileNumber: boolean;
+
   partyInfo: {
     landlord_name: string;
     landlord_email: string;
     tenant_name: string;
     tenant_email: string;
   };
+
   leaseTerms: {
     monthlyRent: string;
     securityDeposit: string;
-    leaseType: string;
+    leaseType: string;      // mapped from form.propertyType
     leaseDuration: string;
-    startDate: string;
+    startDate: string;      // ISO format YYYY-MM-DD
+    rentEsclation: string;  // keep backend spelling
   };
+
   propertyDetails: {
     propertySize: string;
     intendedUse: string;
+    exclusiveUse: string;
     propertyType: string;
-    amenities: string[];
-    utilities: string[];
+    patio?: string;          // from UI (moved here)
+    hasExtraSpace: boolean;  // UI checkbox
+    amenities: string[];     // e.g. ["8–10"]
+    utilities: string[];     // e.g. ["Electricity", "Other"]
   };
+
   additionalDetails: {
     renewalOption: boolean;
     tenantImprovement: string;
     specialConditions: string;
-    contingencies: string;
+    contingencies: string[];       // array, not string
+    rightOfFirstRefusal?: boolean; // optional misc
+    leaseToPurchase?: boolean;     // optional misc
   };
-  submit_status: string;
+
+  submit_status: SubmitStatus;
 }
 
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
