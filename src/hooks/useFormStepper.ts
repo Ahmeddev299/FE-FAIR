@@ -7,7 +7,7 @@ export const useFormStepper = () => {
 
   const nextStep = useCallback(() => {
     console.log('nextStep called, current:', currentStep);
-    setCurrentStep(prev => {
+  setCurrentStep(prev => {
       const next = Math.min(prev + 1, STEPS.length);
       return next;
     });
@@ -32,6 +32,12 @@ export const useFormStepper = () => {
   const resetStepper = useCallback(() => {
     setCurrentStep(1);
   }, []);
+  
+
+   const jumpToStep = (step: number) => {
+    if (step >= 1 && step <= STEPS.length) setCurrentStep(step);
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return {
     currentStep,
@@ -40,6 +46,7 @@ export const useFormStepper = () => {
     goToStep,
     isStepComplete,
     resetStepper,
-    steps: STEPS
+    steps: STEPS,
+    jumpToStep
   };
 };

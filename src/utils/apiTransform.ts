@@ -3,6 +3,8 @@ import type { LOIApiPayload } from '@/types/loi';
 import { FormValues } from '../types/loi';
 
 export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
+
+  console.log("values", values.renewalOption)
   // Utilities -> array of labels
   const selectedUtilities = Object.entries(values.utilities || {})
     .filter(([, v]) => v === true)
@@ -46,8 +48,9 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
       leaseType: values.propertyType,     // <-- REQUIRED: map from form
       leaseDuration: values.leaseDuration,
       startDate: values.startDate,
-      rentEsclation: values.rentEsclation,
+      RentEscalation: values.rentEsclation,
       // patio?: you can add here if your LOIApiPayload includes it
+      PrepaidRent: values.prepaidRent
     },
 
     propertyDetails: {
@@ -58,12 +61,14 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
       amenities: values.parkingSpaces ? [values.parkingSpaces] : [], // <-- array of range strings
       utilities: selectedUtilities,                                   // ["Electricity", ...]
       // hasExtraSpace/patio can be added if present in LOIApiPayload
-        hasExtraSpace: values.hasExtraSpace
+        hasExtraSpace: values.hasExtraSpace,
+        patio : values.patio
     },
 
     additionalDetails: {
-      renewalOption: !!values.renewalOption,
+      Miscellaneous_items: !!values.renewalOption,
       tenantImprovement: values.improvementAllowance,
+      
       specialConditions: values.specialConditions,
       contingencies, // <-- array as per updated type
       // rightOfFirstRefusal / leaseToPurchase optional if your API type has them

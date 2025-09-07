@@ -26,26 +26,30 @@ interface Props {
 
 const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
-  const { currentStep, nextStep, prevStep, isStepComplete, steps } = useFormStepper();
+  const { currentStep, nextStep, prevStep, isStepComplete, steps , jumpToStep  } = useFormStepper();
+  
+  console.log("steps", steps)
   const [initialData, setInitialData] = useState<FormValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false); 
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    if (mode === 'edit' && loiId) {
-      (async () => {
-        try {
-          const resultAction = await dispatch(getLOIDetailsById(loiId));
-          const loiDetails = unwrapResult(resultAction);
-          setInitialData(EDIT_INITIAL_VALUES(loiDetails));
-        } catch (err) {
-          console.error('Error fetching LOI details', err);
-        } 
-      })();
-    }
-  }, [mode, loiId]);
+ useEffect(() => {
+  if (mode === "edit" && loiId) {
+    (async () => {
+      try {
+        const resultAction = await dispatch(getLOIDetailsById(loiId));
+        const loiDetails = unwrapResult(resultAction);
+        setInitialData(EDIT_INITIAL_VALUES(loiDetails));
+
+      } catch (err) {
+        console.error("Error fetching LOI details", err);
+      }
+    })();
+  }
+}, [mode, loiId]);
+
 
   const handleSubmit = async (formValues: FormValues) => {
   try {
@@ -99,7 +103,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
       case 2: return <LeaseTermsStep />;
       case 3: return <PropertyDetailsStep />;
       case 4: return <AdditionalTermsStep />;
-      case 5: return <ReviewSubmitStep values={formValues} />;
+      case 5: return <ReviewSubmitStep values={formValues} onEdit={jumpToStep}  />;
       default: return null;
     }
   };

@@ -9,6 +9,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { FormValues } from '../../types/loi';
+import { exportLoiToDocx } from '@/utils/exportDocx';
+import { transformToApiPayload } from '@/utils/apiTransform';
 
 interface ReviewSubmitStepProps {
   values: FormValues;
@@ -16,6 +18,7 @@ interface ReviewSubmitStepProps {
   goToStep?: (step: number) => void;
   /** Optional: export the PDF */
   onDownload?: () => void;
+  onEdit: (step: number) => void 
 }
 
 const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
@@ -29,10 +32,8 @@ const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
 
 export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
   values,
-  goToStep,
-  onDownload,
+  onEdit
 }) => {
-  const edit = (n: number) => () => goToStep?.(n);
 
   return (
     <div className="space-y-6">
@@ -48,15 +49,15 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           <div className="border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <h4 className="font-semibold">Basic Information</h4>
-              <button
-                type="button"
-                onClick={edit(1)}
-                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
-                aria-label="Edit Basic Information"
-              >
-                <PencilLine className="w-4 h-4" />
-                Edit
-              </button>
+                {/* <button
+                  type="button"
+                  onClick={onEdit(1)}
+                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                  aria-label="Edit Basic Information"
+                >
+                  <PencilLine className="w-4 h-4" />
+                  Edit
+                </button> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               <Row label="LOI Title" value={values.title} />
@@ -70,15 +71,15 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           <div className="border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <h4 className="font-semibold">Lease Terms</h4>
-              <button
+              {/* <button
                 type="button"
-                onClick={edit(2)}
+                onClick={onEdit(2)}
                 className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
                 aria-label="Edit Lease Terms"
               >
                 <PencilLine className="w-4 h-4" />
                 Edit
-              </button>
+              </button> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               <Row
@@ -100,15 +101,15 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           <div className="border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <h4 className="font-semibold">Property Details</h4>
-              <button
+              {/* <button
                 type="button"
-                onClick={edit(3)}
+                onClick={onEdit(3)}
                 className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
                 aria-label="Edit Property Details"
               >
                 <PencilLine className="w-4 h-4" />
                 Edit
-              </button>
+              </button> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               <Row
@@ -137,7 +138,8 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
                 <div className="mt-3 flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={onDownload}
+                    onClick={() => exportLoiToDocx(transformToApiPayload(values))}
+
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm"
                   >
                     <DownloadIcon className="w-4 h-4" />

@@ -10,6 +10,8 @@ export const STEPS: Step[] = [
   { id: 5, title: 'Review & Submit', subtitle: 'Final review' }
 ];
 
+
+
 /* -------------------- INITIAL VALUES -------------------- */
 export const INITIAL_VALUES: FormValues = {
   // Step 1
@@ -36,7 +38,7 @@ export const INITIAL_VALUES: FormValues = {
   propertyType: '',
   hasExtraSpace: false,
   parkingSpaces: '',
-
+  prepaidRent: '',
   utilities: {
     electricity: false,
     waterSewer: false,
@@ -44,7 +46,7 @@ export const INITIAL_VALUES: FormValues = {
     internetCable: false,
     hvac: false,
     securitySystem: false,
-    other: false, 
+    other: false,
   },
 
   // Step 4
@@ -83,6 +85,7 @@ type LoiDTO = {
     leaseDuration?: string;
     startDate?: string;       // ISO string
     rentEsclation?: string;   // keep spelling to match backend
+    prepaidRent: string,
   };
 
   propertyDetails?: {
@@ -141,7 +144,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => ({
   leaseDuration: loi.leaseTerms?.leaseDuration ?? '',
   rentEsclation: loi.leaseTerms?.rentEsclation ?? '',
   startDate: (loi.leaseTerms?.startDate ?? '').split('T')[0] || '',
-
+  prepaidRent: loi.leaseTerms?.prepaidRent ?? '' ,
   // Step 3
   propertySize: loi.propertyDetails?.propertySize ?? '',
   patio: loi.propertyDetails?.patio ?? '',
@@ -167,7 +170,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => ({
 
   // 🔹 Add the two required booleans (default false)
   rightOfFirstRefusal: !!loi.additionalDetails?.rightOfFirstRefusal,
-  leaseToPurchase:    !!loi.additionalDetails?.leaseToPurchase,
+  leaseToPurchase: !!loi.additionalDetails?.leaseToPurchase,
 
   // Step 5
   terms: false,

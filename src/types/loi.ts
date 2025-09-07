@@ -18,6 +18,8 @@ export interface FormValues {
   parkingSpaces: string;
   exclusiveUse: string;
   hasExtraSpace: boolean;
+  prepaidRent: string ,
+
   patio: string;
   utilities: {
     electricity: boolean;
@@ -68,7 +70,8 @@ export interface LOIApiPayload {
     leaseType: string;      // mapped from form.propertyType
     leaseDuration: string;
     startDate: string;      // ISO format YYYY-MM-DD
-    rentEsclation: string;  // keep backend spelling
+    RentEscalation: string;  // keep backend spelling
+    PrepaidRent: string;
   };
 
   propertyDetails: {
@@ -83,12 +86,13 @@ export interface LOIApiPayload {
   };
 
   additionalDetails: {
-    renewalOption: boolean;
+    Miscellaneous_items: boolean;
     tenantImprovement: string;
     specialConditions: string;
     contingencies: string[];       // array, not string
     rightOfFirstRefusal?: boolean; // optional misc
     leaseToPurchase?: boolean;     // optional misc
+
   };
 
   submit_status: SubmitStatus;
