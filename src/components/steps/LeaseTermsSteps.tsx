@@ -6,6 +6,7 @@ import { Info } from 'lucide-react';
 import { DollarSign, CalendarDays } from "lucide-react";
 
 export const LeaseTermsStep: React.FC = () => (
+
   <div className="space-y-6">
     <h3 className="text-lg font-semibold mb-4">Lease Terms</h3>
     <p>Define the financial and temporal aspects of your proposed lease.</p>
@@ -61,16 +62,16 @@ export const LeaseTermsStep: React.FC = () => (
           <label className="block text-sm font-medium mb-2">Lease Type *</label>
           <Field
             as="select"
-            name="LeaseType"
+            name="leaseType"
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">Select property type</option>
+            <option value="">Select lease type</option>
             <option value="Gross Lease">Gross Lease</option>
             <option value="Modified NNN">Modified NNN</option>
             <option value="Modified Gross">Modified Gross</option>
             <option value="Percentage Lease">Percentage Lease</option>
           </Field>
-          <ErrorMessage name="LeaseType" component="div" className="text-red-500 text-sm mt-1" />
+          <ErrorMessage name="leaseType" component="div" className="text-red-500 text-sm mt-1" />
 
         </div>
       </div>

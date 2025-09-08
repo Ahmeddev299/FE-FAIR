@@ -23,18 +23,24 @@ import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { getClauseDetailsAsync } from "@/services/lease/asyncThunk";
 
-// ---------- Types ----------
+/* ---------- Types ---------- */
 interface ClauseData {
-  risk: string;                         // e.g., "Low (2/10)"
+  // minimal fields used in UI; extend to match API if needed
+  risk: string; // e.g., "Low (2/10)"
   status: "approved" | "pending" | "rejected";
   current_version: string;
   ai_suggested_clause_details: string;
   clause_details: string;
+
+  // possible id fields (we'll try several when extracting)
+  clause_id?: string;
+  id?: string;
+  _id?: string;
 }
 
 type HistoryMap = Record<string, ClauseData>;
 
-// ---------- UI helpers ----------
+/* ---------- UI helpers ---------- */
 const Pill: React.FC<{ tone?: "neutral" | "green" | "yellow" | "red" | "blue"; children: React.ReactNode }> = ({
   tone = "neutral",
   children,
@@ -107,7 +113,7 @@ const ClauseListItem: React.FC<{
   );
 };
 
-// ---------- Component ----------
+/* ---------- Component ---------- */
 const LeaseClauseReview: React.FC = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -129,22 +135,32 @@ const LeaseClauseReview: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string>("");
   const [showAIAssistant, setShowAIAssistant] = useState<boolean>(false);
 
-  // Data fetch
+  // Local editable copy of the history (for optimistic UI)
+  const [localHistory, setLocalHistory] = useState<HistoryMap>({});
+
+  /* ---------- Data fetch ---------- */
   useEffect(() => {
     if (leaseId && clauseDocId) {
       dispatch(getClauseDetailsAsync({ leaseId, clauseDocId }));
     }
   }, [dispatch, leaseId, clauseDocId]);
 
+  // Sync local history when store changes
+  useEffect(() => {
+    if (currentLease?.data?.history) {
+      setLocalHistory(currentLease.data.history as HistoryMap);
+    }
+  }, [currentLease?.data?.history]);
+
   // Select first clause by default
   useEffect(() => {
-    if (currentLease?.data?.history && !selectedClause) {
-      const first = Object.keys(currentLease.data.history)[0];
-      if (first) setSelectedClause(first);
+    if (localHistory && !selectedClause) {
+      const names = Object.keys(localHistory);
+      if (names.length) setSelectedClause(names[0]);
     }
-  }, [currentLease, selectedClause]);
+  }, [localHistory, selectedClause]);
 
-  // ----- Helpers -----
+  /* ---------- Helpers ---------- */
   const getRiskLevel = (risk: string): number => {
     const match = risk.match(/\((\d+)\/10\)/);
     return match ? parseInt(match[1], 10) : 0;
@@ -164,9 +180,20 @@ const LeaseClauseReview: React.FC = () => {
     return CheckCircle;
   };
 
-  // Categorize clauses (tweak keywords as you like)
-  const groupClausesByCategory = (): Record<string, string[]> => {
-    const history = currentLease?.data?.history ?? {};
+  // Extract a clause id (try a few common places)
+  const getClauseId = (clauseName: string): string => {
+    const item: any = localHistory?.[clauseName];
+    return (
+      item?.clause_id ||
+      item?._id ||
+      item?.id ||
+      currentLease?.data?.history_meta?.[clauseName]?.id ||
+      ""
+    );
+  };
+
+  // Category grouping (keywords can be tuned)
+  const groupClausesByCategory = (history: HistoryMap): Record<string, string[]> => {
     const categories: Record<string, string[]> = {
       Rent: [],
       "CAM Charges": [],
@@ -185,81 +212,186 @@ const LeaseClauseReview: React.FC = () => {
     return categories;
   };
 
-  // Filter function
-  const filterClauses = (clauses: string[]): string[] => {
-    const history = currentLease?.data?.history ?? {};
-    return clauses.filter((name) => {
-      const clause = history[name];
-      if (!clause) return false;
+  const categories = useMemo(() => groupClausesByCategory(localHistory), [localHistory]);
 
+  // Filtered names for each section
+  const filterClauses = (clauses: string[]): string[] => {
+    return clauses.filter((name) => {
+      const clause = localHistory[name];
+      if (!clause) return false;
       const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
       const level = getRiskLevel(clause.risk);
-
       const matchesRisk =
         riskFilter === "All Risk Levels" ||
         (riskFilter === "Low Risk" && level < 4) ||
         (riskFilter === "Medium Risk" && level >= 4 && level < 7) ||
         (riskFilter === "High Risk" && level >= 7);
-
       return matchesSearch && matchesRisk;
     });
   };
 
-  const categories = useMemo(() => groupClausesByCategory(), [currentLease?.data?.history]);
-
   const selectedClauseData: ClauseData | null =
-    selectedClause && currentLease?.data?.history
-      ? (currentLease.data.history[selectedClause] as ClauseData)
-      : null;
+    selectedClause && localHistory ? (localHistory[selectedClause] as ClauseData) : null;
 
-  // ----- Toast -----
+  /* ---------- Toast ---------- */
   const showToastMessage = (msg: string) => {
     setToastMessage(msg);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2500);
   };
 
-  // ----- Actions -----
-  const handleAccept = (clauseName: string) => {
-    console.log("Accepting clause:", clauseName);
-    // TODO: dispatch an update action if backend supported
-    showToastMessage("AI suggestion accepted successfully!");
+  /* ---------- Actions ---------- */
+
+  // Accept: replace Original with AI Suggested and save
+  const handleAccept = async (clauseName: string) => {
+    const clause = localHistory?.[clauseName];
+    if (!clause) return;
+
+    const clauseId = getClauseId(clauseName);
+    const newText = clause.ai_suggested_clause_details ?? "";
+
+    // optimistic update
+    setLocalHistory((prev) => ({
+      ...prev,
+      [clauseName]: {
+        ...prev[clauseName],
+        current_version: newText,
+        status: "approved",
+      },
+    }));
+
+    try {
+      await fetch(
+        `/clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${clauseId}`,
+        {
+          method: "PUT", // adjust to PATCH if needed
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clause_id: clauseId,
+            clause_title: clauseName,
+            // store the AI suggestion as the new current version
+            current_version: newText,
+            ai_suggested_clause_details: clause.ai_suggested_clause_details,
+            action: "accept_ai_suggestion",
+          }),
+        }
+      );
+      showToastMessage("AI suggestion accepted successfully!");
+    } catch (e) {
+      // rollback on failure
+      setLocalHistory((prev) => ({
+        ...prev,
+        [clauseName]: { ...prev[clauseName], current_version: clause.current_version, status: clause.status },
+      }));
+    }
   };
 
-  const handleReject = (clauseName: string) => {
-    console.log("Rejecting clause:", clauseName);
-    // TODO: dispatch an update action if backend supported
+  // Reject: cancel and go back
+  const handleReject = () => {
     router.back();
   };
 
+  // Edit: enable editing text area
   const handleEdit = (clauseName: string) => {
     setEditingClause(clauseName);
-    setEditedContent(currentLease?.data?.history?.[clauseName]?.current_version ?? "");
+    setEditedContent(localHistory?.[clauseName]?.current_version ?? "");
   };
 
-  const handleSaveEdit = (clauseName: string) => {
-    console.log("Saving edited clause:", clauseName);
-    // TODO: dispatch an update action if backend supported
-    setEditingClause(null);
-    setEditedContent("");
-    showToastMessage("Clause edited and saved.");
+  // Save edited Original Clause to API
+  const handleSaveEdit = async (clauseName: string) => {
+    const clauseId = getClauseId(clauseName);
+    const newText = editedContent ?? "";
+
+    // optimistic update
+    setLocalHistory((prev) => ({
+      ...prev,
+      [clauseName]: { ...prev[clauseName], current_version: newText, status: "pending" },
+    }));
+
+    try {
+      await fetch(
+        `/clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${clauseId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clause_id: clauseId,
+            clause_title: clauseName,
+            current_version: newText,
+            action: "manual_edit",
+          }),
+        }
+      );
+      showToastMessage("Clause edited and saved.");
+    } catch (e) {
+      // (optional) you can refetch or restore from previous if you keep a snapshot
+    } finally {
+      setEditingClause(null);
+      setEditedContent("");
+    }
   };
 
-  const handleDownloadPDF = () => {
-    // Using your HTML export approach for now; can be swapped with server PDF later.
-    showToastMessage("PDF downloaded successfully!");
-    // ... (left as-is from your previous implementation)
-  };
-
+  // CSV export of summary
   const handleExportSummary = () => {
-    // Generates CSV from current data (left as-is from your previous implementation)
+    const rows = [["Clause", "Risk (0-10)", "Status"]];
+    Object.entries(localHistory ?? {}).forEach(([name, c]) => {
+      const risk = parseInt(c.risk.match(/\((\d+)\/10\)/)?.[1] ?? "0", 10);
+      rows.push([name, String(risk), (c.status || "pending").toString()]);
+    });
+
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "lease_clause_summary.csv";
+    a.click();
+    URL.revokeObjectURL(url);
     showToastMessage("Summary exported successfully!");
+  };
+
+  // Simple printable page for the selected clause
+  const handleDownloadPDF = () => {
+    const clause = localHistory?.[selectedClause ?? ""];
+    const w = window.open("", "_blank", "width=900,height=700");
+    w!.document.write(`
+      <html><head>
+        <title>Lease Clause Review</title>
+        <style>
+          body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px;line-height:1.5;}
+          h1{font-size:18px;margin-bottom:12px;}
+          h2{font-size:16px;margin-top:18px;margin-bottom:8px;}
+          .box{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin-top:8px;}
+          .muted{color:#4B5563;font-size:12px;}
+        </style>
+      </head><body>
+        <h1>Lease Clause Review</h1>
+        <div class="muted">${new Date().toLocaleString()}</div>
+        <h2>${selectedClause ?? "Clause"}</h2>
+        <div class="box"><strong>Original Clause</strong><div>${(clause?.current_version ?? "")
+          .replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/\n/g,"<br/>")}</div></div>
+        <div class="box"><strong>AI Suggested Clause</strong><div>${(clause?.ai_suggested_clause_details ?? "")
+          .replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/\n/g,"<br/>")}</div></div>
+        <div class="box"><strong>AI Analysis</strong><div>${(clause?.clause_details ?? "")
+          .replace(/</g,"&lt;")
+          .replace(/>/g,"&gt;")
+          .replace(/\n/g,"<br/>")}</div></div>
+      </body></html>
+    `);
+    w!.document.close();
+    w!.focus();
+    w!.print();
+    w!.close();
+    showToastMessage("PDF downloaded successfully!");
   };
 
   const handleAIAssistant = () => setShowAIAssistant(true);
   const closeAIAssistant = () => setShowAIAssistant(false);
 
-  // ---------- RENDER ----------
+  /* ---------- RENDER ---------- */
   return (
     <DashboardLayout>
       {isLoading ? (
@@ -409,7 +541,7 @@ const LeaseClauseReview: React.FC = () => {
                         <h4 className="text-[11px] font-semibold text-gray-500 uppercase px-1">{category}</h4>
                         <div className="space-y-2">
                           {filtered.map((clauseName) => {
-                            const clause = (currentLease?.data?.history ?? ({} as HistoryMap))[clauseName];
+                            const clause = localHistory[clauseName];
                             if (!clause) return null;
                             return (
                               <ClauseListItem
@@ -466,47 +598,7 @@ const LeaseClauseReview: React.FC = () => {
                               Cancel
                             </button>
                           </>
-                        ) : (
-                          <div className="flex flex-wrap items-center gap-1">
-                            {/* Edit */}
-                            <button
-                              onClick={() => handleEdit(selectedClause!)}
-                              className="inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white/90 px-4 text-sm font-medium text-gray-800 shadow-sm transition
-               hover:bg-white hover:shadow ring-1 ring-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                              aria-label="Edit clause"
-                            >
-                              <Edit3 className="h-2 w-2 text-gray-700" />
-                              <span>Edit</span>
-                            </button>
-
-                            {/* Accept Suggestion (primary) */}
-                            <button
-                              onClick={() => handleAccept(selectedClause!)}
-                              className="inline-flex h-10 items-center gap-3 rounded-xl bg-gradient-to-b from-blue-600 to-blue-600/90 px-4 text-sm font-semibold text-white shadow-sm transition
-               hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
-                              aria-label="Accept AI suggestion"
-                            >
-                              <Check className="h-3 w-3" />
-                              {/* two-line label on ≥sm, single-line on xs */}
-                              <span className="hidden sm:flex flex-col leading-4">
-                                <span>Accept</span>
-                                <span className="text-[11px] font-normal opacity-90">Suggestion</span>
-                              </span>
-                              <span className="sm:hidden">Accept</span>
-                            </button>
-
-                            {/* Reject (destructive-ghost) */}
-                            <button
-                              onClick={() => handleReject(selectedClause!)}
-                              className="inline-flex h-10 items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-4 text-sm font-medium text-red-700 shadow-sm transition
-               hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400/40"
-                              aria-label="Reject AI suggestion"
-                            >
-                              <X className="h-3 w-3" />
-                              <span>Reject</span>
-                            </button>
-                          </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </Card>
@@ -552,6 +644,49 @@ const LeaseClauseReview: React.FC = () => {
                       <p className="text-sm text-gray-800">{selectedClauseData.clause_details}</p>
                     )}
                   </Card>
+
+                  <div className="w-full rounded-xl border border-gray-200 bg-white p-5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Reject */}
+                      <button
+                        type="button"
+                        onClick={() => handleReject()}
+                        aria-label="Reject suggestion"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 text-sm font-medium text-red-700 shadow-sm transition
+                          hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40
+                          disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        <span>Reject</span>
+                      </button>
+
+                      {/* Edit */}
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(selectedClause!)}
+                        aria-label="Edit clause"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-800 shadow-sm transition
+                          hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50
+                          disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Edit3 className="h-3.5 w-3.5 text-gray-700" />
+                        <span>Edit</span>
+                      </button>
+
+                      {/* Accept Suggestion */}
+                      <button
+                        type="button"
+                        onClick={() => handleAccept(selectedClause!)}
+                        aria-label="Accept AI suggestion"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-green-600 px-3 text-sm font-semibold text-white shadow-sm transition
+                          hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/60
+                          disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        <span>Accept Suggestion</span>
+                      </button>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <Card className="p-6 text-sm text-gray-500">Select a clause from the left to view details.</Card>

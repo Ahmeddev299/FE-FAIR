@@ -30,6 +30,12 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
   if (values.propertyInspection) contingencies.push('Property Inspection');
   if (values.insuranceApproval) contingencies.push('Insurance Approval');
 
+  const Miscellaneous_items : string[] =[]
+
+  if (values.renewalOption) Miscellaneous_items.push('Include renewal option in LOI');
+  if (values.rightOfFirstRefusal) Miscellaneous_items.push('Right of First Refusal');
+  if (values.leaseToPurchase) Miscellaneous_items.push('Lease to Purchase');
+
   const payload: LOIApiPayload = {
     title: values.title,
     propertyAddress: values.propertyAddress,
@@ -45,7 +51,7 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
     leaseTerms: {
       monthlyRent: values.rentAmount,
       securityDeposit: values.securityDeposit,
-      leaseType: values.propertyType,     // <-- REQUIRED: map from form
+      leaseType: values.leaseType,     // <-- REQUIRED: map from form
       leaseDuration: values.leaseDuration,
       startDate: values.startDate,
       RentEscalation: values.rentEsclation,
@@ -66,7 +72,7 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
     },
 
     additionalDetails: {
-      Miscellaneous_items: !!values.renewalOption,
+      Miscellaneous_items: Miscellaneous_items,
       tenantImprovement: values.improvementAllowance,
       
       specialConditions: values.specialConditions,

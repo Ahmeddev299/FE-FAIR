@@ -8,7 +8,7 @@ export interface FormValues {
   tenantEmail: string;
   addFileNumber: boolean,
   rentAmount: string;
-  rentEsclation: string
+  rentEsclation: string,
   startDate: string,
   securityDeposit: string;
   propertyType: string;
@@ -19,7 +19,7 @@ export interface FormValues {
   exclusiveUse: string;
   hasExtraSpace: boolean;
   prepaidRent: string ,
-
+leaseType:string,
   patio: string;
   utilities: {
     electricity: boolean;
@@ -235,3 +235,18 @@ export interface Paginated<T> {
   limit: number;
   total: number;
 }
+
+export interface ClauseData {
+  risk: string; // "Low (2/10)"
+  status: "approved" | "pending" | "rejected";
+  current_version: string;
+  ai_suggested_clause_details: string;
+  clause_details: string;
+
+  // optional id fields (your API might use one of these)
+  clause_id?: string;
+  id?: string;
+  _id?: string;
+}
+
+export type HistoryMap = Record<string, ClauseData>;

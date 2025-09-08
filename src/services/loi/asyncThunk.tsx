@@ -54,6 +54,30 @@ export const getDraftLOIsAsync = createAsyncThunk(
   }
 );
 
+
+// services/loi/asyncThunk.ts (add thunk)
+export const runAiAssistantAsync = createAsyncThunk(
+  "loi/aiAssistant",
+  async (data: any, { rejectWithValue }) => {
+    try {
+      const token: string = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+      const response = await loiBaseService.aiAssistant(data);
+
+      if (response.success === false && response.status === 400) {
+        return rejectWithValue(response.message);
+      }
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.data?.message) return rejectWithValue(error.response.data.message);
+      if (error.response?.message) return rejectWithValue(error.response.message);
+      if (error.message) return rejectWithValue(error.message);
+      return rejectWithValue("AI Assistant request failed");
+    }
+  }
+);
+
+
 // in asyncThunk.ts or wherever you define thunks
 export const getLOIDetailsById = createAsyncThunk(
   "loi/fetchSingleDraft",

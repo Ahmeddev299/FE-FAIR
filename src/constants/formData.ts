@@ -8,9 +8,7 @@ export const STEPS: Step[] = [
   { id: 3, title: 'Property Details', subtitle: 'Size and specifications' },
   { id: 4, title: 'Additional Terms', subtitle: 'Deposit and timelines' },
   { id: 5, title: 'Review & Submit', subtitle: 'Final review' }
-];
-
-
+];  
 
 /* -------------------- INITIAL VALUES -------------------- */
 export const INITIAL_VALUES: FormValues = {
@@ -48,6 +46,7 @@ export const INITIAL_VALUES: FormValues = {
     securitySystem: false,
     other: false,
   },
+  leaseType: '',            // ✅ add this
 
   // Step 4
   rightOfFirstRefusal: false,
@@ -86,6 +85,7 @@ type LoiDTO = {
     startDate?: string;       // ISO string
     rentEsclation?: string;   // keep spelling to match backend
     prepaidRent: string,
+    leaseType: string,
   };
 
   propertyDetails?: {
@@ -142,9 +142,10 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => ({
   rentAmount: loi.leaseTerms?.monthlyRent ?? '',
   securityDeposit: loi.leaseTerms?.securityDeposit ?? '',
   leaseDuration: loi.leaseTerms?.leaseDuration ?? '',
-  rentEsclation: loi.leaseTerms?.rentEsclation ?? '',
+  leaseType: loi.leaseTerms?.leaseType ?? '',
+  rentEsclation: loi.leaseTerms?.RentEscalation ?? '',
   startDate: (loi.leaseTerms?.startDate ?? '').split('T')[0] || '',
-  prepaidRent: loi.leaseTerms?.prepaidRent ?? '' ,
+  prepaidRent: loi.leaseTerms?.PrepaidRent ?? '',
   // Step 3
   propertySize: loi.propertyDetails?.propertySize ?? '',
   patio: loi.propertyDetails?.patio ?? '',
@@ -193,6 +194,7 @@ export const VALIDATION_SCHEMAS = {
   // Step 2: keep only fields actually present in your Lease Terms step
   2: Yup.object({
     rentAmount: Yup.string().required('Monthly Rent is required'),
+    leaseType: Yup.string().required('Lease Type is required'), // ✅ add this
     securityDeposit: Yup.string().required('Security Deposit is required'),
     leaseDuration: Yup.string().required('Lease Duration is required'),
     startDate: Yup.date().required('Start Date is required'),

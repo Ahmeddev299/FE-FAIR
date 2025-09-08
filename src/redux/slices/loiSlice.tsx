@@ -4,6 +4,7 @@ import {
   submitLOIAsync,
   getLOIDetailsById,
   getDraftLOIsAsync,
+  runAiAssistantAsync,
 } from "@/services/loi/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
@@ -224,8 +225,22 @@ export const loiSlice = createSlice({
       })
       .addCase(getLOIDetailsById.rejected, (state) => {
         state.isLoading = false;
-      });
+      })
 
+      // store/loiSlice.ts (extraReducers additions)
+      .addCase(runAiAssistantAsync.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(runAiAssistantAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        Toast.fire({ icon: "success", title: "Assistant suggestions applied" });
+        // If backend returns updated LOI, you could merge it here:
+        // state.currentLOI = { ...state.currentLOI, ...action.payload };
+      })
+      .addCase(runAiAssistantAsync.rejected, (state, action: any) => {
+        state.isLoading = false;
+        Toast.fire({ icon: "error", title: action.payload || "Assistant failed" });
+      });
   },
 });
 
