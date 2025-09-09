@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Bell, Mail, FileWarning, MessageCircle, CalendarCheck } from "lucide-react";
 import Switch from "@/components/setting/Switch";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardLayout } from "@/components/layouts";
 
 export type NotificationPrefs = {
