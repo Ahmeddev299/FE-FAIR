@@ -72,7 +72,7 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
     },
 
     additionalDetails: {
-      Miscellaneous_items: Miscellaneous_items.length > 0, // boolean ✅
+      Miscellaneous_items: Miscellaneous_items, // boolean ✅
       tenantImprovement: values.improvementAllowance,
       specialConditions: values.specialConditions,
       contingencies,

@@ -90,7 +90,7 @@ export interface LOIApiPayload {
   };
 
   additionalDetails: {
-    Miscellaneous_items: boolean;
+    Miscellaneous_items: string[];
     tenantImprovement: string;
     specialConditions: string;
     contingencies: string[];       // array, not string
