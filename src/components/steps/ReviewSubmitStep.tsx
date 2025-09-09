@@ -3,7 +3,6 @@ import React from 'react';
 import { Field, ErrorMessage } from 'formik';
 import {
   CheckCircle2,
-  PencilLine,
   Download as DownloadIcon,
   FileCheck,
   ChevronRight,
@@ -32,7 +31,6 @@ const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
 
 export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
   values,
-  onEdit
 }) => {
 
   return (

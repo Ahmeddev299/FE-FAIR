@@ -20,6 +20,11 @@ import { unwrapResult } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
 import AiAssistantModal from '@/components/models/aIAssistant';
 
+interface Props {
+  mode?: "edit" | "create";
+  loiId?: string;
+}
+
 const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
   const { currentStep, nextStep, prevStep, isStepComplete, steps, jumpToStep } = useFormStepper();

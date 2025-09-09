@@ -1,6 +1,6 @@
 // components/AiAssistantModal.tsx
 import React, { useState } from "react";
-import { X, Bot, CheckCircle2, Zap } from "lucide-react";
+import { X, Bot, CheckCircle2 } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; text: string };
 

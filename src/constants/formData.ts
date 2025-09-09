@@ -8,7 +8,7 @@ export const STEPS: Step[] = [
   { id: 3, title: 'Property Details', subtitle: 'Size and specifications' },
   { id: 4, title: 'Additional Terms', subtitle: 'Deposit and timelines' },
   { id: 5, title: 'Review & Submit', subtitle: 'Final review' }
-];  
+];
 
 /* -------------------- INITIAL VALUES -------------------- */
 export const INITIAL_VALUES: FormValues = {
@@ -86,6 +86,9 @@ type LoiDTO = {
     rentEsclation?: string;   // keep spelling to match backend
     prepaidRent: string,
     leaseType: string,
+    RentEscalation?: string;
+    PrepaidRent?: string;
+    LeaseType?: string;
   };
 
   propertyDetails?: {
@@ -176,7 +179,6 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => ({
   // Step 5
   terms: false,
 });
-
 
 /* -------------------- VALIDATION (matches UI) -------------------- */
 export const VALIDATION_SCHEMAS = {

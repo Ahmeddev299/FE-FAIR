@@ -30,7 +30,7 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
   if (values.propertyInspection) contingencies.push('Property Inspection');
   if (values.insuranceApproval) contingencies.push('Insurance Approval');
 
-  const Miscellaneous_items : string[] =[]
+  const Miscellaneous_items: string[] = []
 
   if (values.renewalOption) Miscellaneous_items.push('Include renewal option in LOI');
   if (values.rightOfFirstRefusal) Miscellaneous_items.push('Right of First Refusal');
@@ -39,7 +39,7 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
   const payload: LOIApiPayload = {
     title: values.title,
     propertyAddress: values.propertyAddress,
-    addFileNumber:values.addFileNumber,
+    addFileNumber: values.addFileNumber,
 
     partyInfo: {
       landlord_name: values.landlordName,
@@ -67,17 +67,15 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
       amenities: values.parkingSpaces ? [values.parkingSpaces] : [], // <-- array of range strings
       utilities: selectedUtilities,                                   // ["Electricity", ...]
       // hasExtraSpace/patio can be added if present in LOIApiPayload
-        hasExtraSpace: values.hasExtraSpace,
-        patio : values.patio
+      hasExtraSpace: values.hasExtraSpace,
+      patio: values.patio
     },
 
     additionalDetails: {
-      Miscellaneous_items: Miscellaneous_items,
+      Miscellaneous_items: Miscellaneous_items.length > 0, // boolean ✅
       tenantImprovement: values.improvementAllowance,
-      
       specialConditions: values.specialConditions,
-      contingencies, // <-- array as per updated type
-      // rightOfFirstRefusal / leaseToPurchase optional if your API type has them
+      contingencies,
     },
 
     submit_status: 'Submitted',

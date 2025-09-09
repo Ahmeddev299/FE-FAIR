@@ -18,8 +18,12 @@ export interface FormValues {
   parkingSpaces: string;
   exclusiveUse: string;
   hasExtraSpace: boolean;
-  prepaidRent: string ,
-leaseType:string,
+  RentEscalation?: string;
+  PrepaidRent?: string;
+  LeaseType?: string;
+
+  prepaidRent: string,
+  leaseType: string,
   patio: string;
   utilities: {
     electricity: boolean;
@@ -178,7 +182,7 @@ export interface LeaseFormValues {
   notes: string;
   document: string;
   leaseId?: string;     // optional
-  leaseTitle?: string;  // optional (but you already have `title`)
+  leaseTitle?: string;  // optional (but you already have `title`)p
 }
 
 export type SetFieldValue = (field: string, value: File | null) => void;
@@ -250,3 +254,4 @@ export interface ClauseData {
 }
 
 export type HistoryMap = Record<string, ClauseData>;
+export type HistoryMetaMap = Record<string, { id?: string } | undefined>;

@@ -231,13 +231,13 @@ export const loiSlice = createSlice({
       .addCase(runAiAssistantAsync.pending, (state) => {
         state.isLoading = true;
       })
-      .addCase(runAiAssistantAsync.fulfilled, (state, action) => {
+      .addCase(runAiAssistantAsync.fulfilled, (state) => {
         state.isLoading = false;
         Toast.fire({ icon: "success", title: "Assistant suggestions applied" });
         // If backend returns updated LOI, you could merge it here:
         // state.currentLOI = { ...state.currentLOI, ...action.payload };
       })
-      .addCase(runAiAssistantAsync.rejected, (state, action: any) => {
+      .addCase(runAiAssistantAsync.rejected, (state, action) => {
         state.isLoading = false;
         Toast.fire({ icon: "error", title: action.payload || "Assistant failed" });
       });
