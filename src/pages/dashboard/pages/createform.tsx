@@ -55,7 +55,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
     try {
       if (currentStep === steps.length) {
         setSubmitting(true);
-        const apiPayload = transformToApiPayload(formValues);
+        const apiPayload = transformToApiPayload(formValues, loiId);
         await dispatch(submitLOIAsync(apiPayload)).unwrap();
         setLastSaved(new Date().toLocaleTimeString());
         router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });

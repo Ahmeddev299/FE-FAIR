@@ -2,10 +2,11 @@
 import type { LOIApiPayload } from '@/types/loi';
 import { FormValues } from '../types/loi';
 
-export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
+export const transformToApiPayload = (values: FormValues, loiId?: string
+): LOIApiPayload => {
+  const effectiveDocId = (loiId ?? values.doc_id)?.trim();
 
   console.log("values", values.renewalOption)
-  // Utilities -> array of labels
   const selectedUtilities = Object.entries(values.utilities || {})
     .filter(([, v]) => v === true)
     .map(([k]) => {
@@ -21,7 +22,6 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
       return map[k] ?? k;
     });
 
-  // Contingencies -> array of strings
   const contingencies: string[] = [];
   if (values.financingApproval) contingencies.push('Financing Approval');
   if (values.environmentalAssessment) contingencies.push('Environmental Assessment');
@@ -40,6 +40,7 @@ export const transformToApiPayload = (values: FormValues): LOIApiPayload => {
     title: values.title,
     propertyAddress: values.propertyAddress,
     addFileNumber: values.addFileNumber,
+    ...(effectiveDocId ? { doc_id: effectiveDocId } : {}),
 
     partyInfo: {
       landlord_name: values.landlordName,

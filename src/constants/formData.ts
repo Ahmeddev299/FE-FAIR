@@ -15,6 +15,7 @@ export const INITIAL_VALUES: FormValues = {
   // Step 1
   title: '',
   addFileNumber: false,
+  doc_id: '',
   propertyAddress: '',
   landlordName: '',
   landlordEmail: '',
@@ -68,9 +69,10 @@ export const INITIAL_VALUES: FormValues = {
 /* -------------------- DTO SHAPE (aligned to UI) -------------------- */
 type LoiDTO = {
   title?: string;
+  loiId : string,
   propertyAddress?: string;
   addFileNumber: boolean;
-
+  doc_id: string;
   partyInfo?: {
     landlord_name?: string;
     landlord_email?: string;
@@ -135,6 +137,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => ({
   title: loi.title ?? '',
   propertyAddress: loi.propertyAddress ?? '',
   addFileNumber: !!loi.addFileNumber,
+  doc_id: loi?.loiId,
 
   landlordName: loi.partyInfo?.landlord_name ?? '',
   landlordEmail: loi.partyInfo?.landlord_email ?? '',

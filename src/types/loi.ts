@@ -1,5 +1,6 @@
 // types/loi.ts
 export interface FormValues {
+  doc_id :string;
   title: string;
   propertyAddress: string;
   landlordName: string;
@@ -60,7 +61,8 @@ export interface LOIApiPayload {
   title: string;
   propertyAddress: string;
   addFileNumber: boolean;
-
+  loiId?: string;
+  doc_id?: string;
   partyInfo: {
     landlord_name: string;
     landlord_email: string;
@@ -209,8 +211,6 @@ export type ExtendedClause = Clause & {
   name?: string;
 };
 
-export type ClauseStatus = 'Edited' | 'Suggested' | 'Approved' | 'Review' | 'Pending';
-export type RiskLevel = 'High' | 'Medium' | 'Low';
 
 export interface Clause {
   id: number | string;
@@ -255,3 +255,75 @@ export interface ClauseData {
 
 export type HistoryMap = Record<string, ClauseData>;
 export type HistoryMetaMap = Record<string, { id?: string } | undefined>;
+
+
+export type UILease = {
+  id: string;
+  title: string;
+  property_address: string;
+  startDate?: string;
+  endDate?: string;
+  updatedAt?: string;
+  clauseDocId?: string; // backend _clause_log_id if present
+  clauses: UIClause[];
+  approvedCount: number;
+  totalCount: number;
+  unresolvedCount: number;
+};
+
+// Shapes we expect from API/store
+export type ApiClause = {
+  status?: string;
+  risk?: string;
+  current_version?: string;
+  ai_suggested_clause_details?: string;
+  clause_details?: string;
+};
+
+export type ApiLease = {
+  id: string | number;
+  title: string;
+  property_address?: string;
+  startDate?: string;
+  endDate?: string;
+  log_updated_at?: string;
+  clauses?: Record<string, unknown>;
+};
+
+// UI-only types you can reuse everywhere
+export type RiskLevel = 'Low' | 'Medium' | 'High';
+export type ClauseStatus = 'AI Suggested' | 'Edited' | 'Approved' | 'Needs Review' | 'Pending' | 'Suggested';
+
+export type UIClause = {
+  id: string;
+  name: string;               // e.g., "Common Area Maintenance"
+  category?: string;          // e.g., "CAM Charges"
+  status: ClauseStatus;
+  risk: RiskLevel;
+  lastEditedAt?: string;      // ISO
+  lastEditedBy?: string;      // e.g., "AI Assistant"
+  commentsUnresolved?: number;
+  currentVersion: string;
+  aiSuggestion?: string;
+  details?: string;
+};
+
+export type UILeaseBrief = {
+  id: string;
+  title: string;
+  type: 'Lease' | 'LOI' | 'Notice' | 'Termination';
+  documentId?: string;        // e.g., "2025-001"
+  status?: string;            // e.g., "Signed", "Draft", "Pending"
+  tags?: string[];            // e.g., ["Termination Clause", "Indemnity"]
+  sizeLabel?: string;         // e.g., "2.4 MB"
+};
+
+export type UILeaseFull = {
+  id: string;
+  title: string;
+  propertyAddress?: string;
+  clauses: UIClause[];
+  approvedCount?: number;
+  totalCount?: number;
+  unresolvedCount?: number;
+};

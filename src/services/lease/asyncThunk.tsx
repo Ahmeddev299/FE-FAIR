@@ -5,14 +5,11 @@ import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
 
-// types (optional but nice)
-
 type UploadLeaseResponse = {
   Lease: { _id: string; name: string; lease_title: string; startDate?: string; endDate?: string; property_address?: string; };
   Clauses: { _id: string; history: Record<string, ClauseEntry>; };
 };
 
-// Optional typing based on your API sample
 type ClauseEntry = {
   status: string;
   clause_details: string;
@@ -22,6 +19,18 @@ type ClauseEntry = {
   comment: any[];
   created_at: string;
   updated_at: string;
+};
+
+export type UpdateClauseArgs = {
+  clauseId: string;
+  clause_key: string;
+  details: string;
+};
+
+export type AcceptSuggestionArgs = {
+  clauseId: string;
+  clause_key: string;
+  details: string;
 };
 
 export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
@@ -45,8 +54,6 @@ export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
   }
 );
 
-
-// in asyncThunk.ts or wherever you define thunks
 export const getUserLeasesAsync = createAsyncThunk(
   "user/lease",
   async (_, { rejectWithValue }) => {
@@ -105,7 +112,7 @@ export const terminateLeaseAsync = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      // Additional check for API-level errors
+
       if (response.success === false && response.status === 400) {
         return rejectWithValue(response.message);
       }
@@ -113,7 +120,6 @@ export const terminateLeaseAsync = createAsyncThunk(
       return response.data;
 
     } catch (error: any) {
-      // Handle different error scenarios
       if (error.response?.data?.message) {
         return rejectWithValue(error.response.data.message);
       } else if (error.response?.message) {
@@ -172,3 +178,60 @@ export const getallUserLeasesAsync = createAsyncThunk(
   }
 );
 
+/** ---------- Manual Edit (Save current version) ---------- */
+export const updateClauseCurrentVersionAsync = createAsyncThunk(
+  "lease/updateClauseCurrentVersion",
+  async ({ clauseId, clause_key, details }: UpdateClauseArgs, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+
+      const res = await leaseBaseService.updateClauseDetailOrCurrentVersion(clauseId, {
+        clause_id: clauseId,   // ✅ backend exact
+        clause_key,            // ✅ backend exact
+        details,               // ✅ backend exact
+        action: "manual_edit",
+      });
+
+      if (!res?.success || res?.status === 400) {
+        return rejectWithValue(res?.message ?? "Failed to save clause");
+      }
+      // return minimal data needed by reducers/UI
+      return { clause_key, details };
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
+    }
+  }
+);
+
+// clause_key: clauseName,
+//           details,p
+
+// ---------- Accept AI suggestion ----------
+/** ---------- Accept AI suggestion ---------- */
+export const acceptClauseSuggestionAsync = createAsyncThunk<
+  { clauseId: string; clause_key: string; details: string },   // ✅ return type includes details
+  AcceptSuggestionArgs                                         // ✅ arg type
+>(
+  "lease/acceptClauseSuggestion",
+  async ({ clauseId, clause_key, details }, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+
+      const res = await leaseBaseService.updateClauseDetailOrCurrentVersion(clauseId, {
+        clause_id: clauseId,
+        clause_key,
+        details,
+        action: "accept_ai_suggestion",
+      });
+
+      if (!res?.success || res?.status === 400) {
+        return rejectWithValue(res?.message ?? "Failed to accept AI suggestion");
+      }
+      return { clauseId, clause_key, details };     // ✅ includes details
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to accept AI suggestion");
+    }
+  }
+);

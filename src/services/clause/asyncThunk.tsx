@@ -101,3 +101,43 @@ export const getClauseByIdAsync = createAsyncThunk(
     }
   }
 );
+
+export const commentOnClauseAsync = createAsyncThunk(
+  "clause/commentOnClause",
+  async (
+    params: {
+      clauseDocId: string;        // e.g., "68b83db750cf251edaaee326"
+      clause_key: string;         // clause title/key
+      comment: string;            // comment text/body
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const { clauseDocId, clause_key, comment } = params;
+
+      // API endpoint (typo preserved as provided)
+      const url = `https://api.fairleases.com/clause/comment_on_signle_clauses_of_single_lease/${clauseDocId}`;
+
+      const res = await fetch(url, {
+        method: "PUT", // adjust to your server (POST/PUT/PATCH)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clause_id: clauseDocId,           // keeping prior naming style you used elsewhere
+          clause_title: clause_key,
+          comment: comment,
+        }),
+      });
+
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || "Failed to add comment");
+      }
+
+      const data = await res.json();
+      // Expected to return the new/updated comment or clause block
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err?.message || "Failed to add comment");
+    }
+  }
+);

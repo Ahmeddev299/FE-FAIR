@@ -48,7 +48,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     { name: 'Billing & Plan', href: '/dashboard/pages/billings', icon: '/img7.png', current: router.pathname === '/settings' },
 
     { name: 'Storage', href: '/dashboard/pages/tenantStorage', icon: '/img8.png', current: router.pathname === '/settings' },
-        { name: 'Notifications', href: '/dashboard/pages/notifications', icon: '/bellicon.png', current: router.pathname === '/settings' },
+    { name: 'Notifications', href: '/dashboard/pages/notifications', icon: '/bellicon.png', current: router.pathname === '/settings' },
 
   ];
 
@@ -73,11 +73,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             <Image
               alt="Logo"
               src={backgroundImage}
-              width={200}
+              width={150}
               height={100}
             />
             <div className="mt-5 flex-grow flex flex-col">
-              <nav className="flex-1 px-4 pb-4 space-y-1">
+              <nav className=" flex-1 px-4 pb-4 space-y-1">
                 {navigation.map((item) => {
                   const active = isActive(item.href);
                   return (
@@ -85,9 +85,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       key={item.name}
                       href={item.href}
                       className={`${active
-                        ? 'bg-[#3B82F6] text-white  border-blue-500'
+                        ? 'bg-[#3B82F6] text-white  border-blue-500 '
                         : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        } group flex items-center px-2 py-2 text-[16px] font-medium transition-colors duration-150`}
+                        } group flex items-center px-2 py-2 text-[13px] font-medium transition-colors duration-150`}
                     >
                       <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-2" />
                       {item.name}
