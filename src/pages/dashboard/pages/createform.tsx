@@ -72,7 +72,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const saveAsDraft = async (formValues: FormValues) => {
     try {
       setSaving(true);
-      const draftPayload = transformToApiPayload(formValues);
+      const draftPayload = transformToApiPayload(formValues , loiId);
       await dispatch(submitLOIAsync({ ...draftPayload, submit_status: "Draft" })).unwrap();
       router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });
       setLastSaved(new Date().toLocaleTimeString());
