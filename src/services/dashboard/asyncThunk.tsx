@@ -9,6 +9,15 @@ import type { DashboardData, LoiSummary } from "@/redux/slices/dashboardSlice";
 type RejectString = { rejectValue: string };
 type UnknownRecord = Record<string, unknown>;
 
+export type LoggedInUser = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  fullName?: string;
+  email?: string;
+  // add more fields from your API response if needed
+};
+
 const isObject = (v: unknown): v is UnknownRecord =>
   typeof v === "object" && v !== null;
 
@@ -146,3 +155,42 @@ export const getloiDataAsync = createAsyncThunk<
     }
   }
 );
+
+export const getLoggedInUserAsync = createAsyncThunk<
+  LoggedInUser, // return type
+  void,         // no args
+  RejectString
+>(
+  "dashboard/loggedInUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) return rejectWithValue("Authentication token not found");
+
+      const response: unknown = await dashboardStatusService.getLoggedInUser();
+
+      const resp = response as {
+        success?: boolean;
+        status?: number;
+        message?: string;
+        data?: LoggedInUser;
+      } | undefined;
+
+      if (!resp) return rejectWithValue("No data received from server");
+      if (resp.success === false) {
+        return rejectWithValue(resp.message || "Failed to fetch logged in user");
+      }
+
+      return resp.data ?? (response as LoggedInUser);
+    } catch (error: unknown) {
+      const status = getStatus(error);
+      if (status === 401) return rejectWithValue("Session expired. Please log in again.");
+      if (status === 403) return rejectWithValue("You don't have permission to access this resource.");
+      if (typeof status === "number" && status >= 500) {
+        return rejectWithValue("Server error. Please try again later.");
+      }
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+

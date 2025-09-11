@@ -1,6 +1,6 @@
 // src/redux/slices/dashboardSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getDashboardStatsAsync, getloiDataAsync } from "@/services/dashboard/asyncThunk";
+import { getDashboardStatsAsync, getLoggedInUserAsync, getloiDataAsync } from "@/services/dashboard/asyncThunk";
 
 /** Replace with your real shapes as they evolve */
 export type LeaseSummary = {
@@ -21,6 +21,15 @@ export type LeaseSummary = {
   document_url?: string;
 };
 
+export type LoggedInUser = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  fullName?: string;
+  email?: string;
+  // add any other fields your API returns
+};
+
 export type LoiSummary = {
   id?: string;
   _id?: string;
@@ -29,7 +38,7 @@ export type LoiSummary = {
   property_address?: string;
   status?: string;
   endDate: number;
-  startDate:number;
+  startDate: number;
   submit_status?: string;
   updatedAt?: string;
   createdAt?: string;
@@ -66,6 +75,10 @@ type DashboardState = {
   leaseLimit: number;
   loiLimit: number;
 
+  loggedInUser: LoggedInUser | null;
+  isLoadingUser: boolean;
+  userError: DashboardError;
+
   // Loading states
   isLoading: boolean;
   isLoadingLeases: boolean;
@@ -97,6 +110,9 @@ const initialState: DashboardState = {
   isLoadingLOIs: false,
   error: null,
   leaseError: null,
+  loggedInUser: null,
+  isLoadingUser: false,
+  userError: null,
   loiError: null,
   isSuccess: false,
   lastUpdated: null,
@@ -176,7 +192,20 @@ const dashboardSlice = createSlice({
           state.isLoading = false;
           state.loiError = action.payload ?? "Failed to fetch LOI data";
         }
-      );
+      )
+
+      .addCase(getLoggedInUserAsync.pending, (state) => {
+        state.isLoadingUser = true;
+        state.userError = null;
+      })
+      .addCase(getLoggedInUserAsync.fulfilled, (state, action: PayloadAction<LoggedInUser>) => {
+        state.isLoadingUser = false;
+        state.loggedInUser = action.payload;
+      })
+      .addCase(getLoggedInUserAsync.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.isLoadingUser = false;
+        state.userError = action.payload ?? "Failed to fetch logged-in user";
+      });
   }
 
 });

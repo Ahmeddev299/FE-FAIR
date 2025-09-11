@@ -34,9 +34,9 @@ export default function LeasesPage() {
   // }, [leaseList]);
 
   const leases: UILeaseBriefRow[] = useMemo(
-  () => mapLeaseListToUI(leaseList as unknown as { data: ApiLeaseItem[] } | ApiLeaseListResponse | ApiLeaseItem[]),
-  [leaseList]
-);
+    () => mapLeaseListToUI(leaseList as unknown as { data: ApiLeaseItem[] } | ApiLeaseListResponse | ApiLeaseItem[]),
+    [leaseList]
+  );
 
   const total = leaseList?.meta?.total ?? leases.length;
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -47,7 +47,7 @@ export default function LeasesPage() {
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
-    setPage(1); 
+    setPage(1);
   };
 
   return (
@@ -75,7 +75,7 @@ export default function LeasesPage() {
 
       <LeasesTable
         leases={leases}
-isLoading={showLoader}
+        isLoading={showLoader}
         page={page}
         limit={limit}
         total={total}

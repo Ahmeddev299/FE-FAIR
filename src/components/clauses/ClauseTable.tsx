@@ -27,6 +27,7 @@ export default function ClausesTable({
   const filtered = clauses.filter((c) => {
     const okStatus = filters.status === 'All Status' || c.status === filters.status;
     const okRisk = filters.risk === 'All Risk Levels' || c.risk === filters.risk;
+    console.log("onRISK", okRisk)
     const okCat = filters.category === 'Category' || (c.category || 'Other') === filters.category;
     return okStatus && okRisk && okCat;
   });

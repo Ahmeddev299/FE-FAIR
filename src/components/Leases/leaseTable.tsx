@@ -144,8 +144,12 @@ export default function LeasesTable({
     return Array.from(s).sort();
   }, [leases]);
 
+  console.log("leases", leases)
+
   const hasActiveFilters =
     typeFilter !== '__all' || dateFilter !== '__all' || tagFilter !== '__all';
+
+
 
   const [localPage, setLocalPage] = React.useState(page);
   const [localLimit, setLocalLimit] = React.useState(limit);
@@ -259,7 +263,7 @@ export default function LeasesTable({
               <th className="px-5 py-3">Document ID</th>
               <th className="px-5 py-3">Status</th>
               <th className="px-5 py-3">Tags</th>
-              <th className="px-5 py-3">Size</th>
+              {/* <th className="px-5 py-3">Size</th> */}
               <th className="px-5 py-3">Actions</th>
             </tr>
           </thead>
@@ -324,7 +328,7 @@ export default function LeasesTable({
                     ))}
                   </div>
                 </td>
-                <td className="px-5 py-3 text-gray-700">{l.sizeLabel ?? '-'}</td>
+                {/* <td className="px-5 py-3 text-gray-700">{l.sizeLabel ?? '-'}</td> */}
                 <td className="px-5 py-3">
                   <div className="flex justify-start">
                     <Kebab />

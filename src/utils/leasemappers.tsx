@@ -4,15 +4,24 @@
 import type { UIClause, UILeaseFull } from '@/types/loi';
 
 /** ---- API shapes (minimal) ---- */
-export type ApiClause = {
+
+type ApiComment = {
+  text?: string;
+  author?: string;
+  created_at?: string;
+};
+
+type ApiClause = {
   status?: string;
   clause_details?: string;
   current_version?: string;
+  ai_confidence_score?: number;
   ai_suggested_clause_details?: string;
-  comment?: unknown[];
-  risk?: string;               // e.g. "High (8/10)"
+  comment?: ApiComment[];
+  risk?: string;
   created_at?: string;
   updated_at?: string;
+  accepted_ai?: boolean;
 };
 
 export type ApiLeaseDetail = {
@@ -43,7 +52,7 @@ export const riskFromApi = (risk?: string): 'Low' | 'Medium' | 'High' => {
 export const statusFromApi = (s?: string, risk?: string): UIClause['status'] => {
   const low = (s || '').toLowerCase();
   if (low === 'approved') return 'Approved';
-  if (low === 'pending') return 'AI Suggested';
+  if (low === 'pending') return 'Pending';
   if (low === 'accept_ai_suggestion') return 'Approved';
   // Fallbacks
   return riskFromApi(risk) === 'High' ? 'Needs Review' : 'Edited';
@@ -105,6 +114,13 @@ export const extractOne = (payload: unknown): ApiLeaseDetail | null => {
   return null;
 };
 
+
+export type ClauseComment = {
+  text: string;
+  author?: string;
+  created_at?: string;
+};
+
 /** ---- main mapper for the clause page ---- */
 export const mapToUILease = (raw: ApiLeaseDetail | null): UILeaseFullWithDoc | null => {
   if (!raw) return null;
@@ -145,3 +161,5 @@ export const mapToUILease = (raw: ApiLeaseDetail | null): UILeaseFullWithDoc | n
     clauseDocId: raw.clauses?._clause_log_id, // ✅ typed; no `any`
   };
 };
+
+

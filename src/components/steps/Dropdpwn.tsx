@@ -5,7 +5,9 @@ import { useFormikContext } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLandlordsAsync, fetchTenantsAsync } from "@/services/auth/partyAsyncThunk";
 import { selectParty } from "@/redux/slices/partySlice";
-import type { AppDispatch } from "@/redux/store";
+import type { AppDispatch, RootState } from "@/redux/store";
+import { getLoggedInUserAsync } from "@/services/dashboard/asyncThunk"; // ✅ fetch current user
+import type { LoggedInUser } from "@/redux/slices/dashboardSlice";
 
 type Props = {
   landlordIdName?: string;     // default: landlordId
@@ -47,24 +49,27 @@ export const PartyDropdowns: React.FC<Props> = ({
   tenantIdName = "tenantId",
   tenantNameName = "tenantName",
   tenantEmailName = "tenantEmail",
-  legacyLandlordNameName = "landloardName", // <- covers the typo
-  legacyTenantNameName = "tenentName",      // <- covers a common typo
+  legacyLandlordNameName = "landloardName",
+  legacyTenantNameName = "tenentName",
 }) => {
-
   const dispatch = useDispatch<AppDispatch>();
-  const { landlords, tenants, loadingLandlords, loadingTenants } =
+  const { landlords, tenants, loadingLandlords } =
     useSelector(selectParty) as PartySlice;
 
-  // Avoid `any` by using a generic record for dynamic key access.
+  // 👤 current logged-in user from dashboard slice
+  const loggedInUser = useSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
+
+  // Formik access with dynamic keys
   const { values, setFieldValue } = useFormikContext<Record<string, unknown>>();
 
+  // Load lists + current user
   React.useEffect(() => {
     dispatch(fetchLandlordsAsync());
     dispatch(fetchTenantsAsync());
+    dispatch(getLoggedInUserAsync());
   }, [dispatch]);
 
-
-  // Ensure ids exist in form state so controlled <select> has a value
+  // Ensure ids exist so selects/hidden inputs are controlled
   React.useEffect(() => {
     if (values[landlordIdName] === undefined) setFieldValue(landlordIdName, "");
     if (values[tenantIdName] === undefined) setFieldValue(tenantIdName, "");
@@ -75,13 +80,20 @@ export const PartyDropdowns: React.FC<Props> = ({
     return landlords.find((l: Party) => partyId(l) === id);
   }, [landlords, values, landlordIdName]);
 
-  const selectedTenant = useMemo(() => {
-    const id = String(values?.[tenantIdName] ?? "");
-    return tenants.find((t: Party) => partyId(t) === id);
-  }, [tenants, values, tenantIdName]);
+  // Try to map logged-in user to an existing tenant party (for tenantId)
+  const tenantMatchFromUser = useMemo(() => {
+    if (!loggedInUser?.email && !loggedInUser?.name && !loggedInUser?.fullName) return undefined;
+    return tenants.find(
+      (t) =>
+        (loggedInUser?.email && t.email === loggedInUser.email) ||
+        (loggedInUser?.name && (t.name ?? t.fullName) === loggedInUser.name) ||
+        (loggedInUser?.fullName && (t.name ?? t.fullName) === loggedInUser.fullName)
+    );
+  }, [tenants, loggedInUser]);
 
+  // Sync landlord fields to form when selection changes
   React.useEffect(() => {
-    if (!selectedLandlord) return;  // 👈 prevents wiping initial values
+    if (!selectedLandlord) return;
     const name = selectedLandlord.name ?? selectedLandlord.fullName ?? "";
     const email = selectedLandlord.email ?? "";
     if (values[landlordNameName] !== name) setFieldValue(landlordNameName, name);
@@ -91,21 +103,39 @@ export const PartyDropdowns: React.FC<Props> = ({
     }
   }, [selectedLandlord, landlordNameName, landlordEmailName, legacyLandlordNameName, setFieldValue, values]);
 
+  // Initialize tenant fields from the logged-in user
   React.useEffect(() => {
-    if (!selectedTenant) return;    // 👈 prevents wiping initial values
-    const name = selectedTenant.name ?? selectedTenant.fullName ?? "";
-    const email = selectedTenant.email ?? "";
-    if (values[tenantNameName] !== name) setFieldValue(tenantNameName, name);
-    if (values[tenantEmailName] !== email) setFieldValue(tenantEmailName, email);
-    if (legacyTenantNameName && values[legacyTenantNameName] !== name) {
-      setFieldValue(legacyTenantNameName, name);
+    const nameFromUser = (loggedInUser?.name ?? loggedInUser?.fullName ?? "").trim();
+    const emailFromUser = (loggedInUser?.email ?? "").trim();
+
+    if (nameFromUser && values[tenantNameName] !== nameFromUser) {
+      setFieldValue(tenantNameName, nameFromUser);
+      if (legacyTenantNameName && values[legacyTenantNameName] !== nameFromUser) {
+        setFieldValue(legacyTenantNameName, nameFromUser);
+      }
     }
-  }, [selectedTenant, tenantNameName, tenantEmailName, legacyTenantNameName, setFieldValue, values]);
+    if (emailFromUser && values[tenantEmailName] !== emailFromUser) {
+      setFieldValue(tenantEmailName, emailFromUser);
+    }
 
+    // If we can match this user to an existing tenant in the list, set tenantId
+    if (!values[tenantIdName] && tenantMatchFromUser) {
+      setFieldValue(tenantIdName, partyId(tenantMatchFromUser));
+    }
+  }, [
+    loggedInUser,
+    tenants,
+    tenantMatchFromUser,
+    tenantIdName,
+    tenantNameName,
+    tenantEmailName,
+    legacyTenantNameName,
+    setFieldValue,
+    values,
+  ]);
 
-  // Hydrate landlordId/tenantId once when editing
+  // Backfill landlordId if editing with existing name/email
   React.useEffect(() => {
-    // Landlord
     if (!values[landlordIdName] && landlords?.length) {
       const matchL = landlords.find(
         (l) =>
@@ -116,30 +146,7 @@ export const PartyDropdowns: React.FC<Props> = ({
         setFieldValue(landlordIdName, partyId(matchL));
       }
     }
-
-    // Tenant
-    if (!values[tenantIdName] && tenants?.length) {
-      const matchT = tenants.find(
-        (t) =>
-          t.email === values[tenantEmailName] ||
-          (t.name ?? t.fullName) === values[tenantNameName]
-      );
-      if (matchT) {
-        setFieldValue(tenantIdName, partyId(matchT));
-      }
-    }
-  }, [
-    landlords,
-    tenants,
-    values,
-    landlordIdName,
-    tenantIdName,
-    landlordEmailName,
-    tenantEmailName,
-    landlordNameName,
-    tenantNameName,
-    setFieldValue,
-  ]);
+  }, [landlords, values, landlordIdName, landlordEmailName, landlordNameName, setFieldValue]);
 
   return (
     <div className="space-y-6 border border-gray-300 rounded-lg p-6">
@@ -147,11 +154,12 @@ export const PartyDropdowns: React.FC<Props> = ({
         <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">2</div>
         Party Information
       </h3>
-      <p className="text-sm text-gray-600">Landlord email: {String(values[landlordEmailName] ?? '')}</p>
 
       {/* Landlord */}
-      <div className="space-y-2">
-        <h4 className="text-lg font-semibold">Landlord</h4>
+      <div className="space-y-3">
+        <h4 className="text-lg font-semibold">Landlord Information</h4>
+
+        {/* landlord selector */}
         <select
           name={landlordIdName}
           value={String(values[landlordIdName] ?? "")}
@@ -167,35 +175,52 @@ export const PartyDropdowns: React.FC<Props> = ({
               </option>
             ))}
         </select>
+
+        {/* landlord name/email inputs */}
+        <input
+          type="text"
+          name={landlordNameName}
+          placeholder="Property Owner or Management Company"
+          value={String(values[landlordNameName] ?? "")}
+          onChange={(e) => setFieldValue(landlordNameName, e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <input
+          type="email"
+          name={landlordEmailName}
+          placeholder="landlord@example.com"
+          value={String(values[landlordEmailName] ?? "")}
+          onChange={(e) => setFieldValue(landlordEmailName, e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
       </div>
 
       {/* Tenant */}
-      <div className="space-y-2">
-        <h4 className="text-lg font-semibold">Tenant</h4>
-        <select
-          name={tenantIdName}
-          value={String(values[tenantIdName] ?? "")}
-          onChange={(e) => setFieldValue(tenantIdName, e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          disabled={loadingTenants}
-        >
-          <option value="">{loadingTenants ? "Loading tenants…" : "Select a tenant"}</option>
-          {Array.isArray(tenants) &&
-            tenants.map((t: Party) => (
-              <option key={partyId(t)} value={partyId(t)}>
-                {(t.name ?? t.fullName ?? "").trim()} — {t.email}
-              </option>
-            ))}
-        </select>
+      <div className="space-y-3">
+        <h4 className="text-lg font-semibold">Tenant Information</h4>
+
+        {/* read-only, prefilled from current user */}
+        <input
+          type="text"
+          name={tenantNameName}
+          placeholder="Your Company Name"
+          value={String(values[tenantNameName] ?? "")}
+          readOnly
+          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+        />
+        <input
+          type="email"
+          name={tenantEmailName}
+          placeholder="your@company.com"
+          value={String(values[tenantEmailName] ?? "")}
+          readOnly
+          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+        />
       </div>
 
-      {/* keep hidden fields if backend still expects them */}
-      <input type="hidden" name={landlordNameName} value={String(values[landlordNameName] ?? "")} readOnly />
-      <input type="hidden" name={landlordEmailName} value={String(values[landlordEmailName] ?? "")} readOnly />
-      <input type="hidden" name={tenantNameName} value={String(values[tenantNameName] ?? "")} readOnly />
-      <input type="hidden" name={tenantEmailName} value={String(values[tenantEmailName] ?? "")} readOnly />
-
-      {/* legacy hidden name fields */}
+      {/* Hidden ids & legacy fields (if backend expects them) */}
+      <input type="hidden" name={landlordIdName} value={String(values[landlordIdName] ?? "")} readOnly />
+      <input type="hidden" name={tenantIdName} value={String(values[tenantIdName] ?? "")} readOnly />
       {legacyLandlordNameName && (
         <input type="hidden" name={legacyLandlordNameName} value={String(values[legacyLandlordNameName] ?? "")} readOnly />
       )}

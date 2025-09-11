@@ -547,9 +547,6 @@ export default function LeaseDetailPage() {
         <ClauseDetailsModel
           onClose={() => setEditOpen(false)}
           clause={toModalClause(selectedClause, clauses.indexOf(selectedClause))} // <-- ensures `id`
-          newComment={newComment}
-          setNewComment={setNewComment}
-          handleAddComment={() => handleAddComment()}
         />
       )}
 

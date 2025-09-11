@@ -13,8 +13,13 @@ class DashboardBaseService extends HttpService {
       this.get(this.prefix + `/`, {})
 
     getloiData = (): Promise<any> =>
-      this.get(this.prefix + `/get_all_loi_for_lease_submittion`, {})
+      this.get(this.prefix + `/get_all_loi_for_lease_submittion`, {});
+
+     getLoggedInUser = (): Promise<any> =>
+    this.get(`/auth/get_logged_in_user`, {});
+
 }
+
 
 export const dashboardStatusService = new DashboardBaseService();
 

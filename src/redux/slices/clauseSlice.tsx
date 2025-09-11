@@ -152,39 +152,37 @@ export const clauseSlice = createSlice({
         Toast.fire({ icon: "error", title: action.payload as string });
       })
 
-      // NEW: add comment
-      .addCase(commentOnClauseAsync.pending, (state) => {
-        state.isLoading = true;
-      })
+      // inside extraReducers of the slice that holds currentLease / clauses
       .addCase(commentOnClauseAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
+        // you have: state.currentLease or wherever clauses live
+        const { clause_key, comment } = action.payload as any;
 
-        // You can decide how to merge it:
-        // If API returns a full clause with comments array:
-        // state.currentClause = { ...state.currentClause, ...action.payload };
-
-        // If API returns just the comment, push it in (optimistic-ish):
-        try {
-          const payload = action.payload as any;
-          const newComment =
-            payload?.comment ||
-            payload?.data?.comment ||
-            payload?.data ||
-            payload; // fallback
-
-          if (!state.currentClause) state.currentClause = {};
-          if (!Array.isArray((state.currentClause as any).comments)) {
-            (state.currentClause as any).comments = [];
-          }
-          (state.currentClause as any).comments.push(newComment);
-        } catch {
-          // noop; shape not guaranteed, but no crash
+        // If you store the open clause separately:
+        if ((state as any).currentClause) {
+          const cc = (state as any).currentClause;
+          cc.comments = Array.isArray(cc.comments) ? cc.comments : [];
+          cc.comments.push(comment);
         }
+
+        // Also reflect in the list on the open lease (optional but nice)
+        const lease = (state as any).currentLease;
+        if (lease?.clauses?.length) {
+          const idx = lease.clauses.findIndex((x: any) => x.name === clause_key);
+          if (idx >= 0) {
+            const prev = lease.clauses[idx];
+            const prevComments = Array.isArray((prev as any).comments) ? (prev as any).comments : [];
+            lease.clauses[idx] = {
+              ...prev,
+              comments: [...prevComments, comment],
+              commentsUnresolved: (prev.commentsUnresolved ?? 0) + 1,
+            };
+          }
+        }
+                Toast.fire({ icon: "success", title: "Comments Added successfully!" });
+
       })
       .addCase(commentOnClauseAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.clauseError = action.payload as string;
-        Toast.fire({ icon: "error", title: action.payload as string });
+        (state as any).clauseError = action.payload as string;
       });
   },
 });

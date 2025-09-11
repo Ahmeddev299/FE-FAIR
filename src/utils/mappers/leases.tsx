@@ -106,7 +106,7 @@ const extractTags = (item: ApiLeaseItem): string[] => {
   const clauseNames = Object.keys(item.clauses ?? {}).filter(k => k !== "_clause_log_id");
   for (const name of clauseNames) {
     const low = name.toLowerCase();
-    if (low.includes("termination")) tags.add("Termination Clause");
+    if (low.includes("4")) tags.add("Termination Clause");
     if (low.includes("indemn")) tags.add("Indemnity");
     if (low.includes("renewal")) tags.add("Renewal Option");
     if (low.includes("security deposit")) tags.add("Security Deposit");

@@ -103,7 +103,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               </p>
             </div>
 
-            {/* Dynamically render sections */}
+          {/* Dynamically render sections */}
             <div className="space-y-6">
               {sections.map(({ title, color, badgeCls, items, badgeText }) =>
                 items.length ? (

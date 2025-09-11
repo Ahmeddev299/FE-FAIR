@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { clauseBaseService } from "./endpoints";
+import { AddCommentResponse, clauseBaseService } from "./endpoints";
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 
 // Approve / Reject / Edit Clause
 export type UpdateClauseTag = "approved" | "reject";
+
+export type ClauseComment = { text: string; author?: string; created_at?: string };
+
 
 export const updateClauseAsync = createAsyncThunk<
   { leaseId: string; clauseKey: string; tag: UpdateClauseTag; server?: any },
@@ -102,42 +105,42 @@ export const getClauseByIdAsync = createAsyncThunk(
   }
 );
 
-export const commentOnClauseAsync = createAsyncThunk(
-  "clause/commentOnClause",
-  async (
-    params: {
-      clauseDocId: string;        // e.g., "68b83db750cf251edaaee326"
-      clause_key: string;         // clause title/key
-      comment: string;            // comment text/body
-    },
-    { rejectWithValue }
-  ) => {
+// src/services/clause/asyncThunk.ts
+// src/services/clause/asyncThunk.ts
+
+export const commentOnClauseAsync = createAsyncThunk<
+  { clauseDocId: string; clause_key: string; comment: ClauseComment },
+  { clauseDocId: string; clause_key: string; comment: string },
+  { rejectValue: string }
+>(
+  "clause/comment",
+  async (params, { rejectWithValue }) => {
     try {
-      const { clauseDocId, clause_key, comment } = params;
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
 
-      // API endpoint (typo preserved as provided)
-      const url = `https://api.fairleases.com/clause/comment_on_signle_clauses_of_single_lease/${clauseDocId}`;
-
-      const res = await fetch(url, {
-        method: "PUT", // adjust to your server (POST/PUT/PATCH)
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clause_id: clauseDocId,           // keeping prior naming style you used elsewhere
-          clause_title: clause_key,
-          comment: comment,
-        }),
+      const res: AddCommentResponse = await clauseBaseService.addCommentToClause(params.clauseDocId, {
+        clause_key: params.clause_key,
+        comment: params.comment,
       });
 
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Failed to add comment");
-      }
+      const ok = res?.success === true || res?.status === 200 || !!res?.data;
+      if (!ok) return rejectWithValue(res?.message ?? "Failed to add comment");
 
-      const data = await res.json();
-      // Expected to return the new/updated comment or clause block
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err?.message || "Failed to add comment");
+      const newComment: ClauseComment =
+        (res.data && "comment" in (res.data as Record<string, unknown>)
+          ? (res.data as { comment?: ClauseComment }).comment
+          : undefined) ??
+        {
+          text: params.comment,
+          author: "You",
+          created_at: new Date().toISOString(),
+        };
+
+      return { clauseDocId: params.clauseDocId, clause_key: params.clause_key, comment: newComment };
+    } catch (e) {
+      console.error("Error adding comment:", e);
+      return rejectWithValue("Failed to add comment");
     }
   }
 );
