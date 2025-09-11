@@ -248,7 +248,7 @@ const LeaseClauseReview: React.FC = () => {
 
   const handleAccept = async (clauseName: string) => {
     const clause = localHistory?.[clauseName];
-    if (!clause) return;
+    // if (!clause) return;
 
     const clauseId = getClauseId(clauseName);
     const newText = clause.ai_suggested_clause_details ?? '';
