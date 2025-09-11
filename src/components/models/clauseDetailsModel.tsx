@@ -1,4 +1,3 @@
-// src/components/models/ClauseDetailsModel.tsx
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -30,16 +29,14 @@ export type ClauseHistoryEntry = {
 
 type Props = {
   onClose: () => void;
-  clause: ExtendedClause; // parent ensures this exists (it already gates rendering)
+  clause: ExtendedClause;
   history?: ClauseHistoryEntry;
   onApprove?: () => void;
   onReject?: () => void;
   onRequestReview?: () => void;
-
-  // Return the created comment so modal can append locally
-  onAddComment?:
-    | ((text: string) => Promise<ClauseHistoryComment | undefined>)
-    | ((text: string) => ClauseHistoryComment | undefined);
+  onAddComment?: (text: string) => Promise<ClauseHistoryComment | undefined> | ((
+    text: string
+  ) => ClauseHistoryComment | undefined);
 };
 
 export default function ClauseDetailsModel({
@@ -51,26 +48,24 @@ export default function ClauseDetailsModel({
   onRequestReview,
   onAddComment,
 }: Props) {
-  // Hooks must always run; don't early-return before these.
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = 'auto'; };
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, []);
 
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
 
-  // Initialize comments from API history
+  // Comments from API (for this clause)
   const initialComments = useMemo<ClauseHistoryComment[]>(
     () => (Array.isArray(history?.comment) ? history!.comment : []),
     [history]
   );
 
-  // Keep comments local to modal (don’t mutate clause/UIClause types)
   const [localComments, setLocalComments] = useState<ClauseHistoryComment[]>(initialComments);
-
-  // Reset local comments when clause/history changes
   useEffect(() => {
     setLocalComments(initialComments);
   }, [initialComments]);
@@ -80,19 +75,18 @@ export default function ClauseDetailsModel({
     if (!text || !onAddComment) return;
     setSubmitting(true);
     try {
-      const created = await onAddComment(text);
-      if (created) setLocalComments((prev) => [...prev, created]);
+      // Parent will update cache + toast + close modal
+      await onAddComment(text);
       setCommentText('');
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Derived fields (prefer history when present)
   const displayStatus = history?.status ?? clause.status ?? 'Pending';
   const displayRisk = history?.risk ?? clause.risk ?? 'Low';
   const originalText = history?.clause_details ?? clause.originalText ?? clause.currentVersion ?? '—';
-  const aiSuggested  = history?.ai_suggested_clause_details ?? clause.aiSuggestion ?? '—';
+  const aiSuggested = history?.ai_suggested_clause_details ?? clause.aiSuggestion ?? '—';
   const currentVersion = history?.current_version ?? clause.currentVersion ?? '—';
 
   const aiScore =
@@ -149,7 +143,7 @@ export default function ClauseDetailsModel({
 
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] space-y-6">
-            {/* Text panels */}
+            {/* Panels */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Original Clause</h3>
@@ -171,52 +165,78 @@ export default function ClauseDetailsModel({
 
             {/* History details */}
             {showHistory && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
                 {history?.risk_line && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Risk Line</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.risk_line}</p>
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+                    <span className="mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-red-50 text-red-700 text-[10px] font-semibold px-2">
+                      RISK
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Risk Line</h4>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.risk_line}</p>
+                    </div>
                   </div>
                 )}
 
                 {history?.Recommendation && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Recommendation</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.Recommendation}</p>
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+                    <span className="mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold px-2">
+                      RECO
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Recommendation</h4>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.Recommendation}</p>
+                    </div>
                   </div>
                 )}
 
                 {history?.Analysis && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Analysis</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.Analysis}</p>
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+                    <span className="mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-amber-50 text-amber-700 text-[10px] font-semibold px-2">
+                      ANALYSIS
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Analysis</h4>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.Analysis}</p>
+                    </div>
                   </div>
                 )}
 
                 {history?.compare_loi_vs_lease && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Compare LOI vs Lease</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.compare_loi_vs_lease}</p>
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+                    <span className="mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-gray-50 text-gray-700 text-[10px] font-semibold px-2">
+                      LOI vs LEASE
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Compare LOI vs Lease</h4>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.compare_loi_vs_lease}</p>
+                    </div>
                   </div>
                 )}
 
                 {(history?.created_at || history?.updated_at) && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Timestamps</h4>
-                    <div className="text-xs text-gray-600">
-                      {history.created_at && <>Created: {new Date(history.created_at).toLocaleString()}</>}
-                      {history.created_at && history.updated_at && <br />}
-                      {history.updated_at && <>Updated: {new Date(history.updated_at).toLocaleString()}</>}
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 p-4">
+                    <span className="mt-0.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-gray-100 text-gray-700 text-[10px] font-semibold px-2">
+                      DATES
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Timestamps</h4>
+                      <div className="text-xs text-gray-600">
+                        {history.created_at && <>Created: {new Date(history.created_at).toLocaleString()}</>}
+                        {history.created_at && history.updated_at && <br />}
+                        {history.updated_at && <>Updated: {new Date(history.updated_at).toLocaleString()}</>}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             )}
 
+
             {/* Comments */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-medium text-gray-900">Comments ({localComments.length})</h3>
+                <h3 className="fpont-medium text-gray-900">Comments ({localComments.length})</h3>
               </div>
 
               <div className="space-y-3">

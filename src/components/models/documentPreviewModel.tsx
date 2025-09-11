@@ -1,14 +1,16 @@
 // components/models/documentPreviewModel.tsx
-import React from 'react';
+'use client';
+
+import React, { useCallback, useRef } from 'react';
 import { FileText, Download, X } from 'lucide-react';
-import type { Clause } from '@/types/loi';
 
 // Extend the base Clause with optional fields your UI uses
-type PreviewClause = Clause & {
+type PreviewClause = {
   id?: string | number;
-  title?: string;
+  name?: string;
   text?: string;
   status?: string;
+  risk?: 'Low' | 'Medium' | 'High';
 };
 
 interface DocumentPreviewModalProps {
@@ -16,6 +18,8 @@ interface DocumentPreviewModalProps {
   approved?: PreviewClause[];
   pending?: PreviewClause[];
   rejected?: PreviewClause[];
+  /** Optional direct file to download; if omitted we generate a PDF of the preview */
+  downloadUrl?: string;
 }
 
 export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
@@ -23,7 +27,63 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   approved = [],
   pending = [],
   rejected = [],
+  downloadUrl,
 }) => {
+  const captureRef = useRef<HTMLDivElement>(null);
+
+  const handleDownload = useCallback(async () => {
+    // If API already gives you a PDF, prefer that
+    if (downloadUrl) {
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.target = '_blank';
+      a.rel = 'noreferrer';
+      a.click();
+      return;
+    }
+
+    // Otherwise: capture the preview area and build a PDF on the fly
+    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ]);
+
+    const node = captureRef.current;
+    if (!node) return;
+
+    // Make sure the background is white and scale is decent for readability
+    const canvas = await html2canvas(node, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'pt', 'a4');
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    // Add first page
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+    // Add extra pages if content is taller than a single page
+    let heightLeft = imgHeight - pageHeight;
+    let position = -pageHeight;
+
+    while (heightLeft > 0) {
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      position -= pageHeight;
+    }
+
+    pdf.save('lease-preview.pdf');
+  }, [downloadUrl]);
+
   const sections: Array<{
     title: string;
     color: string;   // border color
@@ -57,6 +117,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 backdrop-blur-sm bg-black/40">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 text-white rounded-lg p-2">
@@ -68,7 +129,10 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
               <Download className="h-4 w-4" />
               Download PDF
             </button>
@@ -78,8 +142,9 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
           </div>
         </div>
 
+        {/* Body (capture this for PDF) */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-          <div className="max-w-2xl mx-auto">
+          <div ref={captureRef} className="max-w-2xl mx-auto">
             {/* Legend with dynamic counts */}
             <div className="flex items-center justify-center gap-6 mb-6">
               <div className="flex items-center gap-2">
@@ -103,7 +168,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               </p>
             </div>
 
-          {/* Dynamically render sections */}
+            {/* Dynamically render sections */}
             <div className="space-y-6">
               {sections.map(({ title, color, badgeCls, items, badgeText }) =>
                 items.length ? (
@@ -144,8 +209,12 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
           </div>
         </div>
 
+        {/* Footer */}
         <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <button onClick={onClose} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          <button
+            onClick={onClose}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
             Close Preview
           </button>
         </div>

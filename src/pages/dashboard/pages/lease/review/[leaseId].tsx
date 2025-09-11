@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { getClauseDetailsAsync } from "@/services/lease/asyncThunk";
+import { HistoryMetaMap } from "@/types/loi";
 // import { HistoryMetaMap } from "@/types/loi";
 
 /* ---------- Types ---------- */
@@ -181,19 +182,19 @@ const LeaseClauseReview: React.FC = () => {
     return CheckCircle;
   };
 
-  // const extractId = (c?: ClauseData): string | undefined =>
-  // c?.clause_id ?? c?._id ?? c?.id;
+  const extractId = (c?: ClauseData): string | undefined =>
+    c?.clause_id ?? c?._id ?? c?.id;
 
   // Extract a clause id (try a few common places)
-//   const getClauseId = (clauseName: string): string => {
-//   // item is ClauseData | undefined (no any)
-//   const item = localHistory[clauseName];
-//   const fromHistory = extractId(item);
-//   if (fromHistory) return fromHistory;
+  const getClauseId = (clauseName: string): string => {
+    // item is ClauseData | undefined (no any)
+    const item = localHistory[clauseName];
+    const fromHistory = extractId(item);
+    if (fromHistory) return fromHistory;
 
-//   const meta = (currentLease?.data?.history_meta ?? {}) as HistoryMetaMap;
-//   return meta[clauseName]?.id ?? "";
-// };
+    const meta = (currentLease?.data?.history_meta ?? {}) as HistoryMetaMap;
+    return meta[clauseName]?.id ?? "";
+  };
 
   // Category grouping (keywords can be tuned)
   const groupClausesByCategory = (history: HistoryMap): Record<string, string[]> => {
@@ -245,49 +246,55 @@ const LeaseClauseReview: React.FC = () => {
 
   /* ---------- Actions ---------- */
 
-  // Accept: replace Original with AI Suggested and save
-  // const handleAccept = async (clauseName: string) => {
-  //   const clause = localHistory?.[clauseName];
-  //   if (!clause) return;
+  const handleAccept = async (clauseName: string) => {
+    const clause = localHistory?.[clauseName];
+    if (!clause) return;
 
-  //   const clauseId = getClauseId(clauseName);
-  //   const newText = clause.ai_suggested_clause_details ?? "";
+    const clauseId = getClauseId(clauseName);
+    const newText = clause.ai_suggested_clause_details ?? '';
 
-  //   // optimistic update
-  //   setLocalHistory((prev) => ({
-  //     ...prev,
-  //     [clauseName]: {
-  //       ...prev[clauseName],
-  //       current_version: newText,
-  //       status: "approved",
-  //     },
-  //   }));
+    // optimistic update
+    setLocalHistory(prev => ({
+      ...prev,
+      [clauseName]: {
+        ...prev[clauseName],
+        current_version: newText,
+        status: 'approved',
+      },
+    }));
 
-  //   try {
-  //     await fetch(
-  //       `/clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${clauseId}`,
-  //       {
-  //         method: "PUT", // adjust to PATCH if needed
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({
-  //           clause_id: clauseId,
-  //           clause_title: clauseName,
-  //           // store the AI suggestion as the new current version
-  //           current_version: newText,
-  //           ai_suggested_clause_details: clause.ai_suggested_clause_details,
-  //           action: "accept_ai_suggestion",
-  //         }),
-  //       }
-  //     );
-  //     showToastMessage("AI suggestion accepted successfully!");
-  //   } catch (e) {
-  //     // rollback on failure
-  //     setLocalHistory((prev) => ({
-  //       ...prev,
-  //       [clauseName]: { ...prev[clauseName], current_version: clause.current_version, status: clause.status },
-  //     }));
-  //   }
-  // };
+    try {
+      const res = await fetch(
+        `/clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${clauseId}`,
+        {
+          method: 'PUT', // or 'PATCH' if your API expects it
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clause_id: clauseId,
+            clause_title: clauseName,
+            current_version: newText,
+            ai_suggested_clause_details: clause.ai_suggested_clause_details,
+            action: 'accept_ai_suggestion',
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+      showToastMessage('AI suggestion accepted successfully!');
+    } catch {
+      // rollback on failure
+      setLocalHistory(prev => ({
+        ...prev,
+        [clauseName]: {
+          ...prev[clauseName],
+          current_version: clause.current_version,
+          status: clause.status,
+        },
+      }));
+      showToastMessage('Failed to accept AI suggestion. Changes reverted.');
+    }
+  };
 
   // Reject: cancel and go back
   const handleReject = () => {
@@ -300,39 +307,57 @@ const LeaseClauseReview: React.FC = () => {
     setEditedContent(localHistory?.[clauseName]?.current_version ?? "");
   };
 
-  // Save edited Original Clause to API
-  // const handleSaveEdit = async (clauseName: string) => {
-  //   const clauseId = getClauseId(clauseName);
-  //   const newText = editedContent ?? "";
+  const handleSaveEdit = async (clauseName: string): Promise<void> => {
+    const clauseId = getClauseId(clauseName);
+    const newText = (editedContent ?? '').trim();
+    if (!clauseId || !clauseName) return;
 
-  //   // optimistic update
-  //   setLocalHistory((prev) => ({
-  //     ...prev,
-  //     [clauseName]: { ...prev[clauseName], current_version: newText, status: "pending" },
-  //   }));
+    // Snapshot for rollback
+    const prevEntry = localHistory?.[clauseName];
 
-  //   try {
-  //     await fetch(
-  //       `/clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${clauseId}`,
-  //       {
-  //         method: "PUT",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({
-  //           clause_id: clauseId,
-  //           clause_title: clauseName,
-  //           current_version: newText,
-  //           action: "manual_edit",
-  //         }),
-  //       }
-  //     );
-  //     showToastMessage("Clause edited and saved.");
-  //   } catch (e) {
-  //     // (optional) you can refetch or restore from previous if you keep a snapshot
-  //   } finally {
-  //     setEditingClause(null);
-  //     setEditedContent("");
-  //   }
-  // };
+    // If nothing changed, just close the editor
+    if (!prevEntry || prevEntry.current_version === newText) {
+      setEditingClause(null);
+      setEditedContent('');
+      return;
+    }
+
+    // Optimistic update
+    setLocalHistory(prev => ({
+      ...prev,
+      [clauseName]: { ...prev[clauseName], current_version: newText, status: 'pending' },
+    }));
+
+    try {
+      const res = await fetch(
+        `/clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${clauseId}`,
+        {
+          method: 'PUT', // use 'PATCH' if your API expects it
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clause_id: clauseId,
+            clause_title: clauseName,
+            current_version: newText,
+            action: 'manual_edit',
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+      showToastMessage('Clause edited and saved.');
+    } catch {
+      // Rollback on failure
+      setLocalHistory(prev => ({
+        ...prev,
+        ...(prevEntry ? { [clauseName]: prevEntry } : {}),
+      }));
+      showToastMessage('Failed to save changes. Reverted.');
+    } finally {
+      setEditingClause(null);
+      setEditedContent('');
+    }
+  };
 
   // CSV export of summary
   const handleExportSummary = () => {
@@ -371,17 +396,17 @@ const LeaseClauseReview: React.FC = () => {
         <div class="muted">${new Date().toLocaleString()}</div>
         <h2>${selectedClause ?? "Clause"}</h2>
         <div class="box"><strong>Original Clause</strong><div>${(clause?.current_version ?? "")
-          .replace(/</g,"&lt;")
-          .replace(/>/g,"&gt;")
-          .replace(/\n/g,"<br/>")}</div></div>
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>")}</div></div>
         <div class="box"><strong>AI Suggested Clause</strong><div>${(clause?.ai_suggested_clause_details ?? "")
-          .replace(/</g,"&lt;")
-          .replace(/>/g,"&gt;")
-          .replace(/\n/g,"<br/>")}</div></div>
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>")}</div></div>
         <div class="box"><strong>AI Analysis</strong><div>${(clause?.clause_details ?? "")
-          .replace(/</g,"&lt;")
-          .replace(/>/g,"&gt;")
-          .replace(/\n/g,"<br/>")}</div></div>
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>")}</div></div>
       </body></html>
     `);
     w!.document.close();
@@ -584,7 +609,7 @@ const LeaseClauseReview: React.FC = () => {
                         {editingClause === selectedClause ? (
                           <>
                             <button
-                              // onClick={() => handleSaveEdit(selectedClause!)}
+                              onClick={() => handleSaveEdit(selectedClause!)}
                               className="px-3 py-1.5 text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
                             >
                               <Save className="inline-block w-4 h-4 mr-1" />
@@ -679,7 +704,7 @@ const LeaseClauseReview: React.FC = () => {
                       {/* Accept Suggestion */}
                       <button
                         type="button"
-                        // onClick={() => handleAccept(selectedClause!)}
+                        onClick={() => handleAccept(selectedClause!)}
                         aria-label="Accept AI suggestion"
                         className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-green-600 px-3 text-sm font-semibold text-white shadow-sm transition
                           hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500/60
