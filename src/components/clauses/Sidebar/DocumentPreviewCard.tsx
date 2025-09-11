@@ -22,6 +22,7 @@ type Props = {
   clauses: ClausePreviewItem[];
   generatedAt?: string;
   downloadUrl?: string;
+
 };
 
 export default function DocumentPreviewModal({
