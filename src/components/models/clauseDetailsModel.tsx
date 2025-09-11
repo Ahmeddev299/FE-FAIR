@@ -169,50 +169,6 @@ export default function ClauseDetailsModel({
               </div>
             </div>
 
-            {/* History details */}
-            {showHistory && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {history?.risk_line && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Risk Line</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.risk_line}</p>
-                  </div>
-                )}
-
-                {history?.Recommendation && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Recommendation</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.Recommendation}</p>
-                  </div>
-                )}
-
-                {history?.Analysis && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Analysis</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.Analysis}</p>
-                  </div>
-                )}
-
-                {history?.compare_loi_vs_lease && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Compare LOI vs Lease</h4>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{history.compare_loi_vs_lease}</p>
-                  </div>
-                )}
-
-                {(history?.created_at || history?.updated_at) && (
-                  <div className="border border-gray-200 rounded p-4">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Timestamps</h4>
-                    <div className="text-xs text-gray-600">
-                      {history.created_at && <>Created: {new Date(history.created_at).toLocaleString()}</>}
-                      {history.created_at && history.updated_at && <br />}
-                      {history.updated_at && <>Updated: {new Date(history.updated_at).toLocaleString()}</>}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Comments */}
             <div>
               <div className="flex items-center justify-between mb-3">
