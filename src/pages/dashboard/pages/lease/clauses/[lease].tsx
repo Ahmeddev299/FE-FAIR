@@ -24,7 +24,6 @@ import { LoadingOverlay } from '@/components/loaders/overlayloader';
 
 import ClauseDetailsModel from '@/components/models/clauseDetailsModel';
 import { commentOnClauseAsync } from '@/services/clause/asyncThunk';
-import { DocumentPreviewModal } from '@/components/models/documentPreviewModel'; // ⬅ named import
 
 function firstString(v?: string | string[]): string | undefined {
   return Array.isArray(v) ? v[0] : (typeof v === 'string' ? v : undefined);
