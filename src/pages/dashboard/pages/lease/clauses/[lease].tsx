@@ -305,7 +305,7 @@ import Card from '@/components/ui/Card';
 import Pill, { PillTone } from '@/components/ui/Pill';
 import ClausesTable from '@/components/clauses/ClauseTable';
 import ManagementProgress from '@/components/clauses/Sidebar/ManagementProgress';
-import DocumentPreviewCard from '@/components/clauses/Sidebar/DocumentPreviewCard';
+import DocumentPreviewModal, { ClausePreviewItem, PreviewRisk, PreviewStatus } from '@/components/clauses/Sidebar/DocumentPreviewCard';
 import ReadyToProceed from '@/components/clauses/Sidebar/ReadyToProceed';
 import QuickStats from '@/components/clauses/Sidebar/QuickStats';
 import { DashboardLayout } from '@/components/layouts';
@@ -315,12 +315,13 @@ import type { UIClause, ExtendedClause, ClauseStatus, RiskLevel } from '@/types/
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { getLeaseDetailsById, acceptClauseSuggestionAsync } from '@/services/lease/asyncThunk';
 
-import {  extractOne, mapToUILease } from '@/utils/leasemappers';
+import { extractOne, mapToUILease } from '@/utils/leasemappers';
 import { LoadingOverlay } from '@/components/loaders/overlayloader';
 
 import ClauseDetailsModel from '@/components/models/clauseDetailsModel';
 import AddCommentModal from '@/components/models/addClauseModel';
 import { commentOnClauseAsync } from '@/services/clause/asyncThunk';
+import DocumentPreviewCard from '@/components/Leases/documentPreviewCard';
 
 function firstString(v?: string | string[]): string | undefined {
   return Array.isArray(v) ? v[0] : (typeof v === 'string' ? v : undefined);
@@ -379,6 +380,22 @@ const headerChips: HeaderChip[] = [
   { text: 'Ready for editing & approval', tone: 'yellow' },
 ];
 
+function normStatus(raw?: string): PreviewStatus {
+  const s = (raw || '').toLowerCase();
+  if (s.includes('approved')) return 'Approved';
+  if (s.includes('reject')) return 'Rejected';
+  return 'Pending';
+}
+function normRisk(raw?: string): PreviewRisk {
+  if (!raw) return undefined;
+  const s = raw.toLowerCase();
+  if (s.startsWith('low')) return 'Low';
+  if (s.startsWith('medium')) return 'Medium';
+  if (s.startsWith('high')) return 'High';
+  return undefined;
+}
+
+
 export default function ClauseManagementPage() {
   const router = useRouter();
   const q = (router.query ?? {}) as Record<string, string | string[]>;
@@ -403,6 +420,9 @@ export default function ClauseManagementPage() {
     void dispatch(getLeaseDetailsById(leaseId));
   }, [router.isReady, leaseId, dispatch]);
 
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+
   const clauseDocId: string | undefined = clauseDocIdFromQuery || undefined;
 
   const [filters, setFilters] = useState({
@@ -410,6 +430,36 @@ export default function ClauseManagementPage() {
     risk: 'All Risk Levels',
     category: 'Category',
   });
+
+  const previewItems = useMemo<ClausePreviewItem[]>(() => {
+    const items: ClausePreviewItem[] = [];
+
+    if (rawLease?.history) {
+      // Build from API history (preferred)
+      for (const [name, entry] of Object.entries(rawLease.history)) {
+        const status = normStatus(entry?.status);
+        const risk = normRisk(entry?.risk);
+        const text = entry?.current_version || entry?.clause_details || '';
+        const comments = Array.isArray(entry?.comment) ? entry.comment.length : 0;
+        items.push({ name, status, risk, text, comments });
+      }
+      return items;
+    }
+
+    // Fallback to UI lease clauses if history missing
+    if (lease) {
+      for (const c of lease.clauses) {
+        items.push({
+          name: c.name,
+          status: (c.status as PreviewStatus) || 'Pending',
+          risk: (c.risk as PreviewRisk) ?? undefined,
+          text: c.currentVersion || '',
+          comments: c.commentsUnresolved ?? 0,
+        });
+      }
+    }
+    return items;
+  }, [rawLease, lease]);
 
   // Details modal state
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -515,7 +565,8 @@ export default function ClauseManagementPage() {
               total={lease.totalCount ?? lease.clauses.length}
               unresolved={lease.unresolvedCount ?? 0}
             />
-            <DocumentPreviewCard onPreview={() => { /* noop */ }} />
+            <DocumentPreviewCard onPreview={() => setPreviewOpen(true)} />
+
             <ReadyToProceed />
             <QuickStats
               total={lease.totalCount ?? lease.clauses.length}
@@ -533,6 +584,22 @@ export default function ClauseManagementPage() {
           </div>
         </div>
       )}
+      {previewOpen && (
+        <DocumentPreviewModal
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          leaseTitle={lease?.title ?? 'Lease'}
+          address={
+            (lease as { propertyAddress?: string })?.propertyAddress ??
+            (lease as { property_address?: string })?.property_address
+          }
+          clauses={previewItems}
+          generatedAt={new Date().toISOString()}
+          downloadUrl={(rawLease as { url?: string })?.url}
+        />
+      )
+
+      }
 
       {/* Details Modal with history */}
       {detailsOpen && detailsClause && (
