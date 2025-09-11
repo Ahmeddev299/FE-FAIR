@@ -185,7 +185,7 @@ export const updateClauseCurrentVersionAsync = createAsyncThunk(
     try {
       const token = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
-
+console.log("clauseid", clauseId)
       const res = await leaseBaseService.updateClauseDetailOrCurrentVersion(clauseId, {
         clause_id: clauseId,   // ✅ backend exact
         clause_key,            // ✅ backend exact
