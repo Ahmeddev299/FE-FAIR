@@ -24,7 +24,7 @@ type LoiItem = {
 };
 
 interface LOITableProps {
-  lois: LoiItem[]|null;
+  lois: LoiItem[] | null;
   isLoading?: boolean;
   error?: string | null;
   onViewAll?: () => void;
@@ -99,7 +99,7 @@ export const LOITable: React.FC<LOITableProps> = ({
 
 
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-6 py-5 border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-gray-900">My LOIs</h2>
         </div>
@@ -107,7 +107,7 @@ export const LOITable: React.FC<LOITableProps> = ({
           {onAddNew && (
             <button
               onClick={onAddNew}
-              className="text-sm px-3 py-1.5 rounded-md border hover:bg-gray-50"
+              className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 shadow-sm bg-white hover:bg-gray-50 transition"
             >
               + New LOI
             </button>
@@ -115,12 +115,13 @@ export const LOITable: React.FC<LOITableProps> = ({
           {onViewAll && (
             <button
               onClick={onViewAll}
-              className="text-sm px-3 py-1.5 rounded-md border hover:bg-gray-50"
+              className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 shadow-sm bg-white hover:bg-gray-50 transition"
             >
               View All
             </button>
           )}
         </div>
+
       </div>
 
       {error && (

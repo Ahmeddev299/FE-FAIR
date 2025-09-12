@@ -13,8 +13,8 @@ type Lease = {
   title?: string;
   property_address?: string;
   propertyAddress?: string;
-  status?: string;                       
-  clauses?: Record<string, ClauseBlock>; 
+  status?: string;
+  clauses?: Record<string, ClauseBlock>;
   updatedAt?: string;
   lastUpdate?: string;
   startDate?: string;
@@ -121,18 +121,15 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-6 py-5  border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-gray-900">My Leases</h2>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
-            {isLoading ? "…" : leases?.length || 0}
-          </span>
         </div>
         <div className="flex items-center gap-2">
           {onAddNew && (
             <button
               onClick={onAddNew}
-              className="text-sm px-3 py-1.5 rounded-md border hover:bg-gray-50"
+              className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 shadow-sm bg-white hover:bg-gray-50 transition"
             >
               + Upload Lease
             </button>
@@ -140,12 +137,13 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
           {onViewAll && (
             <button
               onClick={onViewAll}
-              className="text-sm px-3 py-1.5 rounded-md border hover:bg-gray-50"
+              className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-md border border-gray-300 shadow-sm bg-white hover:bg-gray-50 transition"
             >
               View All
             </button>
           )}
         </div>
+
       </div>
 
       {error && (
@@ -228,7 +226,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                         <button
                           onClick={() => view(row)}
                           className="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
-                       
+
                         >
                           <Eye className="w-4 h-4" />
                           <span>View</span>
@@ -254,7 +252,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
             <div className="text-center text-sm text-gray-500 py-6">No records found</div>
           )}
 
-          {!isLoading &&  Array.isArray(leases) && leases.length > 0 && 
+          {!isLoading && Array.isArray(leases) && leases.length > 0 &&
             leases?.map((row) => {
               const title = row.lease_title || row.title;
               const addr = row.property_address || row.propertyAddress;
