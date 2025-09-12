@@ -315,7 +315,8 @@ export type UILeaseBrief = {
   documentId?: string;        // e.g., "2025-001"
   status?: string;            // e.g., "Signed", "Draft", "Pending"
   tags?: string[];            // e.g., ["Termination Clause", "Indemnity"]
-  sizeLabel?: string;         // e.g., "2.4 MB"
+  sizeLabel?: string;     
+  updatedAt?:string    // e.g., "2.4 MB"
 };
 
 export type UILeaseFull = {

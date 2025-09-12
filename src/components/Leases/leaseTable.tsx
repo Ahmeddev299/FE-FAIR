@@ -1,8 +1,8 @@
-import React from 'react';
-import Pill from '@/components/ui/Pill';
-import Card from '@/components/ui/Card';
-import Kebab from '@/components/ui/Kebab';
-import type { UILeaseBrief } from '@/types/loi';
+import React from "react";
+import Pill from "@/components/ui/Pill";
+import Card from "@/components/ui/Card";
+import type { UILeaseBrief } from "@/types/loi";
+import { Eye, MoreHorizontal } from "lucide-react";
 
 type Props = {
   leases: UILeaseBrief[];
@@ -11,46 +11,49 @@ type Props = {
   page: number;
   limit: number;
   total: number;
-  totalPages: number; // accepted but not required in render; kept for API compatibility
+  totalPages: number;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
   onFiltersChange?: (filters: { type?: string; date?: string; tag?: string }) => void;
 };
 
-const TypeTone: Record<UILeaseBrief['type'], 'gray' | 'blue' | 'yellow' | 'red'> = {
-  Lease: 'gray',
-  LOI: 'blue',
-  Notice: 'yellow',
-  Termination: 'red',
+const TypeTone: Record<UILeaseBrief["type"], "gray" | "blue" | "yellow" | "red"> = {
+  Lease: "gray",
+  LOI: "blue",
+  Notice: "yellow",
+  Termination: "red",
 };
 
-const StatusTone: Record<'Signed' | 'Draft' | 'Received' | 'Expiring' | 'Pending', 'green' | 'yellow' | 'blue' | 'red' | 'purple' | 'gray'> = {
-  Signed: 'green',
-  Draft: 'yellow',
-  Received: 'blue',
-  Expiring: 'red',
-  Pending: 'purple',
+const StatusTone: Record<
+  "Signed" | "Draft" | "Received" | "Expiring" | "Pending",
+  "green" | "yellow" | "blue" | "red" | "purple" | "gray"
+> = {
+  Signed: "green",
+  Draft: "yellow",
+  Received: "blue",
+  Expiring: "red",
+  Pending: "purple",
 };
 
 const pageSizeOptions = [10, 20, 50] as const;
 
-/** Safe string prop read without `any` */
+/* ---------- helpers ---------- */
+
 function getStringProp(obj: unknown, key: string): string | undefined {
-  if (obj && typeof obj === 'object') {
+  if (obj && typeof obj === "object") {
     const v = (obj as Record<string, unknown>)[key];
-    return typeof v === 'string' ? v : undefined;
+    return typeof v === "string" ? v : undefined;
   }
   return undefined;
 }
 
-/** Pull a timestamp from known optional fields (if present) */
 function getUpdatedMs(l: UILeaseBrief): number | undefined {
   const candidates = [
-    getStringProp(l, 'updatedAt'),
-    getStringProp(l, 'lastUpdatedAt'),
-    getStringProp(l, 'createdAt'),
-    getStringProp(l, 'lastUpdated'),
-  ].filter((v): v is string => typeof v === 'string' && v.length > 0);
+    getStringProp(l, "updatedAt"),
+    getStringProp(l, "lastUpdatedAt"),
+    getStringProp(l, "createdAt"),
+    getStringProp(l, "lastUpdated"),
+  ].filter((v): v is string => typeof v === "string" && v.length > 0);
 
   for (const c of candidates) {
     const t = Date.parse(c);
@@ -63,19 +66,19 @@ function dateInRange(ms: number, bucket: string): boolean {
   const now = new Date();
   const end = now.getTime();
 
-  if (bucket === 'Last 7 days') {
+  if (bucket === "Last 7 days") {
     const start = end - 7 * 24 * 60 * 60 * 1000;
     return ms >= start && ms <= end;
   }
-  if (bucket === 'Last 30 days') {
+  if (bucket === "Last 30 days") {
     const start = end - 30 * 24 * 60 * 60 * 1000;
     return ms >= start && ms <= end;
   }
-  if (bucket === 'This year') {
+  if (bucket === "This year") {
     const start = new Date(now.getFullYear(), 0, 1).getTime();
     return ms >= start && ms <= end;
   }
-  if (bucket === 'Last year') {
+  if (bucket === "Last year") {
     const start = new Date(now.getFullYear() - 1, 0, 1).getTime();
     const stop = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999).getTime();
     return ms >= start && ms <= stop;
@@ -102,7 +105,7 @@ function FilterSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="appearance-none text-sm bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="h-9 text-sm bg-white border border-gray-300 rounded-md pl-3 pr-8 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="__all">{label}</option>
         {options.map((o) => (
@@ -112,7 +115,7 @@ function FilterSelect({
         ))}
       </select>
       <svg
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -122,21 +125,22 @@ function FilterSelect({
   );
 }
 
+/* ---------- component ---------- */
+
 export default function LeasesTable({
   leases,
   isLoading = false,
   page,
   limit,
   total,
-  // totalPages, // not used directly; computed from totals
   onPageChange,
   onLimitChange,
   onRowClick,
   onFiltersChange,
 }: Props) {
-  const [typeFilter, setTypeFilter] = React.useState('__all');
-  const [dateFilter, setDateFilter] = React.useState('__all');
-  const [tagFilter, setTagFilter] = React.useState('__all');
+  const [typeFilter, setTypeFilter] = React.useState("__all");
+  const [dateFilter, setDateFilter] = React.useState("__all");
+  const [tagFilter, setTagFilter] = React.useState("__all");
 
   const tagOptions = React.useMemo(() => {
     const s = new Set<string>();
@@ -144,12 +148,8 @@ export default function LeasesTable({
     return Array.from(s).sort();
   }, [leases]);
 
-  console.log("leases", leases)
-
   const hasActiveFilters =
-    typeFilter !== '__all' || dateFilter !== '__all' || tagFilter !== '__all';
-
-
+    typeFilter !== "__all" || dateFilter !== "__all" || tagFilter !== "__all";
 
   const [localPage, setLocalPage] = React.useState(page);
   const [localLimit, setLocalLimit] = React.useState(limit);
@@ -166,14 +166,14 @@ export default function LeasesTable({
   const filtered = React.useMemo(() => {
     if (!hasActiveFilters) return leases;
     return leases.filter((l) => {
-      if (typeFilter !== '__all' && l.type !== typeFilter) return false;
+      if (typeFilter !== "__all" && l.type !== typeFilter) return false;
 
-      if (tagFilter !== '__all') {
+      if (tagFilter !== "__all") {
         const tags = (l.tags ?? []).map((t) => t.toLowerCase());
         if (!tags.includes(tagFilter.toLowerCase())) return false;
       }
 
-      if (dateFilter !== '__all') {
+      if (dateFilter !== "__all") {
         const ms = getUpdatedMs(l);
         if (ms === undefined) return false;
         if (!dateInRange(ms, dateFilter)) return false;
@@ -190,9 +190,7 @@ export default function LeasesTable({
 
   const startIdx = (effectivePage - 1) * effectiveLimit;
   const endIdx = Math.min(startIdx + effectiveLimit, effectiveTotal);
-  const rows: UILeaseBrief[] = hasActiveFilters
-    ? filtered.slice(startIdx, endIdx)
-    : leases;
+  const rows: UILeaseBrief[] = hasActiveFilters ? filtered.slice(startIdx, endIdx) : leases;
 
   const goToPage = (p: number) => {
     if (p < 1 || p > effectiveTotalPages) return;
@@ -216,8 +214,9 @@ export default function LeasesTable({
   const showLoading = Boolean(isLoading);
 
   return (
-    <Card className="p-0 relative">
-      <div className="px-4 py-4 flex flex-wrap items-center gap-3 justify-between">
+    <Card className="p-0 overflow-hidden border border-gray-200 bg-white">
+      {/* Header / Filters */}
+      <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-gray-200">
         <h2 className="text-sm font-semibold text-gray-900">Documents ({effectiveTotal})</h2>
 
         <div className="flex items-center gap-2">
@@ -226,9 +225,9 @@ export default function LeasesTable({
             value={typeFilter}
             onChange={(v) => {
               setTypeFilter(v);
-              emitFiltersIfNeeded({ type: v === '__all' ? undefined : v });
+              emitFiltersIfNeeded({ type: v === "__all" ? undefined : v });
             }}
-            options={['Lease', 'LOI', 'Notice', 'Termination']}
+            options={["Lease", "LOI", "Notice", "Termination"]}
             disabled={isLoading}
           />
           <FilterSelect
@@ -236,9 +235,9 @@ export default function LeasesTable({
             value={dateFilter}
             onChange={(v) => {
               setDateFilter(v);
-              emitFiltersIfNeeded({ date: v === '__all' ? undefined : v });
+              emitFiltersIfNeeded({ date: v === "__all" ? undefined : v });
             }}
-            options={['Last 7 days', 'Last 30 days', 'This year', 'Last year']}
+            options={["Last 7 days", "Last 30 days", "This year", "Last year"]}
             disabled={isLoading}
           />
           <FilterSelect
@@ -246,7 +245,7 @@ export default function LeasesTable({
             value={tagFilter}
             onChange={(v) => {
               setTagFilter(v);
-              emitFiltersIfNeeded({ tag: v === '__all' ? undefined : v });
+              emitFiltersIfNeeded({ tag: v === "__all" ? undefined : v });
             }}
             options={tagOptions}
             disabled={isLoading}
@@ -254,51 +253,48 @@ export default function LeasesTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600">
-            <tr>
-              <th className="px-5 py-3">Document Name</th>
-              <th className="px-5 py-3">Type</th>
-              <th className="px-5 py-3">Document ID</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Tags</th>
-              {/* <th className="px-5 py-3">Size</th> */}
-              <th className="px-5 py-3">Actions</th>
-            </tr>
-          </thead>
+      {/* Table */}
+      <div className="overflow-x-auto p-5">
+        <table className="w-full text-sm border rounded-xl p-4 border-gray-200">
 
-          <tbody className="divide-y divide-gray-200">
+          <tr className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            <th className="px-6 py-3">Document Name</th>
+            <th className="px-6 py-3">Type</th>
+            <th className="px-6 py-3">Document ID</th>
+            <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3">Tags</th>
+            <th className="px-6 py-3 text-right">Actions</th>
+          </tr>
+
+
+          <tbody>
             {showLoading &&
-              Array.from({ length: 8 }).map((_, i) => (
-                <tr key={`sk-${i}`}>
-                  <td className="px-5 py-4">
+              Array.from({ length: 6 }).map((_, i) => (
+                <tr key={`sk-${i}`} className="border-b border-gray-100">
+                  <td className="px-6 py-4">
                     <div className="h-4 bg-gray-100 rounded animate-pulse" />
                   </td>
-                  <td className="px-2 py-4">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                  <td className="px-6 py-4">
+                    <div className="h-4 w-14 bg-gray-100 rounded animate-pulse" />
                   </td>
-                  <td className="px-2 py-4">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                  <td className="px-6 py-4">
+                    <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
                   </td>
-                  <td className="px-4 py-4">
-                    <div className="h-8 w-20 bg-gray-100 rounded animate-pulse" />
+                  <td className="px-6 py-4">
+                    <div className="h-6 w-20 bg-gray-100 rounded-full animate-pulse" />
                   </td>
-                  <td className="px-2 py-4">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                  <td className="px-6 py-4">
+                    <div className="h-4 w-28 bg-gray-100 rounded animate-pulse" />
                   </td>
-                  <td className="px-2 py-4">
-                    <div className="h-4 bg-gray-100 rounded animate-pulse" />
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="h-8 w-20 bg-gray-100 rounded animate-pulse" />
+                  <td className="px-6 py-4 text-right">
+                    <div className="h-4 w-8 bg-gray-100 rounded animate-pulse ml-auto" />
                   </td>
                 </tr>
               ))}
 
             {rows.map((l) => (
-              <tr key={l.id} className="text-sm hover:bg-gray-50">
-                <td className="px-5 py-3">
+              <tr key={l.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+                <td className="px-6 py-4">
                   <button
                     onClick={() => onRowClick(l.id)}
                     className="text-gray-900 font-medium hover:underline"
@@ -306,52 +302,53 @@ export default function LeasesTable({
                     {l.title}
                   </button>
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-6 py-4">
                   <Pill tone={TypeTone[l.type]}>{l.type}</Pill>
                 </td>
-                <td className="px-5 py-3 text-gray-700">{l.documentId ?? '-'}</td>
-                <td className="px-5 py-3">
+                <td className="px-6 py-4 text-gray-700">{l.documentId ?? "-"}</td>
+                <td className="px-6 py-4">
                   {l.status ? (
-                    <Pill tone={StatusTone[l.status as keyof typeof StatusTone] ?? 'gray'}>
+                    <Pill tone={StatusTone[l.status as keyof typeof StatusTone] ?? "gray"}>
                       {l.status}
                     </Pill>
                   ) : (
                     <span className="text-gray-500">—</span>
                   )}
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-6 py-4">
                   <div className="flex flex-wrap gap-1.5">
                     {(l.tags ?? []).map((t) => (
-                      <Pill key={t} tone={/risk|urgent|legal/i.test(t) ? 'red' : 'gray'}>
+                      <Pill key={t} tone={/risk|urgent|legal/i.test(t) ? "red" : "gray"}>
                         {t}
                       </Pill>
                     ))}
                   </div>
                 </td>
-                {/* <td className="px-5 py-3 text-gray-700">{l.sizeLabel ?? '-'}</td> */}
-                <td className="px-5 py-3">
-                  <div className="flex justify-start">
-                    <Kebab />
-                  </div>
-                </td>
+                 <td className="px-5 py-3 text-right">
+                    <KebabMenu
+                      onView={() => onRowClick(l.id)}
+                      disabled={isLoading}
+                    />
+                  </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 bg-white rounded-b">
+      {/* Footer / Pager */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-t border-gray-200 bg-white">
         <div className="text-sm text-gray-600">
-          Showing <span className="font-medium">{rows.length ? startIdx + 1 : 0}</span> to{' '}
-          <span className="font-medium">{rows.length ? endIdx : 0}</span> of{' '}
+          Showing <span className="font-medium">{rows.length ? startIdx + 1 : 0}</span> to{" "}
+          <span className="font-medium">{rows.length ? endIdx : 0}</span> of{" "}
           <span className="font-medium">{effectiveTotal}</span> results
         </div>
 
         <div className="flex items-center gap-3">
           <label className="text-sm text-gray-600">Rows per page</label>
           <select
-            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white"
-            value={effectiveLimit}
+            className="h-9 text-sm border border-gray-300 rounded-md px-2 bg-white"
+            value={hasActiveFilters ? localLimit : limit}
             onChange={(e) => changeLimit(Number(e.target.value))}
             disabled={isLoading}
           >
@@ -364,7 +361,7 @@ export default function LeasesTable({
 
           <div className="flex items-center gap-1">
             <button
-              className="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               onClick={() => goToPage(effectivePage - 1)}
               disabled={isLoading || effectivePage <= 1}
               aria-label="Previous page"
@@ -375,7 +372,7 @@ export default function LeasesTable({
               {effectivePage} / {effectiveTotalPages}
             </span>
             <button
-              className="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:opacity-50"
               onClick={() => goToPage(effectivePage + 1)}
               disabled={isLoading || effectivePage >= effectiveTotalPages}
               aria-label="Next page"
@@ -386,5 +383,66 @@ export default function LeasesTable({
         </div>
       </div>
     </Card>
+  );
+}
+
+/* ---------- Local actions popup (kebab) ---------- */
+function KebabMenu({
+  onView,
+  disabled,
+}: {
+  onView: () => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const btnRef = React.useRef<HTMLButtonElement | null>(null);
+
+  React.useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (!open) return;
+      const t = e.target as Node | null;
+      if (btnRef.current && !btnRef.current.contains(t)) {
+        const panel = document.getElementById("actions-popover");
+        if (panel && !panel.contains(t)) setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  return (
+    <div className="relative inline-block text-left">
+      <button
+        ref={btnRef}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => !disabled && setOpen((s) => !s)}
+        className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-gray-100 text-gray-600"
+        disabled={disabled}
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </button>
+
+      {open && (
+        <div
+          id="actions-popover"
+          role="menu"
+          className="absolute right-0 mt-2 w-36 origin-top-right rounded-md border border-gray-200 bg-white shadow-lg focus:outline-none z-20"
+        >
+          <button
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onView();
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-800 hover:bg-gray-50"
+          >
+            <Eye className="h-4 w-4 text-gray-600" />
+            View
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

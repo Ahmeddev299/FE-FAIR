@@ -9,7 +9,7 @@ type PreviewClause = {
   id?: string | number;
   name?: string;
   text?: string;
-  status?: string;
+  status?: 'approved' | 'pending' | 'rejected';
   risk?: 'Low' | 'Medium' | 'High';
 };
 
@@ -84,35 +84,42 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
     pdf.save('lease-preview.pdf');
   }, [downloadUrl]);
 
-  const sections: Array<{
-    title: string;
-    color: string;   // border color
-    badgeCls: string;
-    items: PreviewClause[];
-    badgeText: string;
-  }> = [
-    {
-      title: 'Approved',
-      color: 'border-green-500',
-      badgeCls: 'bg-green-100 text-green-700',
-      items: approved,
-      badgeText: 'Approved',
-    },
-    {
-      title: 'Pending',
-      color: 'border-orange-500',
-      badgeCls: 'bg-orange-100 text-orange-700',
-      items: pending,
-      badgeText: 'Pending',
-    },
-    {
-      title: 'Rejected',
-      color: 'border-red-500',
-      badgeCls: 'bg-red-100 text-red-700',
-      items: rejected,
-      badgeText: 'Rejected',
-    },
+  // Combine all clauses and add status information
+  const allClauses: (PreviewClause & { status: 'approved' | 'pending' | 'rejected' })[] = [
+    ...approved.map(clause => ({ ...clause, status: 'approved' as const })),
+    ...pending.map(clause => ({ ...clause, status: 'pending' as const })),
+    ...rejected.map(clause => ({ ...clause, status: 'rejected' as const })),
   ];
+
+  // Helper function to get status badge classes
+  const getStatusBadge = (status: 'approved' | 'pending' | 'rejected') => {
+    switch (status) {
+      case 'approved':
+        return {
+          bg: 'border border-green-500',
+          text: 'text-green-700',
+          label: 'Approved'
+        };
+      case 'pending':
+        return {
+          bg: 'border border-orange-500',
+          text: 'text-orange-700',
+          label: 'Pending'
+        };
+      case 'rejected':
+        return {
+          bg: 'border border-red-500',
+          text: 'text-red-700',
+          label: 'Rejected'
+        };
+      default:
+        return {
+          bg: 'border border-gray-500',
+          text: 'text-gray-700',
+          label: 'Unknown'
+        };
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 backdrop-blur-sm bg-black/40">
@@ -144,7 +151,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
 
         {/* Body (capture this for PDF) */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
-          <div ref={captureRef} className="max-w-2xl mx-auto">
+          <div ref={captureRef} className="max-w-3xl mx-auto">
             {/* Legend with dynamic counts */}
             <div className="flex items-center justify-center gap-6 mb-6">
               <div className="flex items-center gap-2">
@@ -168,55 +175,71 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               </p>
             </div>
 
-            {/* Dynamically render sections */}
-            <div className="space-y-6">
-              {sections.map(({ title, color, badgeCls, items, badgeText }) =>
-                items.length ? (
-                  <div key={title} className={`border-l-4 ${color} pl-4`}>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-gray-900">{title}</h3>
-                      <span className={`text-xs px-2 py-1 rounded ${badgeCls}`}>{badgeText}</span>
-                    </div>
+            {/* Linear clause layout */}
+            <div className="space-y-4">
+              {allClauses.map((clause, idx) => {
+                const key = (clause.id ?? idx).toString();
+                const displayTitle = clause.name ?? `Clause #${idx + 1}`;
+                const hasText = typeof clause.text === 'string' && clause.text.length > 0;
+                const statusBadge = getStatusBadge(clause.status);
 
-                    <div className="space-y-4">
-                      {items.map((c, idx) => {
-                        const key = (c.id ?? idx).toString();
-                        const displayTitle = c.name ?? `Clause #${idx + 1}`;
-                        const hasText = typeof c.text === 'string' && c.text.length > 0;
-                        const hasStatus = typeof c.status === 'string' && c.status.length > 0;
-
-                        return (
-                          <div key={key} className="bg-gray-50 rounded p-3 border border-gray-200">
-                            <div className="font-medium text-gray-900">{displayTitle}</div>
-                            {hasText && <p className="text-sm text-gray-700 mt-1">{c.text}</p>}
-                            {hasStatus && (
-                              <p className="text-xs text-gray-500 italic mt-1">Status: {c.status}</p>
-                            )}
-                          </div>
-                        );
-                      })}
+                return (
+                  <div key={key} className="pb-4 border-b border-gray-200 last:border-b-0">
+                    {/* Clause header with title and status badge on same line */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium text-gray-900 text-sm">
+                        {displayTitle}
+                      </h3>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusBadge.bg} ${statusBadge.text} ml-4 whitespace-nowrap`}>
+                        {statusBadge.label}
+                      </span>
                     </div>
+                    
+                    {/* Clause content - compact spacing */}
+                    {hasText && (
+                      <div className="text-xs text-gray-600 leading-relaxed">
+                        <p>{clause.text}</p>
+                      </div>
+                    )}
+                    
+                    {/* Additional info if available */}
+                    {clause.risk && (
+                      <div className="mt-1">
+                        <span className="text-xs text-gray-500">
+                          Risk Level: <span className="font-medium">{clause.risk}</span>
+                        </span>
+                      </div>
+                    )}
                   </div>
-                ) : null
-              )}
+                );
+              })}
             </div>
 
-            <div className="mt-8 pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500">
-                Document generated on {new Date().toLocaleDateString()}
-              </p>
+            {/* Document footer */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="text-center">
+                <p className="text-xs text-gray-500">
+                  Document generated on {new Date().toLocaleDateString()} • 
+                  Total clauses: {allClauses.length}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
         <div className="border-t border-gray-200 p-4 bg-gray-50">
-          <button
-            onClick={onClose}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          >
-            Close Preview
-          </button>
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              {approved.length + pending.length + rejected.length} total clauses
+            </div>
+            <button
+              onClick={onClose}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Close Preview
+            </button>
+          </div>
         </div>
       </div>
     </div>

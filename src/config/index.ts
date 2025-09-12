@@ -7,28 +7,28 @@ interface ConfigType {
 }
 
 const local: ConfigType = {
-  API_ENDPOINT: "https://api.fairleases.com",
+  API_ENDPOINT: "https://0c0d5bf6d212.ngrok-free.app",
   API_TIMEOUT: 10000,
   MAX_RETRIES: 3,
   DEBUG: true
 };
 
 const dev: ConfigType = {
-  API_ENDPOINT: "https://api.fairleases.com",
+  API_ENDPOINT: "https://0c0d5bf6d212.ngrok-free.app",
   API_TIMEOUT: 15000,
   MAX_RETRIES: 2,
   DEBUG: true,
 };
 
 const stag: ConfigType = {
-API_ENDPOINT: "https://api.fairleases.com", // Different from prod
+API_ENDPOINT: "https://0c0d5bf6d212.ngrok-free.app", // Different from prod
   API_TIMEOUT: 20000,
   MAX_RETRIES: 2,
   DEBUG: false,
 };
 
 const prod: ConfigType = {
-  API_ENDPOINT: "https://api.fairleases.com", // Production URL
+  API_ENDPOINT: "https://0c0d5bf6d212.ngrok-free.app", // Production URL
   API_TIMEOUT: 30000,
   MAX_RETRIES: 1,
   DEBUG: false,

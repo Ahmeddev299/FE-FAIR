@@ -56,6 +56,7 @@ export default function LeasesPage() {
 
       <div className="p-4 bg-white shadow-sm border border-gray-200 rounded mb-4">
         <div className="flex items-center justify-between">
+          {/* Left: Back button */}
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
@@ -63,31 +64,47 @@ export default function LeasesPage() {
             <ArrowLeft className="h-5 w-5" />
             <span className="text-sm">Back to Review</span>
           </button>
-          <div />
-        </div>
-        <div className="mt-3">
-          <h1 className="text-xl font-semibold text-gray-900">Leases</h1>
-          <p className="text-sm text-gray-600">
-            Edit, review, and approve lease clauses before proceeding to signature.
-          </p>
-        </div>
-      </div>
 
-      <LeasesTable
-        leases={leases}
-        isLoading={showLoader}
-        page={page}
-        limit={limit}
-        total={total}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        onLimitChange={handleLimitChange}
-        onRowClick={(id) => {
-          const row = leases.find(l => l.id === id) as UILeaseBrief & { _clauseDocId?: string };
-          const clauseDocId = row?._clauseDocId;
-          router.push(`/dashboard/pages/lease/clauses/${id}${clauseDocId ? `?clauseDocId=${clauseDocId}` : ""}`);
-        }}
-      />
+          {/* Middle: Icon + Title + Subtitle */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100">
+              <span className="text-blue-600 font-semibold text-lg">D</span>
+            </div>
+            <div>
+              <h1 className="text-base font-medium text-gray-900">Leases</h1>
+              <p className="text-xs text-gray-500">
+                Edit, review, and approve lease clauses before proceeding to signature.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Search input */}
+          <div className="relative w-1/2">
+            {/* <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /> */}
+            {/* <input
+              type="text"
+              placeholder="Search documents by title, clause or keyword..."
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            /> */}
+          </div>
+        </div>
+    </div>
+
+        <LeasesTable
+          leases={leases}
+          isLoading={showLoader}
+          page={page}
+          limit={limit}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          onRowClick={(id) => {
+            const row = leases.find(l => l.id === id) as UILeaseBrief & { _clauseDocId?: string };
+            const clauseDocId = row?._clauseDocId;
+            router.push(`/dashboard/pages/lease/clauses/${id}${clauseDocId ? `?clauseDocId=${clauseDocId}` : ""}`);
+          }}
+        />
     </DashboardLayout>
   );
 }

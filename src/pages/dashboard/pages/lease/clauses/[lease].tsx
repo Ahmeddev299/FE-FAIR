@@ -141,7 +141,6 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
         id: c.id ?? idx,
         name: c.name,
         text: c.currentVersion,
-        status: c.status as unknown as string, // if your PreviewClause has `status?: string`
         risk: c.risk,                           // ← add this to satisfy `Clause` requirements
       };
 

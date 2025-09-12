@@ -79,9 +79,9 @@ export default function ClausesTable({
         </select>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto p-6">
         <table className="min-w-full">
-          <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600">
+          <thead className="text-left text-xs font-semibold text-gray-600 border-b border-gray-100">
             <tr>
               <th className="px-4 py-3">Clause</th>
               <th className="px-4 py-3">Status</th>
