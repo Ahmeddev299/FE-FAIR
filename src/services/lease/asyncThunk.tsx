@@ -36,18 +36,20 @@ export type AcceptSuggestionArgs = {
 export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
   '/loi/submit',
   async (formData, { rejectWithValue }) => {
+    console.log("formData", formData)
     try {
       const token = `${ls.get('access_token', { decrypt: true })}`;
       HttpService.setToken(token);
       const response = await leaseBaseService.submitLease(formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
       console.log("response", response)
 
       if (response?.success === false && response?.status === 400) {
         return rejectWithValue(response.message as any);
       }
-      return (response.data ?? response) as UploadLeaseResponse;
+      return (response?.data ?? response) as UploadLeaseResponse;
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || error?.message || 'Upload failed' as any);
     }

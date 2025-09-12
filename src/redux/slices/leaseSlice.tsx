@@ -94,7 +94,7 @@ export const leaseSlice = createSlice({
       })
       .addCase(uploadLeaseAsync.rejected, (state, action) => {
         state.isLoading = false;
-        state.leaseError = (action.payload as string) ?? "Upload failed";
+        state.leaseError = (action?.payload as string) ?? "Upload failed";
         Toast.fire({ icon: "error", title: state.leaseError });
       });
 
