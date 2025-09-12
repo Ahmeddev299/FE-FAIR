@@ -1,6 +1,5 @@
 // components/steps/ReviewSubmitStep.tsx
 import React from 'react';
-import { Field, ErrorMessage } from 'formik';
 import {
   CheckCircle2,
   Download as DownloadIcon,
@@ -143,7 +142,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
         </div>
       </div>
 
-      <div className="flex items-start gap-2">
+      {/* <div className="flex items-start gap-2">
         <Field
           name="terms"
           type="checkbox"
@@ -152,8 +151,8 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
         <label className="text-sm">
           I agree to the terms and conditions and confirm that the information provided is accurate.
         </label>
-      </div>
-      <ErrorMessage name="terms" component="div" className="text-red-500 text-sm" />
+      </div> */}
+      {/* <ErrorMessage name="terms" component="div" className="text-red-500 text-sm" /> */}
     </div>
   );
 };

@@ -219,8 +219,4 @@ export const VALIDATION_SCHEMAS = {
 
   4: Yup.object({
   }),
-
-  5: Yup.object({
-    terms: Yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
-  }),
 };
