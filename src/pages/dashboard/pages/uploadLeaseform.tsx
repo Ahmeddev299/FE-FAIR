@@ -46,95 +46,97 @@ const UploadLeaseForm: React.FC = () => {
     // leaseTitle: '',   // OPTIONAL: only include if you actually bind it in the UI
   };
 
-interface UploadPayload {
-  leaseId?: string;
-  Lease?: { _id?: string };
-  lease?: { _id?: string };
-  data?: {
+  interface UploadPayload {
     leaseId?: string;
+    Lease?: { _id?: string };
     lease?: { _id?: string };
+    data?: {
+      leaseId?: string;
+      lease?: { _id?: string };
+      clauseDocId?: string;
+      clauses?: { _id?: string };
+    };
     clauseDocId?: string;
+    Clauses?: { _id?: string };
     clauses?: { _id?: string };
-  };
-  clauseDocId?: string;
-  Clauses?: { _id?: string };
-  clauses?: { _id?: string };
-}
+  }
 
   function extractIds(data: UploadPayload) {
-  const leaseId =
-    data?.leaseId ??
-    data?.Lease?._id ??
-    data?.lease?._id ??
-    data?.data?.leaseId ??
-    data?.data?.lease?._id;
+    console.log("data", data)
+    const leaseId =
+      data?.leaseId ??
+      data?.Lease?._id ??
+      data?.lease?._id ??
+      data?.leaseId ??
+      data?.lease?._id;
 
-  const clauseDocId =
-    data?.clauseDocId ??
-    data?.Clauses?._id ??
-    data?.clauses?._id ??
-    data?.data?.clauseDocId ??
-    data?.data?.clauses?._id;
+    const clauseDocId =
+      data?.clauseDocId ??
+      data?.Clauses?._id ??
+      data?.clauses?._id ??
+      data?.clauseDocId ??
+      data?.clauses?._id;
 
-  return { leaseId, clauseDocId };
-}
- const MAX_MB = 10;
-const ALLOWED = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // PDF, DOCX
+    return { leaseId, clauseDocId };
+  }
+  const MAX_MB = 10;
+  const ALLOWED = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // PDF, DOCX
 
- function validateLeaseFile(file: File): string | null {
-  if (!ALLOWED.includes(file.type)) return 'Only PDF or DOCX files are allowed.';
-  const sizeMb = file.size / (1024 * 1024);
-  if (sizeMb > MAX_MB) return `File too large: ${sizeMb.toFixed(1)} MB (max ${MAX_MB} MB).`;
-  return null;
-}
+  function validateLeaseFile(file: File): string | null {
+    if (!ALLOWED.includes(file.type)) return 'Only PDF or DOCX files are allowed.';
+    const sizeMb = file.size / (1024 * 1024);
+    if (sizeMb > MAX_MB) return `File too large: ${sizeMb.toFixed(1)} MB (max ${MAX_MB} MB).`;
+    return null;
+  }
 
-const handleSubmit = async (
-  values: ExtendedLeaseFormValues,
-  { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
-) => {
-  try {
-    if (!uploadedFile) {
-      Toast.fire({ icon: 'error', title: 'Please upload a document first.' });
-      return;
-    }
+  const handleSubmit = async (
+    values: ExtendedLeaseFormValues,
+    { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
+  ) => {
+    try {
+      if (!uploadedFile) {
+        Toast.fire({ icon: 'error', title: 'Please upload a document first.' });
+        return;
+      }
 
-    const sizeErr = validateLeaseFile(uploadedFile.file);
-    if (sizeErr) {
-      Toast.fire({ icon: 'error', title: sizeErr });
-      return;
-    }
+      const sizeErr = validateLeaseFile(uploadedFile.file);
+      if (sizeErr) {
+        Toast.fire({ icon: 'error', title: sizeErr });
+        return;
+      }
 
-    const formData = new FormData();
-    if (values.leaseId?.trim()) formData.append('loi_id', values.leaseId.trim());
-    formData.append('lease_title', (values.leaseTitle?.trim() || values.title).trim());
-    formData.append('startDate', values.startDate);
-    formData.append('endDate', values.endDate);
-    formData.append('property_address', values.propertyAddress);
-    formData.append('notes', values.notes || '');
-    formData.append('file', uploadedFile.file);
+      const formData = new FormData();
+      if (values.leaseId?.trim()) formData.append('loi_id', values.leaseId.trim());
+      formData.append('lease_title', (values.leaseTitle?.trim() || values.title).trim());
+      formData.append('startDate', values.startDate);
+      formData.append('endDate', values.endDate);
+      formData.append('property_address', values.propertyAddress);
+      formData.append('notes', values.notes || '');
+      formData.append('file', uploadedFile.file);
 
-    const payload = await dispatch(uploadLeaseAsync(formData)).unwrap();
-    const { leaseId, clauseDocId } = extractIds(payload);
+      const payload = await dispatch(uploadLeaseAsync(formData)).unwrap();
+      console.log("payload", payload)
+      const { leaseId, clauseDocId } = extractIds(payload);
 
-    if (!leaseId || !clauseDocId) {
-      throw new Error('Upload succeeded but IDs were not returned by the server.');
-    }
+      if (!leaseId || !clauseDocId) {
+        throw new Error('Upload succeeded but IDs were not returned by the server.');
+      }
 
-    router.push({
-      pathname: '/dashboard/pages/lease/review/[leaseId]',
-      query: { leaseId, clauseDocId },
-    });
-  } catch (err: unknown) {
-    console.error('Upload error', err);
-    const msg =
+      router.push({
+        pathname: '/dashboard/pages/lease/review/[leaseId]',
+        query: { leaseId, clauseDocId },
+      });
+    } catch (err: unknown) {
+      console.error('Upload error', err);
+      const msg =
         typeof err === "string"
           ? err
           : (err as { message?: string })?.message || "Invalid code. Try again.";
-    Toast.fire({ icon: 'error', title: msg });
-  } finally {
-    setSubmitting(false);
-  }
-};
+      Toast.fire({ icon: 'error', title: msg });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
 
   return (
