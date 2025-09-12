@@ -132,8 +132,8 @@ const leaseArray: LeaseItem[] = useMemo(() => extractLeaseArray(leases), [leases
             formData.append("Doc_title", terminationReason); // send the code like "breach"
             formData.append("termination_date", terminationDate);
             formData.append("reason", supportingNotes);
-            formData.append("ai_template", aiTemplate);
-            if (uploadedFile) formData.append("document", uploadedFile);
+            // formData.append("ai_template", aiTemplate);
+            if (uploadedFile) formData.append("file", uploadedFile);
 
             await dispatch(terminateLeaseAsync(formData)).unwrap();
 
