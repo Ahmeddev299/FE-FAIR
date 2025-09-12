@@ -4,6 +4,7 @@ import { dashboardStatusService } from "./endpoint";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
 import type { DashboardData, LoiSummary } from "@/redux/slices/dashboardSlice";
+import { extractErrorMessage } from "@/utils/error";
 
 /** Small helpers */
 type RejectString = { rejectValue: string };
@@ -15,8 +16,15 @@ export type LoggedInUser = {
   name?: string;
   fullName?: string;
   email?: string;
+  role?:string;
   // add more fields from your API response if needed
 };
+
+export type UpdateLoggedInUserInput = {
+  fullName: string;
+  role: string; // API expects e.g. "tenant"
+};
+
 
 const isObject = (v: unknown): v is UnknownRecord =>
   typeof v === "object" && v !== null;
@@ -194,3 +202,39 @@ export const getLoggedInUserAsync = createAsyncThunk<
   }
 );
 
+export const updateLoggedInUserAsync = createAsyncThunk<
+  LoggedInUser,
+  UpdateLoggedInUserInput,
+  { rejectValue: string }
+>(
+  "dashboard/updateLoggedInUser",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) return rejectWithValue("Authentication token not found");
+
+      const response: unknown = await dashboardStatusService.changeLoggedInUser(payload);
+
+      const resp = response as {
+        success?: boolean;
+        status?: number;
+        message?: string;
+        data?: LoggedInUser;
+      } | undefined;
+
+      if (!resp) return rejectWithValue("No data received from server");
+      if (resp.success === false) {
+        return rejectWithValue(resp.message || "Failed to update profile");
+      }
+
+      if (resp.message) {
+        Toast.fire({ icon: "success", title: resp.message });
+      }
+
+      return resp.data ?? (response as LoggedInUser);
+    } catch (error: unknown) {
+      const msg = extractErrorMessage(error, "Failed to update profile");
+      return rejectWithValue(msg);
+    }
+  }
+);

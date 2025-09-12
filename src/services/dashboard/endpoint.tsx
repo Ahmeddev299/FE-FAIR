@@ -17,6 +17,9 @@ class DashboardBaseService extends HttpService {
 
      getLoggedInUser = (): Promise<any> =>
     this.get(`/auth/get_logged_in_user`, {});
+     
+       changeLoggedInUser = (body: { fullName: string; role: string }): Promise<any> =>
+    this.put(`/auth/update_logged_in_user`, body);
 
 }
 

@@ -1,6 +1,6 @@
 // src/redux/slices/dashboardSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getDashboardStatsAsync, getLoggedInUserAsync, getloiDataAsync } from "@/services/dashboard/asyncThunk";
+import { getDashboardStatsAsync, getLoggedInUserAsync, getloiDataAsync, updateLoggedInUserAsync } from "@/services/dashboard/asyncThunk";
 
 /** Replace with your real shapes as they evolve */
 export type LeaseSummary = {
@@ -22,12 +22,28 @@ export type LeaseSummary = {
 };
 
 export type LoggedInUser = {
-  id?: string;
+  // The API sometimes sends {} for id, so allow an object too
+  id?: string | Record<string, unknown>;
   _id?: string;
-  name?: string;
+
+  // Names
+  name?: string;        // legacy/optional
   fullName?: string;
+
+  // Contact
   email?: string;
-  // add any other fields your API returns
+
+  // Auth / status
+  role?: "tenant" | "admin" | "manager" | string;
+  verified_email?: boolean;
+  social?: boolean;
+  blocked?: boolean;
+  session_token?: string;
+  otp?: number;
+
+  // Timestamps (ISO strings)
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type LoiSummary = {
@@ -69,6 +85,9 @@ type DashboardState = {
   myLeases: LeaseSummary[] | null;
   myLOIs: LoiSummary[] | null;
 
+    isUpdatingUser: boolean;        // <-- add
+  updateUserError: DashboardError; // <-- add
+
   // Pagination
   leasePage: number;
   loiPage: number;
@@ -101,6 +120,8 @@ const initialState: DashboardState = {
   totalLOI: 0,
   myLeases: null,
   myLOIs: null,
+  isUpdatingUser: false,
+  updateUserError: null,
   leasePage: 1,
   loiPage: 1,
   leaseLimit: 5,
@@ -205,7 +226,25 @@ const dashboardSlice = createSlice({
       .addCase(getLoggedInUserAsync.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.isLoadingUser = false;
         state.userError = action.payload ?? "Failed to fetch logged-in user";
+      })
+
+         // Update logged-in user
+      .addCase(updateLoggedInUserAsync.pending, (state) => {
+        state.isUpdatingUser = true;
+        state.updateUserError = null;
+      })
+      .addCase(updateLoggedInUserAsync.fulfilled, (state, action: PayloadAction<LoggedInUser>) => {
+        state.isUpdatingUser = false;
+        state.loggedInUser = {
+          ...state.loggedInUser,
+          ...action.payload, // merge to reflect updates
+        };
+      })
+      .addCase(updateLoggedInUserAsync.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.isUpdatingUser = false;
+        state.updateUserError = action.payload ?? "Failed to update profile";
       });
+
   }
 
 });
