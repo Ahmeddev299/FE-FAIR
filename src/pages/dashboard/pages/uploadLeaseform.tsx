@@ -5,7 +5,9 @@ import React, { useState } from 'react';
 import { Formik, Form, FormikProps, FormikHelpers } from 'formik';
 import { useRouter } from 'next/router';
 import { DashboardLayout } from '@/components/layouts';
-import { useAppDispatch } from '@/hooks/hooks';
+// import { useAppDispatch } from '@/hooks/hooks';
+import Config from "@/config/index";
+import ls from "localstorage-slim";
 
 // Base types from your app
 import { LeaseFormValues, FileData } from '@/types/loi';
@@ -19,8 +21,8 @@ import { ContextForm } from '@/components/uploadLeaseForm/ContextForm';
 import { AIBenefits } from '@/components/uploadLeaseForm/AIBenefits';
 import { HelpSection } from '@/components/uploadLeaseForm/HelpSection';
 import { SubmitButton } from '@/components/buttons/submitButton';
-import { uploadLeaseAsync } from '@/services/lease/asyncThunk';
 import Toast from '@/components/Toast';
+import axios from 'axios';
 
 // Extend the form values locally to allow optional fields used by the API
 type ExtendedLeaseFormValues = LeaseFormValues & {
@@ -31,7 +33,7 @@ type ExtendedLeaseFormValues = LeaseFormValues & {
 const UploadLeaseForm: React.FC = () => {
   const [uploadedFile, setUploadedFile] = useState<FileData | null>(null);
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
 
   // Provide initial values for the required base fields.
   // Optional fields (`leaseId`, `leaseTitle`) can be omitted.
@@ -90,54 +92,72 @@ const UploadLeaseForm: React.FC = () => {
     return null;
   }
 
-  const handleSubmit = async (
-    values: ExtendedLeaseFormValues,
-    { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
-  ) => {
-    try {
-      if (!uploadedFile) {
-        Toast.fire({ icon: 'error', title: 'Please upload a document first.' });
-        return;
-      }
-
-      const sizeErr = validateLeaseFile(uploadedFile.file);
-      if (sizeErr) {
-        Toast.fire({ icon: 'error', title: sizeErr });
-        return;
-      }
-
-      const formData = new FormData();
-      if (values.leaseId?.trim()) formData.append('loi_id', values.leaseId.trim());
-      formData.append('lease_title', (values.leaseTitle?.trim() || values.title).trim());
-      formData.append('startDate', values.startDate);
-      formData.append('endDate', values.endDate);
-      formData.append('property_address', values.propertyAddress);
-      formData.append('notes', values.notes || '');
-      formData.append('file', uploadedFile.file);
-
-      const payload = await dispatch(uploadLeaseAsync(formData)).unwrap();
-      console.log("payload", payload)
-      
-      const { leaseId, clauseDocId } = extractIds(payload);
-      console.log("leaseId", leaseId)
-      console.log("clauseId", clauseDocId)
-
-      if (!leaseId || !clauseDocId) {
-        throw new Error('Upload succeeded but IDs were not returned by the server.');
-      }
-
-      router.push({
-        pathname: '/dashboard/pages/lease/review/[leaseId]',
-        query: { leaseId, clauseDocId },
-      });
-
-    } catch (err) {
-      console.error('Upload error', err);
-    } finally {
-      setSubmitting(false);
+const handleSubmit = async (
+  values: ExtendedLeaseFormValues,
+  { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
+) => {
+  try {
+    if (!uploadedFile) {
+      Toast.fire({ icon: "error", title: "Please upload a document first." });
+      return;
     }
-  };
 
+    const sizeErr = validateLeaseFile(uploadedFile.file);
+    if (sizeErr) {
+      Toast.fire({ icon: "error", title: sizeErr });
+      return;
+    }
+
+    const formData = new FormData();
+    if (values.leaseId?.trim()) {
+      formData.append("loi_id", values.leaseId.trim());
+    }
+    formData.append(
+      "lease_title",
+      (values.leaseTitle?.trim() || values.title).trim()
+    );
+    formData.append("startDate", values.startDate);
+    formData.append("endDate", values.endDate);
+    formData.append("property_address", values.propertyAddress);
+    formData.append("notes", values.notes || "");
+    formData.append("file", uploadedFile.file);
+
+    // 🔹 Grab token from localstorage-slim
+    const token: string = `${ls.get("access_token", { decrypt: true })}`;
+
+    // 🔹 Axios call with Bearer token
+    const response = await axios.post(
+      `${Config.API_ENDPOINT}/dashboard/upload_lease_tenant`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const payload = response.data;
+    console.log("payload", payload);
+
+    const { leaseId, clauseDocId } = extractIds(payload.data);
+
+    console.log("leaseId", leaseId)
+    console.log("clauses", clauseDocId)
+    if (!leaseId || !clauseDocId) {
+      throw new Error("Upload succeeded but IDs were not returned by the server.");
+    }
+    router.push({
+      pathname: "/dashboard/pages/lease/review/[leaseId]",
+      query: { leaseId, clauseDocId },
+    });
+  } catch (err) {
+    console.error("Upload error", err);
+    Toast.fire({ icon: "error", title: "Upload failed. Try again." });
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <DashboardLayout>
