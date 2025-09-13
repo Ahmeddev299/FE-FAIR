@@ -34,7 +34,7 @@ export type AcceptSuggestionArgs = {
 };
 
 export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
-  '/lease/submit',
+  '/lease/submitDetails',
   async (formData, { rejectWithValue }) => {
     console.log("formData", formData)
     try {
@@ -43,8 +43,6 @@ export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
       const response = await leaseBaseService.submitLease(formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      console.log("response", response)
 
       if (response?.success === false && response?.status === 400) {
         return rejectWithValue(response.message as any);

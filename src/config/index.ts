@@ -6,6 +6,7 @@ interface ConfigType {
   DEBUG?: boolean;
 }
 
+
 const local: ConfigType = {
   API_ENDPOINT: "https://api.fairleases.com",
   API_TIMEOUT: 10000,
