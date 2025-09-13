@@ -192,10 +192,10 @@ export const loiSlice = createSlice({
       .addCase(submitLOIAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
         state.submitSuccess = true;
-        Toast.fire({ icon: "success", title: "LOI submitted successfully!" });
         // Optionally add the new LOI to the list
-        if (action.payload.data) {
-          state.loiList.unshift(action.payload.data);
+        if (action?.payload?.data) {
+          console.log("data in response 197",action?.payload?.data)
+          state?.loiList?.unshift(action?.payload?.data);
         }
       })
       .addCase(submitLOIAsync.rejected, (state: any, action: any) => {

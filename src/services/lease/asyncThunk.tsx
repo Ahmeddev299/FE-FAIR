@@ -34,7 +34,7 @@ export type AcceptSuggestionArgs = {
 };
 
 export const uploadLeaseAsync = createAsyncThunk<UploadLeaseResponse, FormData>(
-  '/loi/submit',
+  '/lease/submit',
   async (formData, { rejectWithValue }) => {
     console.log("formData", formData)
     try {

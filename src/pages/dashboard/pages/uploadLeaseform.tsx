@@ -61,8 +61,8 @@ const UploadLeaseForm: React.FC = () => {
     clauses?: { _id?: string };
   }
 
-  function extractIds(data: UploadPayload) {
-    console.log("data", data)
+  function extractIds (data: UploadPayload) {
+    console.log("data" , data)
     const leaseId =
       data?.leaseId ??
       data?.Lease?._id ??
@@ -79,6 +79,7 @@ const UploadLeaseForm: React.FC = () => {
 
     return { leaseId, clauseDocId };
   }
+
   const MAX_MB = 10;
   const ALLOWED = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // PDF, DOCX
 
@@ -116,7 +117,10 @@ const UploadLeaseForm: React.FC = () => {
 
       const payload = await dispatch(uploadLeaseAsync(formData)).unwrap();
       console.log("payload", payload)
+      
       const { leaseId, clauseDocId } = extractIds(payload);
+      console.log("leaseId", leaseId)
+      console.log("clauseId", clauseDocId)
 
       if (!leaseId || !clauseDocId) {
         throw new Error('Upload succeeded but IDs were not returned by the server.');
@@ -126,13 +130,9 @@ const UploadLeaseForm: React.FC = () => {
         pathname: '/dashboard/pages/lease/review/[leaseId]',
         query: { leaseId, clauseDocId },
       });
-    } catch (err: unknown) {
+
+    } catch (err) {
       console.error('Upload error', err);
-      const msg =
-        typeof err === "string"
-          ? err
-          : (err as { message?: string })?.message || "Invalid code. Try again.";
-      Toast.fire({ icon: 'error', title: msg });
     } finally {
       setSubmitting(false);
     }
