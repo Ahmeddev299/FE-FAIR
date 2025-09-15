@@ -188,7 +188,6 @@ export const VALIDATION_SCHEMAS = {
   // Step 1: You wanted proper validation – checkbox must be checked
   1: Yup.object({
     title: Yup.string().required('LOI Title is required'),
-    addFileNumber: Yup.boolean().oneOf([true], 'You must enable automatic file number'),
     propertyAddress: Yup.string().required('Property Address is required'),
     landlordName: Yup.string().required('Landlord Name is required'),
     landlordEmail: Yup.string().email('Invalid email').required('Landlord Email is required'),

@@ -50,11 +50,6 @@ export const BasicInformationStep: React.FC = () => (
               Add automatic file number
             </span>
           </label>
-          <ErrorMessage
-            name="addFileNumber"
-            component="div"
-            className="text-red-500 text-sm mt-1"
-          />
         </div>
       </div>
 
