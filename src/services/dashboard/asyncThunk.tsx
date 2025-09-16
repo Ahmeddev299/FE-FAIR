@@ -5,10 +5,14 @@ import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
 import type { DashboardData, LoiSummary } from "@/redux/slices/dashboardSlice";
 import { extractErrorMessage } from "@/utils/error";
+import { LOIApiPayload } from "@/types/loi";
 
 /** Small helpers */
 type RejectString = { rejectValue: string };
 type UnknownRecord = Record<string, unknown>;
+
+export type LoiServerData = UnknownRecord; // <-- the server's normalized "real" LOI data (what exportLoiToDocx expects)
+
 
 export type LoggedInUser = {
   id?: string;
@@ -235,6 +239,60 @@ export const updateLoggedInUserAsync = createAsyncThunk<
     } catch (error: unknown) {
       const msg = extractErrorMessage(error, "Failed to update profile");
       return rejectWithValue(msg);
+    }
+  }
+);
+
+/** NEW: post payload -> get normalized LOI data */
+export const fetchRealLoiDataAsync = createAsyncThunk<
+  LoiServerData,       // return type (server-shaped LOI data)
+  LOIApiPayload,       // arg type (client payload you send)
+  RejectString
+>(
+  "dashboard/fetchRealLoiData",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) return rejectWithValue("Authentication token not found");
+
+      const response: unknown = await dashboardStatusService.downloadloi(payload);
+
+      // Accept common API envelopes or raw data
+      const resp = response as
+        | {
+            success?: boolean;
+            status?: number;
+            message?: string;
+            data?: LoiServerData;
+          }
+        | undefined;
+
+      if (!resp) return rejectWithValue("No data received from server");
+
+      if (resp?.success === false) {
+        return rejectWithValue(resp.message || "Failed to fetch LOI data");
+      }
+
+      if (resp?.message) {
+        Toast.fire({ icon: "success", title: resp.message });
+      }
+
+      // Prefer resp.data if wrapped, else raw response
+      const normalized = resp?.data ?? (response as LoiServerData);
+      if (!normalized || typeof normalized !== "object") {
+        return rejectWithValue("Malformed LOI data from server");
+      }
+
+      return normalized;
+    } catch (error: unknown) {
+      const status = getStatus(error);
+      if (status === 401) return rejectWithValue("Session expired. Please log in again.");
+      if (status === 403) return rejectWithValue("You don't have permission to perform this action.");
+      if (status === 404) return rejectWithValue("LOI template endpoint not found.");
+      if (typeof status === "number" && status >= 500) {
+        return rejectWithValue("Server error. Please try again later.");
+      }
+      return rejectWithValue(getErrorMessage(error));
     }
   }
 );

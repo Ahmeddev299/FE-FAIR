@@ -20,7 +20,6 @@ const sizeClasses: Record<LoaderSize, string> = {
 // Fixed Inline Loader Component
 export const InlineLoader: React.FC<InlineLoaderProps> = ({
   isVisible = true,
-  message = "Loading...",
   size = "default",
   className = "",
 }) => {
@@ -29,7 +28,6 @@ export const InlineLoader: React.FC<InlineLoaderProps> = ({
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
       <Loader2 className={`animate-spin ${sizeClasses[size]}`} />
-      {message ? <span className="text-sm">{message}</span> : null}
     </div>
   );
 };

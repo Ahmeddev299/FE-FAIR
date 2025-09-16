@@ -1,6 +1,6 @@
 // src/redux/slices/dashboardSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getDashboardStatsAsync, getLoggedInUserAsync, getloiDataAsync, updateLoggedInUserAsync } from "@/services/dashboard/asyncThunk";
+import { fetchRealLoiDataAsync, getDashboardStatsAsync, getLoggedInUserAsync, getloiDataAsync, updateLoggedInUserAsync } from "@/services/dashboard/asyncThunk";
 
 /** Replace with your real shapes as they evolve */
 export type LeaseSummary = {
@@ -85,7 +85,7 @@ type DashboardState = {
   myLeases: LeaseSummary[] | null;
   myLOIs: LoiSummary[] | null;
 
-    isUpdatingUser: boolean;        // <-- add
+  isUpdatingUser: boolean;        // <-- add
   updateUserError: DashboardError; // <-- add
 
   // Pagination
@@ -113,6 +113,10 @@ type DashboardState = {
 
   // Last updated
   lastUpdated: string | null;
+
+  isDownloadingLoi: boolean;
+  downloadLoiError: string | null;
+  lastFetchedLoiData: unknown | null; // what the API returned most recently
 };
 
 const initialState: DashboardState = {
@@ -136,6 +140,9 @@ const initialState: DashboardState = {
   userError: null,
   loiError: null,
   isSuccess: false,
+  isDownloadingLoi: false,
+  downloadLoiError: null,
+  lastFetchedLoiData: null,
   lastUpdated: null,
 };
 
@@ -147,6 +154,7 @@ const dashboardSlice = createSlice({
       state.error = null;
       state.leaseError = null;
       state.loiError = null;
+      state.downloadLoiError = null; // also clear download errors
     },
     clearSuccess(state) {
       state.isSuccess = false;
@@ -228,7 +236,7 @@ const dashboardSlice = createSlice({
         state.userError = action.payload ?? "Failed to fetch logged-in user";
       })
 
-         // Update logged-in user
+      // Update logged-in user
       .addCase(updateLoggedInUserAsync.pending, (state) => {
         state.isUpdatingUser = true;
         state.updateUserError = null;
@@ -243,6 +251,20 @@ const dashboardSlice = createSlice({
       .addCase(updateLoggedInUserAsync.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.isUpdatingUser = false;
         state.updateUserError = action.payload ?? "Failed to update profile";
+      })
+
+      // NEW: fetchRealLoiDataAsync
+      .addCase(fetchRealLoiDataAsync.pending, (state) => {
+        state.isDownloadingLoi = true;
+        state.downloadLoiError = null;
+      })
+      .addCase(fetchRealLoiDataAsync.fulfilled, (state, action: PayloadAction<unknown>) => {
+        state.isDownloadingLoi = false;
+        state.lastFetchedLoiData = action.payload;
+      })
+      .addCase(fetchRealLoiDataAsync.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.isDownloadingLoi = false;
+        state.downloadLoiError = action.payload ?? "Failed to prepare LOI for download";
       });
 
   }
