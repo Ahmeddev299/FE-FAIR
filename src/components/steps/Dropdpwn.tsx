@@ -1,23 +1,22 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { useFormikContext } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLandlordsAsync, fetchTenantsAsync } from "@/services/auth/partyAsyncThunk";
 import { selectParty } from "@/redux/slices/partySlice";
 import type { AppDispatch, RootState } from "@/redux/store";
-import { getLoggedInUserAsync } from "@/services/dashboard/asyncThunk"; // ✅ fetch current user
+import { getLoggedInUserAsync } from "@/services/dashboard/asyncThunk";
 import type { LoggedInUser } from "@/redux/slices/dashboardSlice";
+import { Plus } from "lucide-react";
 
 type Props = {
-  landlordIdName?: string;     // default: landlordId
-  landlordNameName?: string;   // default: landlordName
-  landlordEmailName?: string;  // default: landlordEmail
-  tenantIdName?: string;       // default: tenantId
-  tenantNameName?: string;     // default: tenantName
-  tenantEmailName?: string;    // default: tenantEmail
-
-  // Optional legacy keys if other parts of your form still read them
+  landlordIdName?: string;
+  landlordNameName?: string;
+  landlordEmailName?: string;
+  tenantIdName?: string;
+  tenantNameName?: string;
+  tenantEmailName?: string;
   legacyLandlordNameName?: string; // e.g. "landloardName"
   legacyTenantNameName?: string;   // e.g. "tenentName"
 };
@@ -56,55 +55,74 @@ export const PartyDropdowns: React.FC<Props> = ({
   const { landlords, tenants, loadingLandlords } =
     useSelector(selectParty) as PartySlice;
 
-  // 👤 current logged-in user from dashboard slice
-  const loggedInUser = useSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
+  const loggedInUser = useSelector(
+    (s: RootState) => s.dashboard.loggedInUser
+  ) as LoggedInUser | null;
 
-  // Formik access with dynamic keys
-  const { values, setFieldValue } = useFormikContext<Record<string, unknown>>();
+  const { values, setFieldValue } =
+    useFormikContext<Record<string, unknown>>();
+
+  const [showAddEmail, setShowAddEmail] = useState(false);
+  const addEmailRef = useRef<HTMLInputElement>(null);
 
   // Load lists + current user
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch(fetchLandlordsAsync());
     dispatch(fetchTenantsAsync());
     dispatch(getLoggedInUserAsync());
   }, [dispatch]);
 
-  // Ensure ids exist so selects/hidden inputs are controlled
-  React.useEffect(() => {
-    if (values[landlordIdName] === undefined) setFieldValue(landlordIdName, "");
-    if (values[tenantIdName] === undefined) setFieldValue(tenantIdName, "");
-  }, [values, landlordIdName, tenantIdName, setFieldValue]);
+  // Unique landlord emails for the dropdown
+  const landlordEmailOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return (landlords || []).filter((l) => {
+      const e = (l.email || "").trim().toLowerCase();
+      if (!e || seen.has(e)) return false;
+      seen.add(e);
+      return true;
+    });
+  }, [landlords]);
 
-  const selectedLandlord = useMemo(() => {
-    const id = String(values?.[landlordIdName] ?? "");
-    return landlords.find((l: Party) => partyId(l) === id);
-  }, [landlords, values, landlordIdName]);
-
-  // Try to map logged-in user to an existing tenant party (for tenantId)
-  const tenantMatchFromUser = useMemo(() => {
-    if (!loggedInUser?.email && !loggedInUser?.name && !loggedInUser?.fullName) return undefined;
-    return tenants.find(
-      (t) =>
-        (loggedInUser?.email && t.email === loggedInUser.email) ||
-        (loggedInUser?.name && (t.name ?? t.fullName) === loggedInUser.name) ||
-        (loggedInUser?.fullName && (t.name ?? t.fullName) === loggedInUser.fullName)
+  // Currently selected landlord by EMAIL (from form value)
+  const selectedLandlordByEmail = useMemo(() => {
+    const email = String(values?.[landlordEmailName] ?? "").trim().toLowerCase();
+    if (!email) return undefined;
+    return landlords.find(
+      (l) => (l.email || "").trim().toLowerCase() === email
     );
-  }, [tenants, loggedInUser]);
+  }, [landlords, values, landlordEmailName]);
 
-  // Sync landlord fields to form when selection changes
-  React.useEffect(() => {
-    if (!selectedLandlord) return;
-    const name = selectedLandlord.name ?? selectedLandlord.fullName ?? "";
-    const email = selectedLandlord.email ?? "";
-    if (values[landlordNameName] !== name) setFieldValue(landlordNameName, name);
-    if (values[landlordEmailName] !== email) setFieldValue(landlordEmailName, email);
-    if (legacyLandlordNameName && values[legacyLandlordNameName] !== name) {
-      setFieldValue(legacyLandlordNameName, name);
+  // When a known email is selected, sync id + name; otherwise clear id (new landlord)
+  useEffect(() => {
+    if (selectedLandlordByEmail) {
+      const id = partyId(selectedLandlordByEmail);
+      const name = selectedLandlordByEmail.name ?? selectedLandlordByEmail.fullName ?? "";
+      if (values[landlordIdName] !== id) setFieldValue(landlordIdName, id);
+      if (values[landlordNameName] !== name) setFieldValue(landlordNameName, name);
+      if (legacyLandlordNameName && values[legacyLandlordNameName] !== name) {
+        setFieldValue(legacyLandlordNameName, name);
+      }
+    } else {
+      // Treat as new landlord if email doesn't match existing
+      if (values[landlordIdName]) setFieldValue(landlordIdName, "");
     }
-  }, [selectedLandlord, landlordNameName, landlordEmailName, legacyLandlordNameName, setFieldValue, values]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLandlordByEmail, landlordIdName, landlordNameName, legacyLandlordNameName, setFieldValue]);
 
-  // Initialize tenant fields from the logged-in user
-  React.useEffect(() => {
+  // Backfill email if user is editing and id/name existed first
+  useEffect(() => {
+    if (!values[landlordEmailName] && landlords?.length) {
+      const match = landlords.find(
+        (l) =>
+          partyId(l) === values[landlordIdName] ||
+          (l.name ?? l.fullName) === values[landlordNameName]
+      );
+      if (match?.email) setFieldValue(landlordEmailName, match.email);
+    }
+  }, [landlords, values, landlordEmailName, landlordIdName, landlordNameName, setFieldValue]);
+
+  // Tenant: prefill from logged-in user
+  useEffect(() => {
     const nameFromUser = (loggedInUser?.name ?? loggedInUser?.fullName ?? "").trim();
     const emailFromUser = (loggedInUser?.email ?? "").trim();
 
@@ -118,14 +136,20 @@ export const PartyDropdowns: React.FC<Props> = ({
       setFieldValue(tenantEmailName, emailFromUser);
     }
 
-    // If we can match this user to an existing tenant in the list, set tenantId
-    if (!values[tenantIdName] && tenantMatchFromUser) {
-      setFieldValue(tenantIdName, partyId(tenantMatchFromUser));
+    // Try to match tenantId from list
+    const tenantMatch =
+      tenants.find(
+        (t) =>
+          (emailFromUser && (t.email || "").trim().toLowerCase() === emailFromUser.toLowerCase()) ||
+          (nameFromUser && (t.name ?? t.fullName) === nameFromUser)
+      ) || undefined;
+
+    if (!values[tenantIdName] && tenantMatch) {
+      setFieldValue(tenantIdName, partyId(tenantMatch));
     }
   }, [
     loggedInUser,
     tenants,
-    tenantMatchFromUser,
     tenantIdName,
     tenantNameName,
     tenantEmailName,
@@ -134,91 +158,123 @@ export const PartyDropdowns: React.FC<Props> = ({
     values,
   ]);
 
-  // Backfill landlordId if editing with existing name/email
-  React.useEffect(() => {
-    if (!values[landlordIdName] && landlords?.length) {
-      const matchL = landlords.find(
-        (l) =>
-          l.email === values[landlordEmailName] ||
-          (l.name ?? l.fullName) === values[landlordNameName]
-      );
-      if (matchL) {
-        setFieldValue(landlordIdName, partyId(matchL));
-      }
-    }
-  }, [landlords, values, landlordIdName, landlordEmailName, landlordNameName, setFieldValue]);
+  const openAddEmail = () => {
+    setShowAddEmail(true);
+    // focus after render
+    setTimeout(() => addEmailRef.current?.focus(), 0);
+  };
 
   return (
-    <div className="space-y-6 border border-gray-300 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">2</div>
+    <div className="space-y-6 rounded-xl border border-gray-200 bg-white p-6">
+      <h3 className="mb-2 flex items-center gap-2 text-lg font-semibold">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs text-white">2</span>
         Party Information
       </h3>
 
-      {/* Landlord */}
-      <div className="space-y-3">
-        <h4 className="text-lg font-semibold">Landlord Information</h4>
+      {/* =================== Landlord =================== */}
+      <div className="space-y-4">
+        <h4 className="text-base font-semibold">Landlord Information</h4>
 
-        {/* landlord selector */}
-        <select
-          name={landlordIdName}
-          value={String(values[landlordIdName] ?? "")}
-          onChange={(e) => setFieldValue(landlordIdName, e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          disabled={loadingLandlords}
-        >
-          <option value="">{loadingLandlords ? "Loading landlords…" : "Select a landlord"}</option>
-          {Array.isArray(landlords) &&
-            landlords.map((l: Party) => (
-              <option key={partyId(l)} value={partyId(l)}>
-                {(l.name ?? l.fullName ?? "").trim()} — {l.email}
+        {/* Landlord Name (text) */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">
+            Landlord Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name={landlordNameName}
+            placeholder="Property Owner or Management Company"
+            value={String(values[landlordNameName] ?? "")}
+            onChange={(e) => setFieldValue(landlordNameName, e.target.value)}
+            className="w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Landlord Email (dropdown + + button) */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Landlord Email</label>
+          <div className="relative">
+            <select
+              name={landlordEmailName}
+              value={String(values[landlordEmailName] ?? "")}
+              onChange={(e) => setFieldValue(landlordEmailName, e.target.value)}
+              disabled={loadingLandlords}
+              className="w-full rounded-lg border border-gray-300 p-3 pr-12 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">
+                {loadingLandlords ? "Loading emails…" : "Select an email"}
               </option>
-            ))}
-        </select>
+              {landlordEmailOptions.map((l) => (
+                <option key={partyId(l)} value={l.email}>
+                  {l.email}
+                </option>
+              ))}
+            </select>
 
-        {/* landlord name/email inputs */}
-        <input
-          type="text"
-          name={landlordNameName}
-          placeholder="Property Owner or Management Company"
-          value={String(values[landlordNameName] ?? "")}
-          onChange={(e) => setFieldValue(landlordNameName, e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <input
-          type="email"
-          name={landlordEmailName}
-          placeholder="landlord@example.com"
-          value={String(values[landlordEmailName] ?? "")}
-          onChange={(e) => setFieldValue(landlordEmailName, e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+            {/* + button */}
+            <button
+              type="button"
+              onClick={openAddEmail}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-2 hover:bg-gray-100"
+              aria-label="Add new landlord email"
+              title="Add new landlord email"
+            >
+              <Plus className="h-4 w-4 text-gray-600" />
+            </button>
+          </div>
+
+          {/* New email field, shown after + */}
+          {showAddEmail && (
+            <input
+              ref={addEmailRef}
+              type="email"
+              placeholder="Add new landlord email"
+              value={String(values[landlordEmailName] ?? "")}
+              onChange={(e) => {
+                setFieldValue(landlordEmailName, e.target.value);
+                // Clear id so backend treats as new landlord unless it matches an existing one
+                if (values[landlordIdName]) setFieldValue(landlordIdName, "");
+              }}
+              className="mt-2 w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+          )}
+        </div>
       </div>
 
-      {/* Tenant */}
-      <div className="space-y-3">
-        <h4 className="text-lg font-semibold">Tenant Information</h4>
+      <hr className="my-2 border-gray-200" />
 
-        {/* read-only, prefilled from current user */}
-        <input
-          type="text"
-          name={tenantNameName}
-          placeholder="Your Company Name"
-          value={String(values[tenantNameName] ?? "")}
-          readOnly
-          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-        />
-        <input
-          type="email"
-          name={tenantEmailName}
-          placeholder="your@company.com"
-          value={String(values[tenantEmailName] ?? "")}
-          readOnly
-          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-        />
+      {/* =================== Tenant =================== */}
+      <div className="space-y-4">
+        <h4 className="text-base font-semibold">Tenant Information</h4>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">
+            Tenant Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name={tenantNameName}
+            placeholder="Your Company Name"
+            value={String(values[tenantNameName] ?? "")}
+            readOnly
+            className="w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-700"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Tenant Email</label>
+          <input
+            type="email"
+            name={tenantEmailName}
+            placeholder="your@company.com"
+            value={String(values[tenantEmailName] ?? "")}
+            readOnly
+            className="w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-700"
+          />
+        </div>
       </div>
 
-      {/* Hidden ids & legacy fields (if backend expects them) */}
+      {/* Hidden ids & legacy fields */}
       <input type="hidden" name={landlordIdName} value={String(values[landlordIdName] ?? "")} readOnly />
       <input type="hidden" name={tenantIdName} value={String(values[tenantIdName] ?? "")} readOnly />
       {legacyLandlordNameName && (

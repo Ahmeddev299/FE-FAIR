@@ -1,277 +1,274 @@
-import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectUser, userLogout } from '../../redux/slices/userSlice';
-import { useRouter } from 'next/router';
-import Image from 'next/image';
-import { Bell, ChevronDown } from 'lucide-react';
-import { ProtectedRoute } from '../layouts/protectedRoutes';
-import { LogoutModal } from '../models/logoutModel';
-import Link from 'next/link';
+import { useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Bell,
+  ChevronDown,
+  LayoutGrid,
+  FileText,
+  Upload as UploadIcon,
+  FolderOpen,
+  Signature,
+  MinusCircle,
+  CreditCard,
+  Database,
+  User,
+  LogOut,
+} from "lucide-react";
+import { selectUser, userLogout } from "../../redux/slices/userSlice";
+import { ProtectedRoute } from "../layouts/protectedRoutes";
+import { LogoutModal } from "../models/logoutModel";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+const NAV = [
+  { name: "Dashboard", href: "/dashboard/pages/mainpage" },
+  { name: "Start LOI", href: "/dashboard/pages/start" },
+  { name: "Upload Lease", href: "/dashboard/pages/uploadLeaseform" },
+  { name: "Clause Management", href: "/dashboard/pages/clauseManagement" },
+  { name: "E-Signature", href: "/dashboard/pages/tenanteSignature" },
+  { name: "Terminate Lease", href: "/dashboard/pages/terminateLease" },
+  { name: "Billing & Plan", href: "/dashboard/pages/billings" },
+  { name: "Storage", href: "/dashboard/pages/tenantStorage" },
+];
+
+const USER_MENU = [{ name: "Profile", href: "/dashboard/pages/profile" }];
+
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const dispatch = useDispatch();
   const router = useRouter();
+  const dispatch = useDispatch();
   const { profile } = useSelector(selectUser);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const backgroundImage = '/logo.png';
 
-  const activePath = router.asPath; // e.g. '/dashboard/pages/start'v
+  const asPath = router.asPath;
+  const isActive = (href: string) => asPath === href || asPath.startsWith(href + "/");
 
-  const isActive = (href: string) =>
-    activePath === href || activePath.startsWith(href + '/');
+  const pageTitle = useMemo(() => {
+    const m = NAV.find((n) => isActive(n.href));
+    return m?.name ?? "Dashboard";
+  }, [asPath]);
 
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
-
+  const handleLogout = () => setShowLogoutModal(true);
   const confirmLogout = () => {
     dispatch(userLogout());
     setShowLogoutModal(false);
   };
 
-  const cancelLogout = () => {
-    setShowLogoutModal(false);
+  // map label -> icon component
+  const getIcon = (label: string) => {
+    switch (label) {
+      case "Dashboard":
+        return LayoutGrid;
+      case "Start LOI":
+        return FileText;
+      case "Upload Lease":
+        return UploadIcon;
+      case "Clause Management":
+        return FolderOpen;
+      case "E-Signature":
+        return Signature;
+      case "Terminate Lease":
+        return MinusCircle;
+      case "Billing & Plan":
+        return CreditCard;
+      case "Storage":
+        return Database;
+      default:
+        return LayoutGrid;
+    }
   };
-
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard/pages/mainpage', icon: '/mage_dashboard-2.png', current: router.pathname === '/dashboard' },
-    { name: 'Start LOI', href: '/dashboard/pages/start', icon: '/f7_doc-text.png', current: router.pathname === '/profile' },
-    { name: 'Upload Lease', href: '/dashboard/pages/uploadLeaseform', icon: '/upload.png', current: router.pathname === '/news-alerts' },
-    { name: 'Leases', href: '/dashboard/pages/clauseManagement', icon: '/img4.png', current: router.pathname === '/bills' },
-    { name: 'E-Signature', href: '/dashboard/pages/tenanteSignature', icon: '/img5.png', current: router.pathname === '/reports' },
-    { name: 'Terminate Lease', href: '/dashboard/pages/terminateLease', icon: '/cut.png', current: router.pathname === '/settings' },
-    { name: 'Billing & Plan', href: '/dashboard/pages/billings', icon: '/img7.png', current: router.pathname === '/settings' },
-
-    { name: 'Storage', href: '/dashboard/pages/tenantStorage', icon: '/img8.png', current: router.pathname === '/settings' },
-    { name: 'Notifications', href: '/dashboard/pages/notifications', icon: '/bellicon.png', current: router.pathname === '/settings' },
-
-  ];
-
-  const userSetting = [
-    { name: 'Settings', href: '/dashboard/pages/setting', icon: '/img10.png', current: router.pathname === '/setting' },
-    { name: 'Logout', href: '#', icon: '/img9.png', current: router.pathname === '/profile' },
-  ];
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-100">
-        {/* Logout Modal */}
+      <div className="min-h-screen bg-gray-50 flex">
         <LogoutModal
           isOpen={showLogoutModal}
           onConfirm={confirmLogout}
-          onCancel={cancelLogout}
+          onCancel={() => setShowLogoutModal(false)}
         />
 
-        {/* Sidebar for desktop */}
-        <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-          <div className="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
-            <Image
-              alt="Logo"
-              src={backgroundImage}
-              width={150}
-              height={100}
-            />
-            <div className="mt-5 flex-grow flex flex-col">
-              <nav className=" flex-1 px-4 pb-4 space-y-1">
-                {navigation.map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`${active
-                        ? 'bg-[#3B82F6] text-white  border-blue-500 '
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        } group flex items-center px-2 py-2 text-[13px] font-medium transition-colors duration-150`}
-                    >
-                      <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-2" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-                <div className="border-t border-gray-200 pt-2 mt-2">
-                  {userSetting.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      onClick={(e) => {
-                        if (item.name === 'Logout') {
-                          e.preventDefault();
-                          handleLogout();
-                        }
-                      }}
-                      className={`${item.current
-                        ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                        } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150 cursor-pointer`}
-                    >
-                      <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-3" />
-                      {item.name}
-                    </a>
-                  ))}
-                </div>
-              </nav>
-            </div>
-          </div>
-        </div>
+        {/* SIDEBAR (desktop) */}
+        <aside className="hidden md:flex md:w-64 md:flex-col bg-white border-r border-gray-200">
+          {/* Logo block */}
+          <div className="flex items-center justify-center pt-4">
+            {/* Logo block (desktop) */}
+            <Link href="/dashboard/pages/mainpage" className="flex items-center gap-2">
+              <div className="px-5flex justify-center">
+                <Image
+                  src="/logo.png"
+                  alt="Fair"
+                  width={220}          // intrinsic resolution (keeps sharp)
+                  height={80}
+                  priority
+                  className="h-[98px] w-auto object-contain"  // h-14 = 56px tall
+                />
+              </div>
+            </Link>
 
-        {/* Mobile sidebar */}
-        <div className={`md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
-          <div className="fixed inset-0 flex z-40">
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
-              <div className="absolute top-0 right-0 -mr-12 pt-2">
+          </div>
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto px-4 py-4 border-b ">
+            <div className="space-y-2">
+              {NAV.map((item) => {
+                const active = isActive(item.href);
+                const Icon = getIcon(item.name);
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex text-[#555555] font-semibold items-center gap-4  px-3 py-2.5 text-[14px] transition-colors
+                      ${active ? "bg-[#2D8EEF] text-white font-medium" : "text-gray-600 hover:bg-gray-50"}`}
+                  >
+                    <Icon
+                      className={`h-5 w-5 text-[#555555] ${active ? "text-white" : "text-gray-500"}`}
+                      strokeWidth={2}   // thicker stroke
+                    />
+
+
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-[#989898] h-1 mt-6 pt-6">
+              {/* Profile + Logout (below divider) */}
+              <div className="space-y-1">
+                {USER_MENU.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="flex items-center gap-3 text-[#555555] font-semibold px-3 py-2.5 text-[16px] text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <User className="h-5 w-5 text-gray-500" strokeWidth={2} />
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
                 <button
-                  className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 px-3 py-2.5 font-semibold text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
-                  <span className="sr-only">Close sidebar</span>
-                  <span className="text-white text-xl">✕</span>
+                  <LogOut className="h-5 w-5 text-gray-500" strokeWidth={2} />
+                  <span>Logout</span>
                 </button>
               </div>
-              <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-                {/* Mobile Logo */}
-                <div className="flex-shrink-0 flex items-center px-4 mb-5">
-                  <Image
-                    alt="Logo"
-                    src={backgroundImage}
-                    width={150}
-                    height={75}
-                  />
-                </div>
+            </div>
+          </nav>
+        </aside>
 
-                {/* Mobile Navigation */}
-                <nav className="flex-1 px-2 space-y-1">
-                  {navigation.map((item) => {
+        {/* MAIN COLUMN */}
+        <div className="flex-1 flex flex-col md:pl-0">
+          {/* Mobile open button */}
+          <div className="sticky top-0 z-20 bg-gray-50 px-3 py-3 md:hidden">
+            <button
+              className="h-10 w-10 inline-flex items-center justify-center  text-gray-600 hover:bg-gray-200"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+            >
+              ☰
+            </button>
+          </div>
+
+          {/* Header */}
+          <header className="h-[60px] sticky top-0 z-10 bg-white shadow-sm">
+            <div className="flex items-center justify-between px-5 pt-3">
+              <h1 className="text-xl font-semibold text-gray-800">{pageTitle}</h1>
+              <div className="flex items-center gap-4">
+                <button className="relative rounded p-2 text-gray-600 hover:bg-gray-100" aria-label="Notifications">
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 flex items-center justify-center rounded-full bg-[#8B5A2B] text-white text-sm font-medium">
+                    M
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {profile?.name || profile?.email || "User"}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto bg-gray-50 p-6">{children}</main>
+        </div>
+
+        {/* MOBILE SIDEBAR */}
+        {sidebarOpen && (
+          <div className="md:hidden fixed inset-0 z-40 flex">
+            <div className="fixed inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
+            <aside className="relative z-50 w-72 bg-white border-r border-gray-200">
+              <div className="flex items-center justify-between px-4 py-4 border-b">
+                <div className="flex items-center justify-center">
+                  <Image src="/logo.png" alt="Fair" width={100} height={60} className="object-contain" />
+                </div>
+                <button onClick={() => setSidebarOpen(false)} className="rounded p-2 hover:bg-gray-100">
+                  ✕
+                </button>
+              </div>
+              <nav className="p-4">
+                <div className="space-y-1">
+                  {NAV.map((item) => {
                     const active = isActive(item.href);
+                    const Icon = getIcon(item.name);
                     return (
                       <Link
                         key={item.name}
                         href={item.href}
-                        className={`${active
-                          ? 'bg-blue-100 border-blue-500'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                          } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150`}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors ${active ? "bg-[#4F7EF7] text-white font-medium" : "text-gray-600 hover:bg-gray-50"
+                          }`}
                       >
-                        <Image src={item.icon} alt={item.name} width={32} height={32} className="mr-3" />
-                        {item.name}
+                        <Icon className={`h-4 w-4 ${active ? "text-white" : "text-gray-500"}`} strokeWidth={1.5} />
+                        <span>{item.name}</span>
                       </Link>
                     );
                   })}
+                </div>
 
-                  {/* Mobile User Settings */}
-                  <div className="border-t border-gray-200 pt-2 mt-4">
-                    {userSetting.map((item) => (
-                      <a
+                {/* Mobile divider and user menu */}
+                <div className=" border-gray-200 mt-6 pt-6">
+                  <div className="space-y-1">
+                    {USER_MENU.map((item) => (
+                      <Link
                         key={item.name}
                         href={item.href}
-                        onClick={(e) => {
-                          if (item.name === 'Logout') {
-                            e.preventDefault();
-                            handleLogout();
-                          }
-                          setSidebarOpen(false);
-                        }}
-                        className={`${item.current
-                          ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                          } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors duration-150 cursor-pointer`}
+                        onClick={() => setSidebarOpen(false)}
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                       >
-                        <Image src={item.icon} alt={item.name} width={40} height={30} className="mr-3" />
-                        {item.name}
-                      </a>
+                        <User className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span>{item.name}</span>
+                      </Link>
                     ))}
-                  </div>
-                </nav>
-              </div>
-
-              {/* Mobile User Profile Section */}
-              <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-                <div className="flex items-center w-full">
-                  <div className="flex-shrink-0">
-                    <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">
-                        {profile?.name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-3 flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {profile?.name || profile?.email}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {profile?.role || 'User'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main content area */}
-        <div className="md:pl-64 flex flex-col flex-1">
-          {/* Mobile header */}
-          <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-100">
-            <button
-              className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <span className="sr-only">Open sidebar</span>
-              <span className="text-2xl">☰</span>
-            </button>
-          </div>
-
-          {/* Page header */}
-          <div className="bg-white shadow">
-            <div className="px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center py-4">
-                {/* Left - Page Title */}
-                <h1 className="text-xl font-bold text-gray-900">
-                  {navigation.find(item => item.current)?.name || 'Dashboard'}
-                </h1>
-
-                {/* Right - Notifications + User */}
-                <div className="flex items-center space-x-4">
-                  {/* Notification Icon with Red Dot */}
-                  <div className="relative">
-                    <button className="text-gray-500 hover:text-gray-700">
-                      <Bell className="w-5 h-5" />
+                    <button
+                      onClick={() => {
+                        setSidebarOpen(false);
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                      <span>Logout</span>
                     </button>
-                    <span className="absolute top-0 right-0 inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                   </div>
 
-                  {/* User Avatar & Dropdown */}
-                  <div className="flex items-center space-x-2">
-                    <Image
-                      src="/avatar.png"
-                      alt="User Avatar"
-                      width={40}
-                      height={40}
-                    />
-                    <div className="text-sm text-gray-700 font-medium">
-                      {profile?.name || profile?.email || 'John Doe'}
-                    </div>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  </div>
                 </div>
-              </div>
-            </div>
+              </nav>
+            </aside>
           </div>
-          <main className="flex-1">
-            <div className="py-6">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {children}
-              </div>
-            </div>
-          </main>
-        </div>
+        )}
       </div>
     </ProtectedRoute>
   );
 };
+
+export default DashboardLayout;

@@ -7,7 +7,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { FormValues } from "../../types/loi";
 import { exportLoiToDocx } from "@/utils/exportDocx";
 import { transformToApiPayload } from "@/utils/apiTransform";
 
@@ -17,6 +16,7 @@ import { fetchRealLoiDataAsync } from "@/services/dashboard/asyncThunk";
 import Toast from "@/components/Toast";
 import { InlineLoader } from "../loaders/inlineLoader";
 import { LoadingOverlay } from "../loaders/overlayloader";
+import { FormValues } from "@/constants/formData";
 
 interface ReviewSubmitStepProps {
   values: FormValues;

@@ -40,7 +40,7 @@ export default function LetterOfIntentDashboard() {
 
   return (
     <DashboardLayout>
-      {isLoading ? (<LoadingOverlay isVisible />) : (
+      {isLoading ? (<LoadingOverlay visible />) : (
         <div className="min-h-screen">
           <div className="max-w-9xl mx-auto px-2 sm:px-6 lg:px-p0 py-8">
 

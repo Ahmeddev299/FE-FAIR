@@ -236,7 +236,7 @@ const LeaseClauseReview: React.FC = () => {
   return (
     <DashboardLayout>
       {isLoading ? (
-        <LoadingOverlay isVisible />
+        <LoadingOverlay visible />
       ) : (
         <div className="min-h-screen bg-gray-50 relative">
           {/* Toast */}
@@ -248,7 +248,7 @@ const LeaseClauseReview: React.FC = () => {
           )}
 
           {actionLoading && (
-                    <LoadingOverlay isVisible />
+                    <LoadingOverlay visible />
 
           )}
 

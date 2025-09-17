@@ -6,12 +6,11 @@ import { submitLOIAsync, getLOIDetailsById, runAiAssistantAsync } from '@/servic
 import { useAppDispatch } from '@/hooks/hooks';
 import { useFormStepper } from '../../../hooks/useFormStepper';
 import { transformToApiPayload } from '../../../utils/apiTransform';
-import { INITIAL_VALUES, VALIDATION_SCHEMAS, EDIT_INITIAL_VALUES } from '../../../constants/formData'
+import { INITIAL_VALUES, VALIDATION_SCHEMAS, EDIT_INITIAL_VALUES, FormValues } from '../../../constants/formData'
 import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
 import { BasicInformationStep } from '../../../components/steps/BasicInformation';
-import { FormValues } from '@/types/loi';
 import { LeaseTermsStep } from '@/components/steps/LeaseTermsSteps';
 import { PropertyDetailsStep } from '@/components/steps/PropertyDetailsStep';
 import { AdditionalTermsStep } from '@/components/steps/AdditionalTermsSteps';
@@ -29,6 +28,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
   const { currentStep, nextStep, prevStep, isStepComplete, steps, jumpToStep } = useFormStepper();
   const [initialData, setInitialData] = useState<FormValues | null>(null);
+  console.log("initialDtaa", initialData)
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
@@ -52,6 +52,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   }, [mode, loiId]);
 
   const handleSubmit = async (formValues: FormValues) => {
+    console.log("values", formValues)
     try {
       if (currentStep === steps.length) {
         setSubmitting(true);

@@ -184,7 +184,7 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
         </div>
       </div>
 
-      {SingleLeaseLoader && <LoadingOverlay isVisible />}
+      {SingleLeaseLoader && <LoadingOverlay visible />}
       {!SingleLeaseLoader && !lease && (
         <div className="py-16 text-center text-sm text-gray-500">Lease not found.</div>
       )}

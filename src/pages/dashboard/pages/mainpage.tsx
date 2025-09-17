@@ -45,7 +45,7 @@ function MainPage() {
     return (
         <DashboardLayout>
             {isLoading ? (
-                <LoadingOverlay isVisible />
+                <LoadingOverlay visible />
             ) : (
                 <div className="flex-1 overflow-auto">
                     <DashboardHeader userName="ahmed" />

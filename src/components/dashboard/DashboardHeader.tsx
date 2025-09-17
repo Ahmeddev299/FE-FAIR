@@ -7,7 +7,7 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName }) => {
   return (
-    <header className="mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 p-4">
+    <header className="h-[100px] mx-auto bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 lg:px-8 p-4">
       <div className="flex items-center justify-between h-16 sm:h-20">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Welcome back, {userName}!</h1>

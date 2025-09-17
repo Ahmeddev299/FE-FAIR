@@ -873,7 +873,7 @@ export default function LoiListPage() {
   return (
     <DashboardLayout>
       {isLoading ? (
-        <LoadingOverlay isVisible />
+        <LoadingOverlay visible />
       ) : (
         <div className="p-4 sm:p-6">
           {/* Header */}

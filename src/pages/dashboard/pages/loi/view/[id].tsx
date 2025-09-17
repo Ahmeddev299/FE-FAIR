@@ -99,7 +99,7 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
 
   return (
     <DashboardLayout>
-      {isLoading && <LoadingOverlay isVisible />}
+      {isLoading && <LoadingOverlay visible />}
 
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex items-center gap-2">

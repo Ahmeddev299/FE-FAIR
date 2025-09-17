@@ -34,7 +34,7 @@ export default function ClausesTable({
 
   return (
     <Card className="p-0 overflow-hidden relative">
-      {isLoading && <div className="absolute inset-0 z-10"><LoadingOverlay isVisible /></div>}
+      {isLoading && <div className="absolute inset-0 z-10"><LoadingOverlay visible /></div>}
 
       <div className=" p-4 flex flex-wrap items-center gap-3">
         <select

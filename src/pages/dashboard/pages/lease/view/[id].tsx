@@ -401,7 +401,7 @@ export default function LeaseDetailPage() {
 
         {/* Error */}
         {!isLoading && leaseError && (
-          <LoadingOverlay isVisible />)}
+          <LoadingOverlay visible />)}
 
         {/* Empty */}
         {!isLoading && !leaseError && !currentLease && (

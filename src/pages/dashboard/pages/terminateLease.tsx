@@ -175,7 +175,7 @@ const leaseArray: LeaseItem[] = useMemo(() => extractLeaseArray(leases), [leases
     return (
         <DashboardLayout>
             {isLoading ? (
-                <LoadingOverlay isVisible />
+                <LoadingOverlay visible />
             ) : (
                 <div className="min-h-screen bg-white">
                     {/* Header */}

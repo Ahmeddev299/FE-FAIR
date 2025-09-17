@@ -1,53 +1,77 @@
 // types/loi.ts
-export interface FormValues {
-  doc_id :string;
-  title: string;
-  propertyAddress: string;
-  landlordName: string;
-  landlordEmail: string;
-  tenantName: string;
-  tenantEmail: string;
-  addFileNumber: boolean,
-  rentAmount: string;
-  rentEsclation: string,
-  startDate: string,
-  securityDeposit: string;
-  propertyType: string;
-  leaseDuration: string;
-  propertySize: string;
-  intendedUse: string;
-  parkingSpaces: string;
-  exclusiveUse: string;
-  hasExtraSpace: boolean;
-  RentEscalation?: string;
-  PrepaidRent?: string;
-  LeaseType?: string;
+// export interface FormValues {
+//   // Step 1
+//   doc_id: string;
+//   title: string;
+//   propertyAddress: string;
+//   landlordName: string;
+//   landlordEmail: string;
+//   tenantName: string;
+//   tenantEmail: string;
+//   addFileNumber: boolean;
 
-  prepaidRent: string,
-  leaseType: string,
-  patio: string;
-  utilities: {
-    electricity: boolean;
-    waterSewer: boolean;
-    naturalGas: boolean;
-    internetCable: boolean;
-    hvac: boolean;
-    securitySystem: boolean;
-    other: boolean; // ✅ add this
-  };
-  rightOfFirstRefusal: boolean;
-  leaseToPurchase: boolean;
-  renewalOption: boolean;
-  improvementAllowance: string;
-  specialConditions: string;
-  financingApproval: boolean;
-  environmentalAssessment: boolean;
-  zoningCompliance: boolean;
-  permitsLicenses: boolean;
-  propertyInspection: boolean;
-  insuranceApproval: boolean;
-  terms: boolean;
-}
+//   // Step 2 – Lease Terms
+//   rentAmount: string;
+//   prepaidRent: string;
+//   securityDeposit: string;
+//   leaseType: string;              // string only
+//   leaseDuration: string;          // months (number-as-string)
+//   rentEsclation: string;          // months (number-as-string)
+//   rentEscalationPercent: string;  // percent 0..100 (number-as-string)
+//   includeRenewalOption: boolean;  // checkbox to reveal the two fields below
+//   renewalOptionsCount: string;    // integer >= 1 (number-as-string)
+//   renewalYears: string;           // integer >= 1 (number-as-string)
+//   startDate: string;
+
+//   // Back-compat (optional)
+//   RentEscalation?: string;
+//   PrepaidRent?: string;
+//   LeaseType?: string;
+
+//   // Step 3 – Property Details
+//   propertySize: string;           // sq ft (number-as-string)
+//   hasExtraSpace: boolean;
+//   patio: string;
+//   intendedUse: string;
+//   exclusiveUse: string;
+//   propertyType: string;
+//   parkingSpaces: string;
+//   utilities: {
+//     electricity: boolean;
+//     waterSewer: boolean;
+//     naturalGas: boolean;
+//     internetCable: boolean;
+//     hvac: boolean;
+//     securitySystem: boolean;
+//     other: boolean;
+//   };
+
+//   // Step 4 – Additional Terms
+//   renewalOption: boolean;
+//   renewalOptionDetails: string;
+
+//   rightOfFirstRefusal: boolean;
+//   rightOfFirstRefusalDetails: string;
+
+//   leaseToPurchase: boolean;
+//   leaseToPurchaseDetails: string;
+
+//   improvementAllowanceEnabled: boolean; // checkbox
+//   improvementAllowanceAmount: string;   // $/sf (number-as-string)
+//   improvementAllowance: string;         // legacy free-text
+
+//   specialConditions: string;
+//   financingApproval: boolean;
+//   environmentalAssessment: boolean;
+//   zoningCompliance: boolean;
+//   permitsLicenses: boolean;
+//   propertyInspection: boolean;
+//   insuranceApproval: boolean;
+
+//   // Step 5
+//   terms: boolean;
+// }
+
 
 export interface Step {
   id: number;
@@ -61,8 +85,9 @@ export interface LOIApiPayload {
   title: string;
   propertyAddress: string;
   addFileNumber: boolean;
-  loiId?: string;
-  doc_id?: string;
+  loiId?: string;            // optional external id
+  doc_id?: string;           // persisted id
+
   partyInfo: {
     landlord_name: string;
     landlord_email: string;
@@ -73,11 +98,15 @@ export interface LOIApiPayload {
   leaseTerms: {
     monthlyRent: string;
     securityDeposit: string;
-    leaseType: string;      // mapped from form.propertyType
+    leaseType: string;           // mapped from form.leaseType
     leaseDuration: string;
-    startDate: string;      // ISO format YYYY-MM-DD
-    RentEscalation: string;  // keep backend spelling
-    PrepaidRent: string;
+    startDate: string;           // ISO YYYY-MM-DD
+    RentEscalation: string;      // keep backend spelling (string)
+    prepaidRent: string;         // string for backend compatibility
+    // 🔻 New: renewal fields
+    includeRenewalOption: boolean; // UI checkbox
+    renewalYears: string;          // keep as string for backend
+    renewalOptionsCount: string;   // keep as string for backend
   };
 
   propertyDetails: {
@@ -85,20 +114,25 @@ export interface LOIApiPayload {
     intendedUse: string;
     exclusiveUse: string;
     propertyType: string;
-    patio?: string;          // from UI (moved here)
-    hasExtraSpace: boolean;  // UI checkbox
-    amenities: string[];     // e.g. ["8–10"]
-    utilities: string[];     // e.g. ["Electricity", "Other"]
+
+    patio?: string;               // optional
+    hasExtraSpace: boolean;       // UI checkbox
+
+    amenities: string[];          // e.g. ["8–10"]
+    utilities: string[];          // e.g. ["Electricity", "Other"]
   };
 
   additionalDetails: {
     Miscellaneous_items: string[];
-    tenantImprovement: string;
+    tenantImprovement: string;    // single text field your API expects
     specialConditions: string;
-    contingencies: string[];       // array, not string
-    rightOfFirstRefusal?: boolean; // optional misc
-    leaseToPurchase?: boolean;     // optional misc
+    contingencies: string[];      // array, not string
+    rightOfFirstRefusal?: boolean;
+    leaseToPurchase?: boolean;
 
+    // 🔻 New: improvements flags
+    improvementAllowanceEnabled?: boolean;
+    improvementAllowanceAmount?: string; // keep as string for backend
   };
 
   submit_status: SubmitStatus;
