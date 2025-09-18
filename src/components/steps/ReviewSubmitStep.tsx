@@ -35,30 +35,30 @@ const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
 );
 
 export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode }) => {
-  console.log("values", values)
+  console.log("mode", mode)
   const dispatch = useAppDispatch();
   const isDownloadingLoi = useAppSelector((s) => s.dashboard.isDownloadingLoi);
 
- const handleDownload = async () => {
-  try {
-    const clientPayload: LOIApiPayload = transformToApiPayload(values);
-    const realData: LoiServerData = await dispatch(
-      fetchRealLoiDataAsync(clientPayload)
-    ).unwrap();
+  const handleDownload = async () => {
+    try {
+      const clientPayload: LOIApiPayload = transformToApiPayload(values);
+      const realData: LoiServerData = await dispatch(
+        fetchRealLoiDataAsync(clientPayload)
+      ).unwrap();
 
-    await exportLoiToDocx(realData); // no `as any`
-    Toast.fire({ icon: "success", title: "LOI exported successfully" });
-  } catch (err: unknown) {
-    const msg =
-      err instanceof Error
-        ? err.message
-        : typeof err === "string"
-        ? err
-        : "Failed to export LOI";
+      await exportLoiToDocx(realData); // no `as any`
+      Toast.fire({ icon: "success", title: "LOI exported successfully" });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "Failed to export LOI";
 
-    Toast.fire({ icon: "error", title: msg });
-  }
-};
+      Toast.fire({ icon: "error", title: msg });
+    }
+  };
   return (
     // Make this container relative so the overlay can position `absolute inset-0` within it
     <div className="relative">
@@ -130,10 +130,20 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
             </div>
           </div>
 
-
+          {/* {mode === "edit" ? ("") :
+                      (<button
+                        type="button"
+                        onClick={handleDownload}
+                        disabled={isDownloadingLoi}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <DownloadIcon className="w-4 h-4" />
+                        Download;
+                      </button>
+                      )} */}
 
           <div className="space-y-4">
-            <div className="border border-green-300 rounded-lg bg-green-50 p-4">
+            {mode === "edit" ? ("") : (<div className="border border-green-300 rounded-lg bg-green-50 p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
                 <div className="flex-1">
@@ -144,30 +154,22 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
                   </p>
 
                   <div className="w-full mt-3 flex items-center gap-2">
-                    {mode === 'create' && (
-                      <button
-                        type="button"
-                        onClick={handleDownload}
-                        disabled={isDownloadingLoi}
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        <DownloadIcon className="w-4 h-4" />
-                        Download
-                      </button>
-                    )}
 
-
-                    {/* <button
-                      type="submit"
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      disabled={isDownloadingLoi}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      <FileCheck className="w-4 h-4" />
-                      Submit LOI
-                    </button> */}
+                      <DownloadIcon className="w-4 h-4" />
+                      Download
+                    </button>
+
                   </div>
                 </div>
               </div>
-            </div>
+            </div>)}
+
 
             <div className="border border-gray-200 rounded-lg p-4">
               <h4 className="font-semibold mb-2">Next Steps</h4>

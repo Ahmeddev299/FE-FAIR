@@ -58,7 +58,7 @@ export const LeaseTermsStep: React.FC = () => {
                 step="0.01"
                 placeholder="5000"
                 className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8
-                           focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                          "
               />
             </div>
           </div>
@@ -78,7 +78,7 @@ export const LeaseTermsStep: React.FC = () => {
                 step="0.01"
                 placeholder="10000"
                 className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8
-                           focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                        "
               />
             </div>
           </div>

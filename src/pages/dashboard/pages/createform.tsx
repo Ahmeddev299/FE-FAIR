@@ -89,7 +89,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
       case 2: return <LeaseTermsStep />;
       case 3: return <PropertyDetailsStep />;
       case 4: return <AdditionalTermsStep />;
-      case 5: return <ReviewSubmitStep values={formValues} onEdit={jumpToStep}  mode = 'create' />;
+      case 5: return <ReviewSubmitStep values={formValues} onEdit={jumpToStep} mode={mode}  />;
       default: return null;
     }
   };

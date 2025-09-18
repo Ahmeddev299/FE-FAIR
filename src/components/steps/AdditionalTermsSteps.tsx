@@ -147,7 +147,7 @@ export const AdditionalTermsStep: React.FC = () => {
           placeholder="Any special terms, conditions, or requirements specific to this lease..."
           rows={4}
           className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
-                     focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                     "
         />
       </div>
 
