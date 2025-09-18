@@ -420,7 +420,6 @@ const buildContingencies = (v: FormValues): string[] => {
 
 const buildMiscList = (v: FormValues): string[] => {
   const list: string[] = [];
-  if (v.includeRenewalOption) list.push("Include renewal option in LOI");
   if (v.rightOfFirstRefusal) list.push("Right of First Refusal");
   if (v.leaseToPurchase) list.push("Lease to Purchase");
   return list;

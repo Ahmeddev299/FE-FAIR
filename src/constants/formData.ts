@@ -216,7 +216,6 @@ export type LoiDTO = {
     // add what's used in your code
     Miscellaneous_items?: string[];  // e.g. ["Include renewal option in LOI", ...]
     Miscellaneous_details?: {
-      renewalOptionDetails?: string;
       rightOfFirstRefusalDetails?: string;
       leaseToPurchaseDetails?: string;
     };
