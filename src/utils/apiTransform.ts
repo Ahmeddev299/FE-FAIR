@@ -402,7 +402,7 @@ const UTIL_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-const mapUtilitiesToLabels = (flags: FormValues["utilities"] = {} as any): string[] =>
+const mapUtilitiesToLabels = (flags: FormValues["utilities"]): string[] =>
   Object.entries(flags)
     .filter(([, v]) => v === true)
     .map(([k]) => UTIL_LABELS[k] ?? k);

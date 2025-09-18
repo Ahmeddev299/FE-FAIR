@@ -4,11 +4,11 @@
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { RefreshCw, Wrench, FileText, AlertTriangle } from "lucide-react";
+import { FormValues } from "@/constants/formData";
 
 export const AdditionalTermsStep: React.FC = () => {
-  const { values, setFieldValue, setFieldTouched } = useFormikContext<any>();
+  const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();
 
-  // helper to toggle and clear a detail field
   const toggleWithClear = (flagKey: string, detailKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setFieldValue(flagKey, checked);
@@ -34,21 +34,7 @@ export const AdditionalTermsStep: React.FC = () => {
 
           <div className="space-y-4">
             {/* Include renewal option in LOI */}
-            <div className="space-y-2">
-
-              {values?.renewalOption && (
-                <div>
-                  <Field
-                    name="renewalOptionDetails"
-                    type="text"
-                    placeholder="Add details for renewal option"
-                    className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
-                               focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
-                  />
-                  <ErrorMessage name="renewalOptionDetails" component="div" className="mt-1 text-sm text-red-500" />
-                </div>
-              )}
-            </div>
+       
 
             {/* Right of First Refusal */}
             <div className="space-y-2">

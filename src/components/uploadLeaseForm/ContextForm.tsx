@@ -192,7 +192,7 @@ export const ContextForm: React.FC = () => {
           value={values.leaseId}
         >
           <option value="">-- Select a LOI --</option>
-          {isLoading && <LoadingOverlay isVisible={true} />}
+          {isLoading && <LoadingOverlay visible={true} />}
           {myLOIs?.map((loi) => (
             <option key={loi.id} value={loi.id}>
               {loi.title} {loi.propertyAddress ? `— ${loi.propertyAddress}` : ''}

@@ -4,6 +4,7 @@
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { Info, Building2, Car, Zap } from "lucide-react";
+import { FormValues } from "@/constants/formData";
 
 const PROPERTY_TYPES = [
   "Shopping Center",
@@ -25,7 +26,7 @@ const PROPERTY_TYPES = [
 const PARKING_OPTIONS = ["0–2", "3–5", "6–7", "8–10", "11–15", "16–20", "21+"];
 
 export const PropertyDetailsStep: React.FC = () => {
-  const { values, setFieldValue, setFieldTouched } = useFormikContext<any>();
+  const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();
 
   return (
     <div className="space-y-6">

@@ -4,9 +4,10 @@
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { Info, DollarSign, CalendarDays } from "lucide-react";
+import { FormValues } from "@/constants/formData";
 
 export const LeaseTermsStep: React.FC = () => {
-  const { values, setFieldValue, setFieldTouched } = useFormikContext<any>();
+  const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();
 
   return (
     <div className="space-y-6">

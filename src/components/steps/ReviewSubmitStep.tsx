@@ -3,7 +3,6 @@ import React from "react";
 import {
   CheckCircle2,
   Download as DownloadIcon,
-  FileCheck,
   ChevronRight,
 } from "lucide-react";
 
@@ -12,17 +11,18 @@ import { transformToApiPayload } from "@/utils/apiTransform";
 
 // hooks + thunk + loaders
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { fetchRealLoiDataAsync } from "@/services/dashboard/asyncThunk";
+import { fetchRealLoiDataAsync, LoiServerData } from "@/services/dashboard/asyncThunk";
 import Toast from "@/components/Toast";
-import { InlineLoader } from "../loaders/inlineLoader";
 import { LoadingOverlay } from "../loaders/overlayloader";
 import { FormValues } from "@/constants/formData";
+import { LOIApiPayload } from "@/types/loi";
 
 interface ReviewSubmitStepProps {
   values: FormValues;
   goToStep?: (step: number) => void;
   onDownload?: () => void;
   onEdit: (step: number) => void;
+  mode?: string
 }
 
 const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
@@ -34,24 +34,31 @@ const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
   </div>
 );
 
-export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) => {
+export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode }) => {
+  console.log("values", values)
   const dispatch = useAppDispatch();
   const isDownloadingLoi = useAppSelector((s) => s.dashboard.isDownloadingLoi);
 
-  const handleDownload = async () => {
-    try {
-      const clientPayload = transformToApiPayload(values);
-      const realData = await dispatch(fetchRealLoiDataAsync(clientPayload)).unwrap();
-      await exportLoiToDocx(realData as any);
-      Toast.fire({ icon: "success", title: "LOI exported successfully" });
-    } catch (err: any) {
-      Toast.fire({
-        icon: "error",
-        title: err?.toString?.() ?? "Failed to export LOI",
-      });
-    }
-  };
+ const handleDownload = async () => {
+  try {
+    const clientPayload: LOIApiPayload = transformToApiPayload(values);
+    const realData: LoiServerData = await dispatch(
+      fetchRealLoiDataAsync(clientPayload)
+    ).unwrap();
 
+    await exportLoiToDocx(realData); // no `as any`
+    Toast.fire({ icon: "success", title: "LOI exported successfully" });
+  } catch (err: unknown) {
+    const msg =
+      err instanceof Error
+        ? err.message
+        : typeof err === "string"
+        ? err
+        : "Failed to export LOI";
+
+    Toast.fire({ icon: "error", title: msg });
+  }
+};
   return (
     // Make this container relative so the overlay can position `absolute inset-0` within it
     <div className="relative">
@@ -59,7 +66,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
       <LoadingOverlay
         visible={isDownloadingLoi}
         size="default"
-        fullscreen={true} 
+        fullscreen={true}
       />
 
       <div
@@ -123,6 +130,8 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
             </div>
           </div>
 
+
+
           <div className="space-y-4">
             <div className="border border-green-300 rounded-lg bg-green-50 p-4">
               <div className="flex items-start gap-3">
@@ -134,24 +143,27 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
                     download a PDF copy or send it directly to the landlord.
                   </p>
 
-                  <div className="mt-3 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleDownload}
-                      disabled={isDownloadingLoi}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      <DownloadIcon className="w-4 h-4" />
-                   Download
-                    </button>
+                  <div className="w-full mt-3 flex items-center gap-2">
+                    {mode === 'create' && (
+                      <button
+                        type="button"
+                        onClick={handleDownload}
+                        disabled={isDownloadingLoi}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <DownloadIcon className="w-4 h-4" />
+                        Download
+                      </button>
+                    )}
 
-                    <button
+
+                    {/* <button
                       type="submit"
                       className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
                     >
                       <FileCheck className="w-4 h-4" />
                       Submit LOI
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>

@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { FormikTouched } from 'formik';
-import { FileData, FormValues, SetFieldValue, ExtendedFormikErrors } from '@/types/loi';
+import { FileData,  SetFieldValue, ExtendedFormikErrors } from '@/types/loi';
+import { FormValues } from '@/constants/formData';
 
 interface FileUploadProps {
     uploadedFile: FileData | null;

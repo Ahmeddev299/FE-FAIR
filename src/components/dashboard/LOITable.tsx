@@ -236,7 +236,7 @@ export const LOITable: React.FC<LOITableProps> = ({
           )}
 
           {!showLoading && Array.isArray(lois) && lois.length === 0 && (
-            <LoadingOverlay isVisible />)}
+            <LoadingOverlay visible />)}
 
           {!showLoading && Array.isArray(lois) && lois.length > 0 &&
             lois.map((row) => (

@@ -52,7 +52,7 @@ export default function LeasesPage() {
 
   return (
     <DashboardLayout>
-      {isLoading && <LoadingOverlay isVisible />}
+      {isLoading && <LoadingOverlay visible />}
 
       <div className="p-4 bg-white shadow-sm border border-gray-200 rounded mb-4">
         <div className="flex items-center justify-between">

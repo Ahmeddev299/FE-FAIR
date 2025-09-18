@@ -1,7 +1,8 @@
 // components/StepperNavigation.tsx
 import React from 'react';
 import { Check } from 'lucide-react';
-import { Step, FormValues } from '../types/loi';
+import { Step } from '../types/loi';
+import { FormValues } from '@/constants/formData';
 
 interface StepperNavigationProps {
   steps: Step[];

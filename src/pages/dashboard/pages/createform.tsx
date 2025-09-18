@@ -28,7 +28,6 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const dispatch = useAppDispatch();
   const { currentStep, nextStep, prevStep, isStepComplete, steps, jumpToStep } = useFormStepper();
   const [initialData, setInitialData] = useState<FormValues | null>(null);
-  console.log("initialDtaa", initialData)
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   
@@ -59,7 +58,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
         const apiPayload = transformToApiPayload(formValues, loiId);
         await dispatch(submitLOIAsync(apiPayload)).unwrap();
         setLastSaved(new Date().toLocaleTimeString());
-        router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });
+        router.push({ pathname: "/dashboard/pages/mainpage", query: { success: "loi_submitted" } });
       } else {
         nextStep();
       }
@@ -90,7 +89,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
       case 2: return <LeaseTermsStep />;
       case 3: return <PropertyDetailsStep />;
       case 4: return <AdditionalTermsStep />;
-      case 5: return <ReviewSubmitStep values={formValues} onEdit={jumpToStep} />;
+      case 5: return <ReviewSubmitStep values={formValues} onEdit={jumpToStep}  mode = 'create' />;
       default: return null;
     }
   };
