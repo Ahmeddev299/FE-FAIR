@@ -2087,6 +2087,15 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
             createDetailsTable(),
 
             new Paragraph({ pageBreakBefore: true }),
+            bodyParagraph(
+
+              "This letter is not binding and does not constitute an agreement between the parties, but merely sets forth the general terms under which the Tenant agrees to enter further negotiations and is contingent upon the Tenant's review of a draft lease and a definitive written agreement signed by the parties. Tenant Broker makes no warranty or representation to Landlord or Tenant that the acceptance of the proposal will guarantee the execution of a lease for the Premises.",
+            ),
+            bodyParagraph(
+
+              "Please review the above lease proposal and provide your comments within seven (7) business days upon receipt. If the above proposal is accepted, we will forward the Lease to you for your review. Please note that the above lease proposal does not bind either party to the terms until the Lease is drawn and executed by both parties.",
+              { spacing: { after: 400 } }
+            ),
 
             // AGREED AND ACCEPTED line
             new Paragraph({
