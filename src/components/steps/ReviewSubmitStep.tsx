@@ -143,7 +143,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
                       )} */}
 
           <div className="space-y-4">
-            {mode === "edit" ? ("") : (<div className="border border-green-300 rounded-lg bg-green-50 p-4">
+            <div className="border border-green-300 rounded-lg bg-green-50 p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
                 <div className="flex-1">
@@ -168,7 +168,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
                   </div>
                 </div>
               </div>
-            </div>)}
+            </div>
 
 
             <div className="border border-gray-200 rounded-lg p-4">

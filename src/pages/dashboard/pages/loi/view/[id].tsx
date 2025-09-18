@@ -7,25 +7,37 @@ import { getLOIDetailsById } from "@/services/loi/asyncThunk";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { RootState } from "@/redux/store";
 
+// -------------------- Types --------------------
 type LeaseTerms = {
   leaseType?: string;
-  leaseDuration?: string;
+  leaseDuration?: number | string;
   startDate?: string;
-  monthlyRent?: string;
-  securityDeposit?: string;
+  monthlyRent?: number | string;
+  securityDeposit?: number | string;
+  renewalYears?: number;
+  renewalOptionsCount?: number;
+  includeRenewalOption?: boolean;
+  prepaidRent?: number;
+  RentEscalation?: number;
 };
 
 type AdditionalDetails = {
-  renewalOption?: boolean;
   tenantImprovement?: string;
   specialConditions?: string;
+  tenantImprovement_check?: boolean;
+  Miscellaneous_items?: string[];
+  contingencies?: string[];
 };
-
 
 type PropertyDetails = {
   propertyType?: string;
-  propertySize?: string;
+  propertySize?: number | string;
   intendedUse?: string;
+  hasExtraSpace?: boolean;
+  patio?: string;
+  exclusiveUse?: string;
+  amenities?: string[];
+  utilities?: string[];
 };
 
 type ShapedLoi = {
@@ -47,6 +59,7 @@ type ShapedLoi = {
   propertyDetails?: PropertyDetails;
 };
 
+// -------------------- Components --------------------
 const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
   const s = (value || "").toLowerCase();
   const base = "inline-flex px-2 py-1 text-xs font-medium rounded-full";
@@ -57,39 +70,54 @@ const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
     active: `${base} bg-blue-100 text-blue-800`,
     "in review": `${base} bg-purple-100 text-purple-800`,
     terminated: `${base} bg-red-100 text-red-800`,
+    submitted: `${base} bg-blue-100 text-blue-800`,
   };
   return <span className={map[s] || `${base} bg-gray-100 text-gray-800`}>{value || "—"}</span>;
 };
 
+// -------------------- Shape Mapper --------------------
 const shapeLoi = (raw: unknown): ShapedLoi | null => {
   if (!raw || typeof raw !== "object") return null;
-  const r = raw as Record<string, unknown>;
-  const partyInfo = (r.partyInfo as ShapedLoi["party"]) || {};
+
+  const r = raw as Partial<ShapedLoi> & {
+    _id?: string;
+    propertyAddress?: string;
+    property_address?: string;
+    submit_status?: string;
+    status?: string;
+    created_at?: string;
+    createdAt?: string;
+    updated_at?: string;
+    updatedAt?: string;
+    user_name?: string;
+    partyInfo?: ShapedLoi["party"];
+  };
 
   return {
-    id: String((r.id ?? r._id ?? "") as string).trim(),
-    title: (r.title as string) ?? "",
-    address: (r.propertyAddress as string) ?? (r.property_address as string) ?? "",
-    status: (r.submit_status as string) ?? (r.status as string) ?? "",
-    created: (r.created_at as string) ?? (r.createdAt as string) ?? null,
-    updated: (r.updated_at as string) ?? (r.updatedAt as string) ?? null,
-    userName: (r.user_name as string) ?? "",
-    party: partyInfo,
-    leaseTerms: r.leaseTerms as LeaseTerms | undefined,
-    additionalDetails: r.additionalDetails as AdditionalDetails | undefined,
-    propertyDetails: r.propertyDetails as PropertyDetails | undefined,
+    id: String(r.id ?? r._id ?? "").trim(),
+    title: r.title ?? "",
+    address: r.propertyAddress ?? r.property_address ?? "",
+    status: r.submit_status ?? r.status ?? "",
+    created: r.created_at ?? r.createdAt ?? null,
+    updated: r.updated_at ?? r.updatedAt ?? null,
+    userName: r.user_name ?? "",
+    party: r.partyInfo ?? {},
+    leaseTerms: r.leaseTerms,
+    additionalDetails: r.additionalDetails,
+    propertyDetails: r.propertyDetails,
   };
 };
 
 
+// -------------------- Page --------------------
 export default function SingleLoiPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { id: queryId } = router.query;
 
   // redux state (adjust slice name if different)
-const { currentLOI, isLoading, loiError } = useAppSelector((state: RootState) => state.loi);
-const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
+  const { currentLOI, isLoading, loiError } = useAppSelector((state: RootState) => state.loi);
+  const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
 
   // fetch on mount/id change
   useEffect(() => {
@@ -113,7 +141,7 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
         </div>
 
         {!isLoading && !loiError && loi && (
-          <div className="bg-white  rounded-xl p-6 space-y-6">
+          <div className="bg-white rounded-xl p-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
@@ -144,21 +172,13 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Landlord</div>
-                <div className="text-sm text-gray-900">
-                  {loi.party?.landlord_name || "—"}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {loi.party?.landlord_email || ""}
-                </div>
+                <div className="text-sm text-gray-900">{loi.party?.landlord_name || "—"}</div>
+                <div className="text-xs text-gray-500">{loi.party?.landlord_email || ""}</div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Tenant</div>
-                <div className="text-sm text-gray-900">
-                  {loi.party?.tenant_name || "—"}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {loi.party?.tenant_email || ""}
-                </div>
+                <div className="text-sm text-gray-900">{loi.party?.tenant_name || "—"}</div>
+                <div className="text-xs text-gray-500">{loi.party?.tenant_email || ""}</div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Created</div>
@@ -184,20 +204,44 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
                     <div>{loi.leaseTerms?.leaseType || "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
-                    <div className="text-xs text-gray-500">Duration</div>
-                    <div>{loi.leaseTerms?.leaseDuration || "—"}</div>
+                    <div className="text-xs text-gray-500">Duration </div>
+                    <div>{loi.leaseTerms?.leaseDuration ? `${loi.leaseTerms.leaseDuration} months`: "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Start Date</div>
-                    <div>{loi.leaseTerms?.startDate ? new Date(loi.leaseTerms.startDate).toLocaleDateString() : "—"}</div>
+                    <div>
+                      {loi.leaseTerms?.startDate
+                        ? new Date(loi.leaseTerms.startDate).toLocaleDateString()
+                        : "—"}
+                    </div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
-                    <div className="text-xs text-gray-500">Monthly Rent</div>
-                    <div>{loi.leaseTerms?.monthlyRent || "—"}</div>
+                    <div className="text-xs text-gray-500">Monthly Rent </div>
+                    <div>{loi.leaseTerms?.monthlyRent ? `$${Number(loi.leaseTerms.monthlyRent)}` : ''}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Security Deposit</div>
-                    <div>{loi.leaseTerms?.securityDeposit || "—"}</div>
+                    <div>{loi.leaseTerms?.securityDeposit ? `$${Number(loi.leaseTerms.securityDeposit)}` : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Renewal Years</div>
+                    <div>{loi.leaseTerms?.renewalYears ?? "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Renewal Options Count</div>
+                    <div>{loi.leaseTerms?.renewalOptionsCount ?? "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Include Renewal Option</div>
+                    <div>{loi.leaseTerms?.includeRenewalOption ? "Yes" : "No"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Prepaid Rent</div>
+                    <div>{loi.leaseTerms?.prepaidRent ? `$${loi.leaseTerms.prepaidRent}` : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Rent Escalation</div>
+                    <div>{loi.leaseTerms?.RentEscalation ? `${loi.leaseTerms.RentEscalation} months` : "_"}</div>
                   </div>
                 </div>
               </div>
@@ -214,11 +258,31 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Size</div>
-                    <div>{loi.propertyDetails?.propertySize || "—"}</div>
+                    <div>{loi.propertyDetails?.propertySize ?? "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Intended Use</div>
                     <div>{loi.propertyDetails?.intendedUse || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Has Extra Space</div>
+                    <div>{loi.propertyDetails?.hasExtraSpace ? "Yes" : "No"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Patio</div>
+                    <div>{loi.propertyDetails?.patio ?? "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Exclusive Use</div>
+                    <div>{loi.propertyDetails?.exclusiveUse ?? "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Amenities</div>
+                    <div>{loi.propertyDetails?.amenities?.join(", ") || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Utilities</div>
+                    <div>{loi.propertyDetails?.utilities?.join(", ") || "—"}</div>
                   </div>
                 </div>
               </div>
@@ -230,10 +294,6 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
                 <div className="text-sm font-medium text-gray-900 mb-2">Additional Details</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
                   <div className="bg-gray-50 rounded p-3">
-                    <div className="text-xs text-gray-500">Renewal Option</div>
-                    <div>{loi.additionalDetails?.renewalOption ? "Yes" : "No"}</div>
-                  </div>
-                  <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Tenant Improvement</div>
                     <div>{loi.additionalDetails?.tenantImprovement || "—"}</div>
                   </div>
@@ -241,6 +301,18 @@ const loi = useMemo(() => shapeLoi(currentLOI), [currentLOI]);
                     <div className="text-xs text-gray-500">Special Conditions</div>
                     <div>{loi.additionalDetails?.specialConditions || "—"}</div>
                   </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Tenant Improvement Provided?</div>
+                    <div>{loi.additionalDetails?.tenantImprovement_check ? "Yes" : "No"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Miscellaneous Items</div>
+                    <div>{loi.additionalDetails?.Miscellaneous_items?.join(", ") || "—"}</div>
+                  </div>
+                  {/* <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Contingencies</div>
+                    <div>{loi.additionalDetails?.contingencies?.join(", ") || "—"}</div>
+                  </div> */}
                 </div>
               </div>
             )}
