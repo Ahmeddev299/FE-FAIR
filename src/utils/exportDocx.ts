@@ -1517,8 +1517,6 @@ const loadLogo = async (): Promise<string | undefined> => {
 /* ---------------- types & normalization ---------------- */
 // body is Record<string, unknown> (or whatever yours is)
 
-type Primitive = string | number | boolean | null | undefined;
-
 
 export interface LOIHeader {
   landlord_name?: string;
