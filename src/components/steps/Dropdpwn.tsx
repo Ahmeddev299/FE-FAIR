@@ -139,6 +139,17 @@ const EmailCombobox: React.FC<{
           ) : (
             <>
               {filtered.length === 0 && <div className="px-3 py-2 text-sm text-gray-500">No matches</div>}
+               <button
+                type="button"
+                onMouseEnter={() => setActive(filtered.length)}
+                onClick={() => commit(filtered.length)}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${
+                  active === filtered.length ? "bg-blue-50" : ""
+                }`}
+              >
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-violet-100 text-violet-600">+</span>
+                Add new landlord…
+              </button>
               {filtered.map((email, idx) => (
                 <button
                   key={email}
@@ -150,17 +161,7 @@ const EmailCombobox: React.FC<{
                   {email}
                 </button>
               ))}
-              <button
-                type="button"
-                onMouseEnter={() => setActive(filtered.length)}
-                onClick={() => commit(filtered.length)}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${
-                  active === filtered.length ? "bg-blue-50" : ""
-                }`}
-              >
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-violet-100 text-violet-600">+</span>
-                Add new landlord…
-              </button>
+             
             </>
           )}
         </div>

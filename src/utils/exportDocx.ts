@@ -2086,6 +2086,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
             // Details table
             createDetailsTable(),
 
+            new Paragraph({ pageBreakBefore: true }),
 
             // AGREED AND ACCEPTED line
             new Paragraph({
