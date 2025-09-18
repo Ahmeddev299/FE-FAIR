@@ -94,12 +94,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         />
 
         {/* SIDEBAR (desktop) */}
-        <aside className="hidden md:flex md:w-64 md:flex-col bg-white border-r border-gray-200">
+        <aside
+          className="
+    hidden md:flex
+    fixed md:inset-y-0 md:left-0        /* <-- fix it on screen */
+    md:w-64 md:flex-col
+    bg-white border-r border-gray-200
+  "
+        >
           {/* Logo block */}
           <div className="flex items-center justify-center pt-4">
             {/* Logo block (desktop) */}
             <Link href="/dashboard/pages/mainpage" className="flex items-center gap-2">
-              <div className="px-5flex justify-center">
+              <div className="px-5 flex justify-center">
                 <Image
                   src="/logo.png"
                   alt="Fair"
@@ -165,7 +172,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         </aside>
 
         {/* MAIN COLUMN */}
-        <div className="flex-1 flex flex-col md:pl-0">
+        <div className="lex-1 flex flex-col w-full md:ml-64">
           {/* Mobile open button */}
           <div className="sticky top-0 z-20 bg-gray-50 px-3 py-3 md:hidden">
             <button
@@ -204,9 +211,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
         {/* MOBILE SIDEBAR */}
         {sidebarOpen && (
-          <div className="md:hidden fixed inset-0 z-40 flex">
+          <div className="md:hidden fixed inset-0 z-50 flex">
             <div className="fixed inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
-            <aside className="relative z-50 w-72 bg-white border-r border-gray-200">
+            <aside className="relative z-50 w-72 bg-white border-r border-gray-200 h-full">
               <div className="flex items-center justify-between px-4 py-4 border-b">
                 <div className="flex items-center justify-center">
                   <Image src="/logo.png" alt="Fair" width={100} height={60} className="object-contain" />
@@ -215,7 +222,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   ✕
                 </button>
               </div>
-              <nav className="p-4">
+              <nav className="p-4 h-full overflow-y-auto">
                 <div className="space-y-1">
                   {NAV.map((item) => {
                     const active = isActive(item.href);
