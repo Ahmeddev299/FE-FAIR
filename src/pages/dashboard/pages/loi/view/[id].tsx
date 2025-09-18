@@ -108,7 +108,6 @@ const shapeLoi = (raw: unknown): ShapedLoi | null => {
   };
 };
 
-
 // -------------------- Page --------------------
 export default function SingleLoiPage() {
   const router = useRouter();
@@ -205,7 +204,7 @@ export default function SingleLoiPage() {
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Duration </div>
-                    <div>{loi.leaseTerms?.leaseDuration ? `${loi.leaseTerms.leaseDuration} months`: "—"}</div>
+                    <div>{loi.leaseTerms?.leaseDuration ? `${loi.leaseTerms.leaseDuration} months` : "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Start Date</div>
@@ -224,12 +223,11 @@ export default function SingleLoiPage() {
                     <div>{loi.leaseTerms?.securityDeposit ? `$${Number(loi.leaseTerms.securityDeposit)}` : "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
-                    <div className="text-xs text-gray-500">Renewal Years</div>
-                    <div>{loi.leaseTerms?.renewalYears ?? "—"}</div>
-                  </div>
-                  <div className="bg-gray-50 rounded p-3">
-                    <div className="text-xs text-gray-500">Renewal Options Count</div>
-                    <div>{loi.leaseTerms?.renewalOptionsCount ?? "—"}</div>
+                    <div className="text-xs text-gray-500">Renewal Option</div>
+                    <div className="text-sm text-gray-900">
+                      {loi.leaseTerms?.renewalOptionsCount ?? "—"} Options for{" "}
+                      {loi.leaseTerms?.renewalYears ?? "—"} Years
+                    </div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Include Renewal Option</div>
@@ -257,8 +255,8 @@ export default function SingleLoiPage() {
                     <div>{loi.propertyDetails?.propertyType || "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
-                    <div className="text-xs text-gray-500">Size</div>
-                    <div>{loi.propertyDetails?.propertySize ?? "—"}</div>
+                    <div className="text-xs text-gray-500">Size </div>
+                    <div>{loi.propertyDetails?.propertySize ? `${loi.propertyDetails.propertySize} Sq ft ` : "—"}</div>
                   </div>
                   <div className="bg-gray-50 rounded p-3">
                     <div className="text-xs text-gray-500">Intended Use</div>
