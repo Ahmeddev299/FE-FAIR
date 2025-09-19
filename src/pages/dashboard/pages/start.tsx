@@ -1,16 +1,20 @@
-import { useEffect } from 'react';
-import { CheckCircle, Edit, Eye } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Edit, Eye } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
-import { getDraftLOIsAsync } from '@/services/loi/asyncThunk';
+import { getDraftLOIsAsync, submitLOIByFileAsync } from '@/services/loi/asyncThunk';
 import { DashboardLayout } from '@/components/layouts';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { formatDate } from '@/utils/dateFormatter';
-import { Letter, LOIStatus } from '@/types/loi';
+import { FileData, Letter, LOIStatus } from '@/types/loi';
 import { LoadingOverlay } from '@/components/loaders/overlayloader';
+import { UploadedFiles } from '@/components/uploadLeaseForm/UploadedFile';
 
 export default function LetterOfIntentDashboard() {
-
+  const [showUpload, setShowUpload] = useState<boolean>(false);
+  console.log("showupload", showUpload)
+  const [fileUpload, setUploadedFile] = useState<FileData | null>(null);
+  console.log("fileUpload", fileUpload)
   const router = useRouter();
   const dispatch = useAppDispatch()
   const { loiList, isLoading } = useAppSelector((state) => state.loi);
@@ -38,6 +42,57 @@ export default function LetterOfIntentDashboard() {
     router.push(`/dashboard/pages/loi/view/${id}`);
   };
 
+  function hasDocId(v: unknown): v is { doc_id: string } {
+    return typeof v === "object" && v !== null && "doc_id" in v &&
+      typeof (v as { doc_id: unknown }).doc_id === "string";
+  }
+
+  function hasData(v: unknown): v is { data: unknown } {
+    return typeof v === "object" && v !== null && "data" in v;
+  }
+
+  const handleSubmitFile = async (): Promise<void> => {
+    if (!fileUpload) return;
+
+    try {
+      const result = await dispatch(submitLOIByFileAsync(fileUpload.file)).unwrap();
+
+      let id: string | undefined;
+
+      if (typeof result === "string") {
+        id = result;
+      } else if (hasDocId(result)) {
+        id = result.doc_id;
+      } else if (hasData(result)) {
+        const d = result.data;
+        if (typeof d === "string") {
+          id = d;
+        } else if (hasDocId(d)) {
+          id = d.doc_id;
+        }
+      }
+
+      if (id) {
+        router.push(`/dashboard/pages/loi/view/${id}`);
+        setUploadedFile(null);
+        setShowUpload(false);
+      } else {
+        console.error("Could not determine LOI id from submitLOIByFileAsync result:", result);
+      }
+    } catch (e) {
+      console.error("submitLOIByFileAsync failed", e);
+    }
+  };
+
+  const handleFileUpload = (file: File): void => {
+    const fileData: FileData = {
+      name: file.name,
+      size: (file.size / 1024).toFixed(2) + ' KB',
+      type: file.type,
+      file
+    };
+    setUploadedFile(fileData);
+  };
   return (
     <DashboardLayout>
       {isLoading ? (<LoadingOverlay visible />) : (
@@ -53,43 +108,90 @@ export default function LetterOfIntentDashboard() {
               <div className="xl:col-span-2 w-full">
                 <div className="bg-[#EFF6FF] rounded-lg shadow-sm p-6 h-full">
                   <div className="flex items-center mb-6">
-                    <Image src='/loititle.png' width={50} height={40} alt="" className='mr-5' />
-
+                    <Image src="/loititle.png" width={50} height={40} alt="" className="mr-5" />
                     <h2 className="text-xl font-semibold text-gray-900">Start New LOI</h2>
                   </div>
 
                   <p className="text-gray-600 pt-5 text-[18px] pb-8">
-                    Create a new Letter of Intent using our step-by-step intake wizard. Our AI-powered platform will guide you through each section to ensure your LOI is comprehensive and professional.
+                    Create a new Letter of Intent using our step-by-step intake wizard. Our AI-powered platform
+                    will guide you through each section to ensure your LOI is comprehensive and professional.
                   </p>
 
+                  {/* Buttons */}
                   <div className="flex gap-4 mb-8 flex-wrap">
+                    {/* Start LOI */}
                     <button
-                      className="bg-[#3B82F6] w-[187px] text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center"
+                      className="bg-[#3B82F6] w-[187px] text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
                       onClick={handleStartNewLOI}
                     >
                       Start New LOI
-                      <Image alt='arrow' src='/arrow.png' width={30} height={20} />
+                      <Image alt="arrow" src="/arrow.png" width={30} height={20} />
                     </button>
+
+                    <button
+                      className="bg-[#3B82F6] w-[187px] text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
+                      onClick={handleSubmitFile}
+                    >
+                      Upload LOI
+                      <Image alt="arrow" src="/upload.png" width={30} height={30} />
+                    </button>
+
                   </div>
-                  <div className=" h-[1.5px] bg-[#DBEAFE] w-full my-15" />
-                  <div className="bg-[#EFF6FF] rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900 mb-3">What you will get:</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {[
-                        'Professional LOI template',
-                        'AI-powered suggestions',
-                        'Save and resume anytime',
-                        'Export to PDF',
-                      ].map((text, i) => (
-                        <div className="flex items-center" key={i}>
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-sm text-gray-700">{text}</span>
+                  <div className="bg-white rounded-lg border border-dashed border-gray-300 p-6 text-center">
+                    <h3 className="text-gray-900 font-medium text-lg mb-4 flex items-center justify-center gap-2">
+                      <Image src="/file.png" alt="upload" width={40} height={40} />
+                      LOI Document Upload
+                    </h3>
+
+                    <div
+                      className="border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-colors "
+                    >
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,.doc"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleFileUpload(file);
+                          }
+                        }}
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <label htmlFor="file-upload" className="cursor-pointer">
+                        <div className="rounded-full p-4 mx-auto mb-4 flex items-center justify-center">
+                          <Image alt="upload" src="/file.png" height={60} width={60} />
                         </div>
-                      ))}
+                        <p className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                          Drag and drop your lease documents
+                        </p>
+                        <p className="text-gray-500 mb-4 text-sm sm:text-base">
+                          or click to browse and select files
+                        </p>
+                        <div>
+                          <span className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
+                            Choose Files
+                          </span>
+                          <div className="mt-4 text-sm sm:text-base font-semibold text-gray-500 space-y-1">
+                            <p>Supported formats: PDF, DOCX</p>
+                            <p>Maximum file size: 10MB</p>
+                          </div>
+                        </div>
+                      </label>
                     </div>
+                  </div>
+                  <div className='mt-8'>
+                    {fileUpload && (
+                      <UploadedFiles
+                        uploadedFile={fileUpload}
+                        setUploadedFile={setUploadedFile}
+                        check={true}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
+
 
               <div className="flex flex-col gap-4 w-full">
                 {[
@@ -117,14 +219,14 @@ export default function LetterOfIntentDashboard() {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className={`bg-white rounded-xl shadow-sm px-4 py-5 ${item.support ? 'min-h-[150px]' : 'min-h-[130px]'
+                    className={`bg-white rounded-xl shadow-sm px-4 py-5 ${item.support ? 'min-h-[150px]' : 'min-h-[250px]'
                       }`}
                   >
                     <div className="flex items-start gap-3 mb-2">
                       <Image src={item.icon} width={40} height={30} alt="" />
-                      <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
+                      <h3 className="text-[24px] font-semibold text-gray-900">{item.title}</h3>
                     </div>
-                    <p className="text-gray-700 text-sm mb-3 leading-snug">{item.desc}</p>
+                    <p className=" p-7 text-gray-700 text-[22px] mb-3 leading-snug">{item.desc}</p>
                     {item.support && (
                       <button className="bg-gray-50 font-semibold text-black h-9 w-full px-4 py-1 rounded-lg text-sm hover:bg-gray-100 transition-colors">
                         Contact Support
@@ -140,14 +242,6 @@ export default function LetterOfIntentDashboard() {
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">My Draft LOIs</h2>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                  {/* <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      placeholder="Search drafts..."
-                      className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div> */}
                 </div>
               </div>
 

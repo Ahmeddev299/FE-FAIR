@@ -5,6 +5,7 @@ import {
   getLOIDetailsById,
   getDraftLOIsAsync,
   runAiAssistantAsync,
+  submitLOIByFileAsync,
 } from "@/services/loi/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
@@ -51,6 +52,7 @@ export const loiSlice = createSlice({
     loiList: {
       my_loi: [],
     },
+    submitByFileResult: null as { doc_id: string } | null,
 
     metaData: {},
     filters: {},
@@ -196,8 +198,9 @@ export const loiSlice = createSlice({
         if (action?.payload?.data) {
           state?.loiList?.unshift(action?.payload?.data);
         }
-        Toast.fire({ icon: "success", title: action.message || "LOI Submitted Successfully"          
-          });
+        Toast.fire({
+          icon: "success", title: action.message || "LOI Submitted Successfully"
+        });
 
       })
       .addCase(submitLOIAsync.rejected, (state: any, action: any) => {
@@ -242,6 +245,39 @@ export const loiSlice = createSlice({
       .addCase(runAiAssistantAsync.rejected, (state, action) => {
         state.isLoading = false;
         Toast.fire({ icon: "error", title: action.payload || "Assistant failed" });
+      })
+
+      // 2) Handlers
+      .addCase(submitLOIByFileAsync.pending, (state) => {
+        state.isLoading = true;
+        state.loiError = "";
+        state.submitByFileResult = null; // optional: clear previous
+      })
+      .addCase(submitLOIByFileAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.submitSuccess = true;
+
+        // Safely normalize the payload without accessing .doc_id on a mismatched type
+        const data = (action as any)?.payload?.data as unknown;
+
+        let id: string | undefined;
+        if (typeof data === "string") {
+          id = data;
+        } else if (data && typeof data === "object" && "doc_id" in (data as Record<string, unknown>)) {
+          const maybe = (data as { doc_id?: unknown }).doc_id;
+          if (typeof maybe === "string") id = maybe;
+        }
+
+        if (id) {
+          state.submitByFileResult = { doc_id: id }; // store separately
+        }
+
+        Toast.fire({ icon: "success", title: "LOI File Submitted Successfully" });
+      })
+      .addCase(submitLOIByFileAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loiError = action.payload as string;
+        Toast.fire({ icon: "error", title: action.payload as string });
       });
   },
 });

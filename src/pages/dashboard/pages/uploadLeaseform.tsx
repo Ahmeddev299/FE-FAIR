@@ -187,7 +187,9 @@ const handleSubmit = async (
                       uploadedFile={uploadedFile}
                       setUploadedFile={setUploadedFile}
                       setFieldValue={setFieldValue}
+                      check={false}
                     />
+
                   )}
                 </div>
 

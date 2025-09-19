@@ -17,6 +17,14 @@ class LoiBaseService extends HttpService {
     this.get(this.prefix + `/get_single_loi/${id}`, {});
   aiAssistant = (data: any): Promise<any> =>
     this.post(this.prefix + `/ai_assistent`, data); // NOTE: 'assistent' spelling from your screenshot
+  submitLOIByFile = (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return this.post(this.prefix + `/submit_loi_by_file`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  };
 
 }
 

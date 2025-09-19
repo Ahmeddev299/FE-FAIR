@@ -33,10 +33,7 @@ export const AdditionalTermsStep: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {/* Include renewal option in LOI */}
-       
 
-            {/* Right of First Refusal */}
             <div className="space-y-2">
               <label className="flex items-center gap-2">
                 <Field

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { loiBaseService } from "./enpoints";
-import type { LOIApiPayload } from "@/types/loi"; // adjust path accordingly
+import type { Letter, LOIApiPayload } from "@/types/loi"; // adjust path accordingly
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
@@ -54,7 +54,6 @@ export const getDraftLOIsAsync = createAsyncThunk(
   }
 );
 
-
 // services/loi/asyncThunk.ts (add thunk)
 export const runAiAssistantAsync = createAsyncThunk(
   "loi/aiAssistant",
@@ -76,7 +75,6 @@ export const runAiAssistantAsync = createAsyncThunk(
     }
   }
 );
-
 
 // in asyncThunk.ts or wherever you define thunks
 export const getLOIDetailsById = createAsyncThunk(
@@ -103,3 +101,27 @@ export const getLOIDetailsById = createAsyncThunk(
   }
 );
 
+export const submitLOIByFileAsync = createAsyncThunk<
+  { data: Letter },   
+  File,               
+  { rejectValue: string }
+>("loi/submitByFile", async (file, { rejectWithValue }) => {
+  try {
+    const token: string = `${ls.get("access_token", { decrypt: true })}`;
+    HttpService.setToken(token);
+
+    const response = await loiBaseService.submitLOIByFile(file);
+
+    if (response.success === false && response.status === 400) {
+      return rejectWithValue(response.message);
+    }
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.message) return rejectWithValue(error.response.data.message);
+    if (error.response?.message) return rejectWithValue(error.response.message);
+    if (error.message) return rejectWithValue(error.message);
+    return rejectWithValue("An unexpected error occurred while submitting LOI by file");
+  }
+}
+);

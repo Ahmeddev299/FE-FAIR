@@ -203,9 +203,9 @@ export interface CustomFieldProps {
 }
 
 export interface FileData {
-  name: string;
-  size: string;
-  type: string;
+   name: string;
+  size: string;      // e.g. "12.34 KB"
+  type: string;      // mime type
   file: File;
 }
 

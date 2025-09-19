@@ -27,8 +27,7 @@ function MainPage() {
     }, [dispatch]);
 
     const handleStartNewLOI = () => {
-        console.log("running");
-        router.push('/dashboard/pages/start');
+        router.push('/dashboard/pages/createform');
     };
 
     const uploadLeaseNewLOI = () => {
@@ -40,7 +39,7 @@ function MainPage() {
     };
 
     const uploadLOI = () => {
-        router.push('/dashboard/pages/createform')
+        router.push('/dashboard/pages/start')
     }
     return (
         <DashboardLayout>

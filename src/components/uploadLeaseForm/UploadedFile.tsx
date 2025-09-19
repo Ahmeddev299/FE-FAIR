@@ -4,19 +4,23 @@ import { FileText, X, CheckCircle } from 'lucide-react';
 import { FileData, SetFieldValue } from '@/types/loi';
 
 interface UploadedFilesProps {
-    uploadedFile: FileData;
-    setUploadedFile: (file: FileData | null) => void;
-    setFieldValue: SetFieldValue;
+    uploadedFile: FileData;                             // parent guards null
+    setUploadedFile: (file: FileData | null) => void;   // matches parent setter type
+    setFieldValue?: SetFieldValue;
+    check: boolean;
 }
 
 export const UploadedFiles: React.FC<UploadedFilesProps> = ({
     uploadedFile,
     setUploadedFile,
-    setFieldValue
+    setFieldValue,
+    check
 }) => {
     const removeFile = (): void => {
         setUploadedFile(null);
-        setFieldValue('document', null);
+        if (!check && setFieldValue) {
+            setFieldValue('document', null);
+        }
     };
 
     return (
