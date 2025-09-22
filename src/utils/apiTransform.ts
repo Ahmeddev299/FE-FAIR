@@ -1,6 +1,44 @@
 import { FormValues } from "@/constants/formData";
 import type { LOIApiPayload } from "@/types/loi";
 
+
+const EMPTY_MAINT = {
+  structural: { landlord: false, tenant: false },
+  nonStructural: { landlord: false, tenant: false },
+  hvac: { landlord: false, tenant: false },
+  plumbing: { landlord: false, tenant: false },
+  electrical: { landlord: false, tenant: false },
+  commonAreas: { landlord: false, tenant: false },
+  utilities: { landlord: false, tenant: false },
+  specialEquipment: { landlord: false, tenant: false },
+} as const;
+
+type MaintKey = keyof typeof EMPTY_MAINT;
+
+// This alias matches the DTO shape for a single row:
+type MaintenanceRowDTO = { landlord?: boolean; tenant?: boolean };
+
+// This is a partial map of all rows the backend may return:
+type MaintenanceDTO = Partial<Record<MaintKey, MaintenanceRowDTO>>;
+
+const mapMaintenanceToDTO = (m?: MaintenanceDTO): FormValues["maintenance"] => {
+  const src: MaintenanceDTO = m ?? {};
+
+  const result = (Object.keys(EMPTY_MAINT) as MaintKey[]).reduce(
+    (acc, k) => {
+      const v = src[k] ?? {};
+      acc[k] = {
+        landlord: Boolean(v.landlord),
+        tenant: Boolean(v.tenant),
+      };
+      return acc;
+    },
+    {} as Record<MaintKey, { landlord: boolean; tenant: boolean }>
+  );
+
+  return result;
+};
+
 const UTIL_LABELS: Record<string, string> = {
   electricity: "Electricity",
   waterSewer: "Water/Sewer",
@@ -31,6 +69,7 @@ const buildMiscList = (v: FormValues): string[] => {
   const list: string[] = [];
   if (v.rightOfFirstRefusal) list.push("Right of First Refusal");
   if (v.leaseToPurchase) list.push("Lease to Purchase");
+  if (v.includeRenewalOption || v.renewalOption) list.push("Include renewal option in LOI");
   return list;
 };
 
@@ -59,10 +98,17 @@ export const transformToApiPayload = (
     ...(effectiveDocId ? { doc_id: effectiveDocId } : {}),
 
     partyInfo: {
-      landlord_name: values.landlordName ,
+      landlord_name: values.landlordName,
       landlord_email: values.landlordEmail || "",
-      tenant_name: values.tenantName ,
+      tenant_name: values.tenantName,
       tenant_email: values.tenantEmail || "",
+      // NEW
+      ...(nonEmpty(values.landlord_home_town_address)
+        ? { landlord_home_town_address: String(values.landlord_home_town_address).trim() }
+        : {}),
+      ...(nonEmpty(values.tenant_home_town_address)
+        ? { tenant_home_town_address: String(values.tenant_home_town_address).trim() }
+        : {}),
     },
 
     leaseTerms: {
@@ -71,22 +117,32 @@ export const transformToApiPayload = (
       leaseType: values.leaseType || "",
       leaseDuration: values.leaseDuration || "",
       startDate: values.startDate || "",
+      rentstartDate:values.rentstartDate || "", 
       RentEscalation: values.RentEscalation || "",
       prepaidRent: values.prepaidRent || "",
       includeRenewalOption: !!values.includeRenewalOption,
       renewalYears: values.renewalYears || "",
       renewalOptionsCount: values.renewalOptionsCount || "",
+      // keep if you need it server-side:
+      ...(nonEmpty(values.rentEscalationPercent)
+        ? { rentEscalationPercent: String(values.rentEscalationPercent).trim() }
+        : {}),
     },
 
     propertyDetails: {
       propertySize: values.propertySize || "",
       intendedUse: values.intendedUse || "",
-      exclusiveUse: values.exclusiveUse || "",
+      exclusiveUse: !!values.exclusiveUse, // FIX: boolean
       propertyType: values.propertyType || "",
       hasExtraSpace: !!values.hasExtraSpace,
       ...(nonEmpty(values.patio) ? { patio: values.patio } : {}),
-      amenities: values.parkingSpaces ? [values.parkingSpaces] : [],
+      amenities: values.parkingSpaces || "", // FIX: string, not array
       utilities: selectedUtilities,
+      // NEW
+      ...(nonEmpty(values.deliveryCondition)
+        ? { deliveryCondition: String(values.deliveryCondition).trim() }
+        : {}),
+      maintenance: mapMaintenanceToDTO(values.maintenance),
     },
 
     additionalDetails: {

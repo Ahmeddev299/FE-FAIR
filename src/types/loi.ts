@@ -81,62 +81,78 @@ export interface Step {
 // types/loi.ts (or types/api.ts if you separate DTOs)
 export type SubmitStatus = 'Draft' | 'Submitted';
 
-export interface LOIApiPayload {
+// "@/types/loi"
+export type LOIApiPayload = {
   title: string;
   propertyAddress: string;
   addFileNumber: boolean;
-  loiId?: string;            // optional external id
-  doc_id?: string;           // persisted id
+  doc_id?: string;
 
   partyInfo: {
     landlord_name: string;
     landlord_email: string;
     tenant_name: string;
     tenant_email: string;
+
+    // NEW
+    landlord_home_town_address?: string;
+    tenant_home_town_address?: string;
   };
 
   leaseTerms: {
     monthlyRent: string;
     securityDeposit: string;
-    leaseType: string;           // mapped from form.leaseType
-    leaseDuration: string;
-    startDate: string;           // ISO YYYY-MM-DD
-    RentEscalation: string;      // keep backend spelling (string)
-    prepaidRent: string;         // string for backend compatibility
-    // 🔻 New: renewal fields
-    includeRenewalOption: boolean; // UI checkbox
-    renewalYears: string;          // keep as string for backend
-    renewalOptionsCount: string;   // keep as string for backend
+    leaseType: string;
+    leaseDuration: string;     // months
+    startDate: string;         // yyyy-mm-dd
+    RentEscalation?: string;
+    prepaidRent: string;
+    includeRenewalOption: boolean;
+    renewalYears: string;
+    renewalOptionsCount: string;
+    rentstartDate: string;
+
+    // Optional (kept for compatibility)
+    rentEscalationPercent?: string;
   };
 
   propertyDetails: {
     propertySize: string;
     intendedUse: string;
-    exclusiveUse: string;
+    exclusiveUse: boolean;     // FIX: boolean, not string
     propertyType: string;
-
-    patio?: string;               // optional
-    hasExtraSpace: boolean;       // UI checkbox
-
-    amenities: string[];          // e.g. ["8–10"]
-    utilities: string[];          // e.g. ["Electricity", "Other"]
+    hasExtraSpace: boolean;
+    patio?: string;
+    amenities: string;         // e.g. "8–10"
+    utilities: string[];       // ["Electricity", "HVAC", ...]
+    // NEW
+    deliveryCondition?: string; // "as_is" | "shell" | "vanilla_shell" | "turnkey" | "white_box"
+    maintenance?: {
+      structural?: { landlord?: boolean; tenant?: boolean };
+      nonStructural?: { landlord?: boolean; tenant?: boolean };
+      hvac?: { landlord?: boolean; tenant?: boolean };
+      plumbing?: { landlord?: boolean; tenant?: boolean };
+      electrical?: { landlord?: boolean; tenant?: boolean };
+      commonAreas?: { landlord?: boolean; tenant?: boolean };
+      utilities?: { landlord?: boolean; tenant?: boolean };
+      specialEquipment?: { landlord?: boolean; tenant?: boolean };
+    };
   };
 
   additionalDetails: {
     Miscellaneous_items: string[];
-    tenantImprovement: string;    // single text field your API expects
+    tenantImprovement: string;
+    improvementAllowanceEnabled: boolean;
+    improvementAllowanceAmount: string;
     specialConditions: string;
-    contingencies: string[];      // array, not string
+    contingencies: string[];
     rightOfFirstRefusal?: boolean;
     leaseToPurchase?: boolean;
-
-    // 🔻 New: improvements flags
-    improvementAllowanceEnabled?: boolean;
-    improvementAllowanceAmount?: string; // keep as string for backend
   };
 
-  submit_status: SubmitStatus;
-}
+  submit_status: "Submitted" | "Draft";
+};
+
 
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
 export interface Letter {

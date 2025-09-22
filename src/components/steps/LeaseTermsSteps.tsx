@@ -239,9 +239,19 @@ export const LeaseTermsStep: React.FC = () => {
 
           {/* Preferred Start Date */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Preferred Start Date</label>
+            <label className="mb-2 block text-sm font-medium">Commencement Start Date</label>
             <Field
               name="startDate"
+              type="date"
+              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
+                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+            />
+          </div>
+
+           <div>
+            <label className="mb-2 block text-sm font-medium">Rent Commencement Start Date</label>
+            <Field
+              name="rentstartDate"
               type="date"
               className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
                          focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"

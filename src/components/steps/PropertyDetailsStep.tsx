@@ -3,7 +3,7 @@
 
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
-import { Info, Building2, Car, Zap } from "lucide-react";
+import { Info, Building2, Car, Zap, Wrench } from "lucide-react";
 import { FormValues } from "@/constants/formData";
 
 const PROPERTY_TYPES = [
@@ -24,6 +24,25 @@ const PROPERTY_TYPES = [
 ];
 
 const PARKING_OPTIONS = ["0–2", "3–5", "6–7", "8–10", "11–15", "16–20", "21+"];
+
+const DELIVERY_CONDITIONS = [
+  { value: "as_is", label: "As-Is, Where-Is" },
+  { value: "shell", label: "Shell Condition (basic structure, no interior buildout)" },
+  { value: "vanilla_shell", label: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)" },
+  { value: "turnkey", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
+  { value: "white_box", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
+];
+
+const MAINTENANCE_CATEGORIES = [
+  { key: "structural", label: "Structural Repairs (foundation, roof, exterior walls)" },
+  { key: "nonStructural", label: "Non-Structural Repairs (interior walls, ceilings, flooring)" },
+  { key: "hvac", label: "HVAC" },
+  { key: "plumbing", label: "Plumbing" },
+  { key: "electrical", label: "Electrical" },
+  { key: "commonAreas", label: "Common Areas (lobbies, parking lots, landscaping)" },
+  { key: "utilities", label: "Utilities (gas, water, electricity connections)" },
+  { key: "specialEquipment", label: "Special Equipment / Fixtures (if applicable)" },
+];
 
 export const PropertyDetailsStep: React.FC = () => {
   const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();
@@ -70,7 +89,6 @@ export const PropertyDetailsStep: React.FC = () => {
                 const checked = e.target.checked;
                 setFieldValue("hasExtraSpace", checked);
                 if (!checked) {
-                  // clear patio when hidden
                   setFieldValue("patio", "");
                   setFieldTouched("patio", false, false);
                 }
@@ -109,17 +127,20 @@ export const PropertyDetailsStep: React.FC = () => {
           </div>
 
           {/* Exclusive Use */}
+          {/* Exclusive Use (checkbox) */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Exclusive Use *</label>
-            <Field
-              name="exclusiveUse"
-              type="text"
-              placeholder="e.g., Corporate headquarters, Retail store"
-              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
-                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
-            />
+
+            <label className="flex items-center gap-2">
+              <Field
+                type="checkbox"
+                name="exclusiveUse"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Exclusive Use</span>
+            </label>
             <ErrorMessage name="exclusiveUse" component="div" className="mt-1 text-sm text-red-500" />
           </div>
+
 
           {/* Property Type */}
           <div>
@@ -141,13 +162,14 @@ export const PropertyDetailsStep: React.FC = () => {
           </div>
         </div>
 
-        {/* ---------------- Amenities and Services ---------------- */}
+        {/* ---------------- Premises Conditions ---------------- */}
         <div className="space-y-6 rounded-lg border border-gray-300 p-6">
           <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <Car className="h-5 w-5 text-orange-500" />
-            <span>Amenities and Services</span>
+            <span>Premises Conditions</span>
           </h4>
 
+          {/* Parking */}
           <div>
             <label className="mb-2 block text-sm font-medium">Parking Spaces Required *</label>
             <Field
@@ -164,6 +186,25 @@ export const PropertyDetailsStep: React.FC = () => {
               ))}
             </Field>
             <ErrorMessage name="parkingSpaces" component="div" className="mt-1 text-sm text-red-500" />
+          </div>
+
+          {/* Delivery Condition (NEW) */}
+          <div>
+            <label className="mb-2 block text-sm font-medium">Delivery Condition *</label>
+            <Field
+              as="select"
+              name="deliveryCondition"
+              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
+                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+            >
+              <option value="">Select Delivery Condition</option>
+              {DELIVERY_CONDITIONS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </Field>
+            <ErrorMessage name="deliveryCondition" component="div" className="mt-1 text-sm text-red-500" />
           </div>
         </div>
       </div>
@@ -208,6 +249,47 @@ export const PropertyDetailsStep: React.FC = () => {
             </label>
           ))}
         </div>
+      </div>
+
+      {/* Maintenance / Repair Obligations (NEW) */}
+      <div className="rounded-lg border border-gray-200 p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <Wrench className="h-5 w-5 text-sky-600" />
+          <h4 className="text-sm font-semibold">Maintenance / Repair Obligations</h4>
+        </div>
+
+        {/* Header row */}
+        <div className="mb-2 grid grid-cols-12 items-center text-xs font-semibold text-gray-600 p-4">
+          <div className="col-span-8">Category</div>
+          <div className="col-span-2 text-center">Landlord</div>
+          <div className="col-span-2 text-center">Tenant</div>
+        </div>
+
+        <div className=" rounded-lg border border-gray-200">
+          {MAINTENANCE_CATEGORIES.map(({ key, label }) => (
+            <div key={key} className="grid grid-cols-12 items-center gap-2 p-5">
+              <div className="col-span-8 text-sm">{label}</div>
+              <div className="col-span-2 text-center">
+                <Field
+                  type="checkbox"
+                  name={`maintenance.${key}.landlord`}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+              </div>
+              <div className="col-span-2 text-center">
+                <Field
+                  type="checkbox"
+                  name={`maintenance.${key}.tenant`}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-3 text-xs text-gray-500">
+          Tip: Check one or both boxes to reflect responsibility. If both are checked, this indicates a shared obligation.
+        </p>
       </div>
     </div>
   );

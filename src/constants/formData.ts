@@ -12,6 +12,8 @@ export interface FormValues {
   landlordEmail: string;
   tenantName: string;
   tenantEmail: string;
+  landlord_home_town_address: string;
+  tenant_home_town_address: string;
   addFileNumber: boolean;
 
   // Step 2 (Lease Terms)
@@ -25,6 +27,19 @@ export interface FormValues {
   renewalOptionsCount: string;        // integer >= 1
   renewalYears: string;               // integer >= 1
   startDate: string;                  // yyyy-mm-dd
+  rentstartDate: string;
+  deliveryCondition: string,
+  maintenance: {
+    structural: { landlord: boolean, tenant: boolean },
+    nonStructural: { landlord: boolean, tenant: boolean },
+    hvac: { landlord: boolean, tenant: boolean },
+    plumbing: { landlord: boolean, tenant: boolean },
+    electrical: { landlord: boolean, tenant: boolean },
+    commonAreas: { landlord: boolean, tenant: boolean },
+    utilities: { landlord: boolean, tenant: boolean },
+    specialEquipment: { landlord: boolean, tenant: boolean },
+  },
+
 
   // (kept for backend compatibility if other code references them)
   RentEscalation?: string;
@@ -36,7 +51,7 @@ export interface FormValues {
   hasExtraSpace: boolean;             // show Patio when true
   patio: string;                      // text, required only if hasExtraSpace
   intendedUse: string;
-  exclusiveUse: string;
+  exclusiveUse: boolean;
   propertyType: string;
   parkingSpaces: string;              // e.g. "8–10"
   utilities: {
@@ -96,6 +111,8 @@ export const INITIAL_VALUES: FormValues = {
   landlordEmail: "",
   tenantName: "",
   tenantEmail: "",
+  landlord_home_town_address: "",
+  tenant_home_town_address: "",
 
   // Step 2
   rentAmount: "",
@@ -109,6 +126,7 @@ export const INITIAL_VALUES: FormValues = {
   renewalOptionsCount: "",
   renewalYears: "",
   startDate: "",
+  rentstartDate:"",
 
   // compat (unused by UI)
   PrepaidRent: undefined,
@@ -119,9 +137,10 @@ export const INITIAL_VALUES: FormValues = {
   hasExtraSpace: false,
   patio: "",
   intendedUse: "",
-  exclusiveUse: "",
+  exclusiveUse: false,
   propertyType: "",
   parkingSpaces: "",
+  deliveryCondition: "", // required in validation
   utilities: {
     electricity: false,
     waterSewer: false,
@@ -130,6 +149,16 @@ export const INITIAL_VALUES: FormValues = {
     hvac: false,
     securitySystem: false,
     other: false,
+  },
+  maintenance: {
+    structural: { landlord: false, tenant: false },
+    nonStructural: { landlord: false, tenant: false },
+    hvac: { landlord: false, tenant: false },
+    plumbing: { landlord: false, tenant: false },
+    electrical: { landlord: false, tenant: false },
+    commonAreas: { landlord: false, tenant: false },
+    utilities: { landlord: false, tenant: false },
+    specialEquipment: { landlord: false, tenant: false },
   },
 
   // Step 4
@@ -156,8 +185,7 @@ export const INITIAL_VALUES: FormValues = {
   terms: false,
 };
 
-/* -------------------- DTO SHAPE (aligned to backend) -------------------- */
-// src/constants/formData.ts (or wherever LoiDTO lives)
+
 export type LoiDTO = {
   title?: string;
   loiId: string;
@@ -170,6 +198,10 @@ export type LoiDTO = {
     landlord_email?: string;
     tenant_name?: string;
     tenant_email?: string;
+
+    // NEW: addresses
+    landlord_home_town_address?: string;
+    tenant_home_town_address?: string;
   };
 
   leaseTerms?: {
@@ -177,44 +209,58 @@ export type LoiDTO = {
     securityDeposit?: string;
     leaseDuration?: string;   // months
     startDate?: string;       // ISO string
+    rentstartDate?: string;
     prepaidRent?: string;
     leaseType?: string;
 
-    // legacy/alt spellings coming from backend in some payloads
-    RentEscalation?: string;  // alt for rent escalation cadence
-    PrepaidRent?: string;     // alt for prepaidRent
-    LeaseType?: string;       // alt for leaseType
+    // legacy/alt spellings
+    RentEscalation?: string;
+    PrepaidRent?: string;
+    LeaseType?: string;
 
-    // fields you actually use in EDIT_INITIAL_VALUES:
+    // UI fields
     rentEscalationPercent?: string;
     includeRenewalOption?: boolean;
-    renewalYears?: string;         // keep as string if you store text
-    renewalOptionsCount?: string;  // keep as string if you store text
-    // optional legacy misspelling used in fallbacks:
-    rentEsclation?: string;
+    renewalYears?: string;
+    renewalOptionsCount?: string;
+    rentEsclation?: string; // legacy misspelling
   };
 
   propertyDetails?: {
     propertySize?: string;
     patio?: string;
     intendedUse?: string;
-    exclusiveUse?: string;
+    exclusiveUse?: boolean;   // now boolean in UI
     propertyType?: string;
     amenities?: string;       // Parking spaces (e.g., "8–10")
     utilities?: string[];     // e.g., ["Electricity","HVAC"]
     hasExtraSpace?: boolean;
+
+    // NEW:
+    deliveryCondition?: string; // "as_is" | "shell" | "vanilla_shell" | "turnkey" | "white_box"
+
+    // NEW: maintenance responsibilities
+    maintenance?: {
+      structural?: { landlord?: boolean; tenant?: boolean };
+      nonStructural?: { landlord?: boolean; tenant?: boolean };
+      hvac?: { landlord?: boolean; tenant?: boolean };
+      plumbing?: { landlord?: boolean; tenant?: boolean };
+      electrical?: { landlord?: boolean; tenant?: boolean };
+      commonAreas?: { landlord?: boolean; tenant?: boolean };
+      utilities?: { landlord?: boolean; tenant?: boolean };
+      specialEquipment?: { landlord?: boolean; tenant?: boolean };
+    };
   };
 
   additionalDetails?: {
-    tenantImprovement?: string;   // free text or "$/sf"
+    tenantImprovement?: string;
     renewalOption?: boolean;
     specialConditions?: string;
     contingencies?: string[];
     rightOfFirstRefusal?: boolean;
     leaseToPurchase?: boolean;
 
-    // add what's used in your code
-    Miscellaneous_items?: string[];  // e.g. ["Include renewal option in LOI", ...]
+    Miscellaneous_items?: string[];
     Miscellaneous_details?: {
       rightOfFirstRefusalDetails?: string;
       leaseToPurchaseDetails?: string;
@@ -237,6 +283,42 @@ const normalizeParkingSpaces = (amenities?: unknown): string => {
   return String(amenities).trim();
 };
 
+type MaintenanceRowDTO = { landlord?: boolean; tenant?: boolean };
+
+type MaintenanceDTO = Partial<Record<MaintKey, MaintenanceRowDTO>>;
+
+/* Maintenance mappers */
+const EMPTY_MAINT = {
+  structural: { landlord: false, tenant: false },
+  nonStructural: { landlord: false, tenant: false },
+  hvac: { landlord: false, tenant: false },
+  plumbing: { landlord: false, tenant: false },
+  electrical: { landlord: false, tenant: false },
+  commonAreas: { landlord: false, tenant: false },
+  utilities: { landlord: false, tenant: false },
+  specialEquipment: { landlord: false, tenant: false },
+} as const;
+
+type MaintKey = keyof typeof EMPTY_MAINT;
+const mapMaintenanceFromDTO = (m?: MaintenanceDTO): FormValues["maintenance"] => {
+  const src: MaintenanceDTO = m ?? {};
+
+  const result = (Object.keys(EMPTY_MAINT) as MaintKey[]).reduce(
+    (acc, k) => {
+      const v = src[k] ?? {};
+      acc[k] = {
+        landlord: Boolean(v.landlord),
+        tenant: Boolean(v.tenant),
+      };
+      return acc;
+    },
+    {} as Record<MaintKey, { landlord: boolean; tenant: boolean }>
+  );
+
+  return result;
+};
+
+
 // Extract first numeric token from a string (e.g. "$12.50/sf" -> "12.50")
 const extractAmount = (s?: string): string => {
   const m = String(s ?? "").match(/[\d,.]+/);
@@ -244,7 +326,6 @@ const extractAmount = (s?: string): string => {
 };
 
 export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
-  // default each section with its exact type (no any)
   const lt: NonNullable<LoiDTO["leaseTerms"]> = loi.leaseTerms ?? {};
   const pd: NonNullable<LoiDTO["propertyDetails"]> = loi.propertyDetails ?? {};
   const ad: NonNullable<LoiDTO["additionalDetails"]> = loi.additionalDetails ?? {};
@@ -264,32 +345,35 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     tenantName: loi.partyInfo?.tenant_name ?? "",
     tenantEmail: loi.partyInfo?.tenant_email ?? "",
 
+    // NEW addresses
+    landlord_home_town_address: loi.partyInfo?.landlord_home_town_address ?? "",
+    tenant_home_town_address: loi.partyInfo?.tenant_home_town_address ?? "",
+
     // Step 2
     rentAmount: lt.monthlyRent ?? "",
     prepaidRent: lt.prepaidRent ?? lt.PrepaidRent ?? "",
     securityDeposit: lt.securityDeposit ?? "",
     leaseType: lt.leaseType ?? lt.LeaseType ?? "",
     leaseDuration: lt.leaseDuration ?? "",
-    // prefer canonical, then legacy misspelling
     RentEscalation: lt.RentEscalation ?? lt.rentEsclation ?? "",
     rentEscalationPercent: lt.rentEscalationPercent ?? "",
-
-    // renewal (form keeps these at the ROOT)
-    includeRenewalOption:
-      (lt.includeRenewalOption ?? hasMisc("Include renewal option in LOI")) || false,
+    includeRenewalOption: (lt.includeRenewalOption ?? hasMisc("Include renewal option in LOI")) || false,
     renewalOptionsCount: lt.renewalOptionsCount ?? "",
     renewalYears: lt.renewalYears ?? "",
     startDate: (lt.startDate ?? "").split("T")[0] || "",
+    rentstartDate:(lt.rentstartDate ?? "").split("T")[0] || "",
 
     // Step 3
     propertySize: pd.propertySize ?? "",
     hasExtraSpace: !!pd.hasExtraSpace,
     patio: pd.patio ?? "",
     intendedUse: pd.intendedUse ?? "",
-    exclusiveUse: pd.exclusiveUse ?? "",
+    exclusiveUse: !!pd.exclusiveUse,
     propertyType: pd.propertyType ?? "",
-    parkingSpaces: normalizeParkingSpaces(pd.amenities),  // (amenities?: string) => string
-    utilities: mapUtilitiesToBoolean(pd.utilities),       // (utilities?: string[]) => Record<string, boolean>
+    parkingSpaces: normalizeParkingSpaces(pd.amenities),
+    deliveryCondition: pd.deliveryCondition ?? "",
+    utilities: mapUtilitiesToBoolean(pd.utilities),
+    maintenance: mapMaintenanceFromDTO(pd.maintenance),
 
     // Step 4 — derive from Miscellaneous_items
     renewalOption: hasMisc("Include renewal option in LOI"),
@@ -300,11 +384,10 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     leaseToPurchaseDetails: "",
 
     improvementAllowanceEnabled: !!ad.tenantImprovement,
-    improvementAllowanceAmount: extractAmount(ad.tenantImprovement), // (s?: string) => string
+    improvementAllowanceAmount: extractAmount(ad.tenantImprovement),
     improvementAllowance: ad.tenantImprovement ?? "",
     specialConditions: ad.specialConditions ?? "",
 
-    // Contingencies booleans from array
     financingApproval: !!ad.contingencies?.includes("Financing Approval"),
     environmentalAssessment: !!ad.contingencies?.includes("Environmental Assessment"),
     zoningCompliance: !!ad.contingencies?.includes("Zoning Compliance"),
@@ -403,7 +486,7 @@ export const VALIDATION_SCHEMAS = {
       otherwise: (s) => s.strip(),
     }),
     intendedUse: Yup.string().required("Intended use is required"),
-    exclusiveUse: Yup.string().required("Exclusive use is required"),
+    exclusiveUse: Yup.boolean().oneOf([true], "Exclusive Use is required"),
     propertyType: Yup.string().required("Property type is required"),
     parkingSpaces: Yup.string().required("Parking Spaces is required"),
   }),
