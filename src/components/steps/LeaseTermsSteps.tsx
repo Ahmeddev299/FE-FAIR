@@ -239,7 +239,7 @@ export const LeaseTermsStep: React.FC = () => {
 
           {/* Preferred Start Date */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Commencement Start Date</label>
+            <label className="mb-2 block text-sm font-medium">Commencement  Date</label>
             <Field
               name="startDate"
               type="date"

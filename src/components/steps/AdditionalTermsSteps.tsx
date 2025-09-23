@@ -108,10 +108,7 @@ export const AdditionalTermsStep: React.FC = () => {
                   </span>
                   <Field
                     name="improvementAllowanceAmount"
-                    type="number"
-                    inputMode="decimal"
-                    min="0"
-                    step="0.01"
+                    type="number"      
                     placeholder="Amount"
                     className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8 pr-36
                                "

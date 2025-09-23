@@ -29,7 +29,7 @@ const NAV = [
   { name: "Dashboard", href: "/dashboard/pages/mainpage" },
   { name: "Start LOI", href: "/dashboard/pages/start" },
   { name: "Upload Lease", href: "/dashboard/pages/uploadLeaseform" },
-  { name: "Clause Management", href: "/dashboard/pages/clauseManagement" },
+  { name: "Leases", href: "/dashboard/pages/clauseManagement" },
   { name: "E-Signature", href: "/dashboard/pages/tenanteSignature" },
   { name: "Terminate Lease", href: "/dashboard/pages/terminateLease" },
   { name: "Billing & Plan", href: "/dashboard/pages/billings" },
@@ -69,7 +69,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         return FileText;
       case "Upload Lease":
         return UploadIcon;
-      case "Clause Management":
+      case "Leases":
         return FolderOpen;
       case "E-Signature":
         return Signature;

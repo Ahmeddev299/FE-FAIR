@@ -109,25 +109,69 @@ const yesNo = (v?: boolean | string) => {
 };
 
 // ---------- shape mapper ----------
-const shapeLoi = (raw: any): ShapedLoi | null => {
-  if (!raw) return null;
-  const r = raw as any;
+type UnknownRecord = Record<string, unknown>;
 
-  const data = r.data ?? r; // allow passing the whole API envelope or just data
+type LoiLike = {
+  id?: unknown;
+  _id?: unknown;
+  title?: unknown;
+  propertyAddress?: unknown;
+  property_address?: unknown;
+  submit_status?: unknown;
+  status?: unknown;
+  created_at?: unknown;
+  createdAt?: unknown;
+  updated_at?: unknown;
+  updatedAt?: unknown;
+  user_name?: unknown;
+  addFileNumber?: unknown;
+  partyInfo?: unknown;
+  leaseTerms?: unknown;
+  additionalDetails?: unknown;
+  propertyDetails?: unknown;
+};
+
+const toStringOr = (v: unknown, fallback = ""): string =>
+  typeof v === "string" ? v : typeof v === "number" ? String(v) : fallback;
+
+const toNullableString = (v: unknown): string | null =>
+  typeof v === "string" ? v : null;
+
+const toNumOrStr = (v: unknown): number | string | undefined =>
+  typeof v === "number" || typeof v === "string" ? v : undefined;
+
+const toObj = <T extends object>(v: unknown): T | undefined =>
+  v !== null && typeof v === "object" ? (v as T) : undefined;
+
+const shapeLoi = (raw: unknown): ShapedLoi | null => {
+  if (!raw) return null;
+
+  // Accept either an API envelope (e.g., { data: {...} }) or the object itself.
+  const maybeEnvelope = raw as UnknownRecord;
+  const base: UnknownRecord =
+    typeof maybeEnvelope?.data === "object" && maybeEnvelope.data !== null
+      ? (maybeEnvelope.data as UnknownRecord)
+      : maybeEnvelope;
+
+  const data = base as LoiLike;
+
+  const idRaw = data.id ?? data._id ?? "";
+  const createdRaw = data.created_at ?? data.createdAt ?? null;
+  const updatedRaw = data.updated_at ?? data.updatedAt ?? null;
 
   return {
-    id: String(data.id ?? data._id ?? "").trim(),
-    title: data.title ?? "",
-    address: data.propertyAddress ?? data.property_address ?? "",
-    status: data.submit_status ?? data.status ?? "",
-    created: data.created_at ?? data.createdAt ?? null,
-    updated: data.updated_at ?? data.updatedAt ?? null,
-    userName: data.user_name ?? "",
-    addFileNumber: data.addFileNumber,
-    party: data.partyInfo ?? {},
-    leaseTerms: data.leaseTerms,
-    additionalDetails: data.additionalDetails,
-    propertyDetails: data.propertyDetails,
+    id: toStringOr(idRaw).trim(),
+    title: toStringOr(data.title),
+    address: toStringOr(data.propertyAddress ?? data.property_address),
+    status: toStringOr(data.submit_status ?? data.status),
+    created: createdRaw === null ? null : toNullableString(createdRaw),
+    updated: updatedRaw === null ? null : toNullableString(updatedRaw),
+    userName: toStringOr(data.user_name),
+    addFileNumber: toNumOrStr(data.addFileNumber),
+    party: toObj<Party>(data.partyInfo) ?? {},
+    leaseTerms: toObj<LeaseTerms>(data.leaseTerms),
+    additionalDetails: toObj<AdditionalDetails>(data.additionalDetails),
+    propertyDetails: toObj<PropertyDetails>(data.propertyDetails),
   };
 };
 

@@ -21,14 +21,15 @@ export default function LetterOfIntentDashboard() {
 
   // UI state
   const [showUpload, setShowUpload] = useState<boolean>(false);
+  console.log(showUpload)
   const [fileUpload, setUploadedFile] = useState<FileData | null>(null);
 
   // Drag & drop + progress UI
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  console.log((progress))
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const isPDF = (fileUpload?.type || "").toLowerCase().includes("pdf");
 
   // Fetch drafts
   useEffect(() => {
@@ -54,13 +55,25 @@ export default function LetterOfIntentDashboard() {
     router.push(`/dashboard/pages/loi/view/${id}`);
   };
 
+  // shared helper
+function isObjectRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
   // Type guards for thunk result
   function hasDocId(v: unknown): v is { doc_id: string } {
-    return typeof v === "object" && v !== null && "doc_id" in v && typeof (v as any).doc_id === "string";
-  }
-  function hasData(v: unknown): v is { data: unknown } {
-    return typeof v === "object" && v !== null && "data" in v;
-  }
+  if (!isObjectRecord(v)) return false;
+  const value = v["doc_id"]; // value: unknown
+  return typeof value === "string";
+}
+
+  function hasData<T = unknown>(v: unknown): v is { data: T } {
+  if (!isObjectRecord(v)) return false;
+  // Either existence check...
+  if (!("data" in v)) return false;
+  // ...or, if you need stricter typing, narrow further:
+  // const data = v["data"] as unknown as T;
+  return true;
+}
 
   // Upload handlers
   const handleFileUpload = (file: File): void => {
@@ -96,7 +109,7 @@ export default function LetterOfIntentDashboard() {
       } else if (hasDocId(result)) {
         id = result.doc_id;
       } else if (hasData(result)) {
-        const d = (result as any).data;
+        const d = (result).data;
         if (typeof d === "string") id = d;
         else if (hasDocId(d)) id = d.doc_id;
       }
