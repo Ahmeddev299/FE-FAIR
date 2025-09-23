@@ -214,15 +214,14 @@ export const PropertyDetailsStep: React.FC = () => {
 
           {/* Exclusive Use */}
           <div>
-            <label className="flex items-center gap-2">
-              <Field
-                type="checkbox"
-                name="exclusiveUse"
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">Exclusive Use</span>
-            </label>
-            <ErrorMessage name="exclusiveUse" component="div" className="mt-1 text-sm text-red-500" />
+            <label className="block text-sm font-medium mb-2">Exclusive Use *</label>
+            <Field
+              name="exclusiveUse"
+              type="text"
+              placeholder="e.g., Corporate headquarters, Retail store"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <ErrorMessage name="exclusiveUse" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
           {/* Property Type */}

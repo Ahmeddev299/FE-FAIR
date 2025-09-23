@@ -119,7 +119,7 @@ export type LOIApiPayload = {
   propertyDetails: {
     propertySize: string;
     intendedUse: string;
-    exclusiveUse: boolean;     // FIX: boolean, not string
+    exclusiveUse: string;     // FIX: boolean, not string
     propertyType: string;
     hasExtraSpace: boolean;
     patio?: string;

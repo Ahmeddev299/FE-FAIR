@@ -132,7 +132,7 @@ export const transformToApiPayload = (
     propertyDetails: {
       propertySize: values.propertySize || "",
       intendedUse: values.intendedUse || "",
-      exclusiveUse: !!values.exclusiveUse, // FIX: boolean
+      exclusiveUse: values.exclusiveUse, // FIX: boolean
       propertyType: values.propertyType || "",
       hasExtraSpace: !!values.hasExtraSpace,
       ...(nonEmpty(values.patio) ? { patio: values.patio } : {}),

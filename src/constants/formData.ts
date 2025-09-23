@@ -51,7 +51,7 @@ export interface FormValues {
   hasExtraSpace: boolean;             // show Patio when true
   patio: string;                      // text, required only if hasExtraSpace
   intendedUse: string;
-  exclusiveUse: boolean;
+  exclusiveUse: string;
   propertyType: string;
   parkingSpaces: string;              // e.g. "8–10"
   utilities: {
@@ -137,7 +137,7 @@ export const INITIAL_VALUES: FormValues = {
   hasExtraSpace: false,
   patio: "",
   intendedUse: "",
-  exclusiveUse: false,
+  exclusiveUse: "",
   propertyType: "",
   parkingSpaces: "",
   deliveryCondition: "", // required in validation
@@ -230,7 +230,7 @@ export type LoiDTO = {
     propertySize?: string;
     patio?: string;
     intendedUse?: string;
-    exclusiveUse?: boolean;   // now boolean in UI
+    exclusiveUse?: string;   // now boolean in UI
     propertyType?: string;
     amenities?: string;       // Parking spaces (e.g., "8–10")
     utilities?: string[];     // e.g., ["Electricity","HVAC"]
@@ -368,7 +368,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     hasExtraSpace: !!pd.hasExtraSpace,
     patio: pd.patio ?? "",
     intendedUse: pd.intendedUse ?? "",
-    exclusiveUse: !!pd.exclusiveUse,
+    exclusiveUse: pd.exclusiveUse ?? "",
     propertyType: pd.propertyType ?? "",
     parkingSpaces: normalizeParkingSpaces(pd.amenities),
     deliveryCondition: pd.deliveryCondition ?? "",
@@ -486,7 +486,7 @@ export const VALIDATION_SCHEMAS = {
       otherwise: (s) => s.strip(),
     }),
     intendedUse: Yup.string().required("Intended use is required"),
-    exclusiveUse: Yup.boolean().oneOf([true], "Exclusive Use is required"),
+    exclusiveUse: Yup.string().required("Exclusive use is required"),
     propertyType: Yup.string().required("Property type is required"),
     parkingSpaces: Yup.string().required("Parking Spaces is required"),
   }),
