@@ -763,19 +763,6 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
                           spacing: { after: 80 },
                         }),
 
-                        new Paragraph({
-                          children: [
-                            new TextRun({ text: "Its: ", size: 22, font: "Times New Roman" }),
-                            new TextRun({
-                              text: "Partner",
-                              size: 22,
-                              font: "Times New Roman",
-                              underline: { type: UnderlineType.SINGLE },
-                            }),
-                          ],
-                          spacing: { after: 80 },
-                        }),
-
                         ...(headerData.landlord_email
                           ? [
                             new Paragraph({
