@@ -40,7 +40,6 @@ export interface FormValues {
     specialEquipment: { landlord: boolean, tenant: boolean },
   },
 
-
   // (kept for backend compatibility if other code references them)
   RentEscalation?: string;
   PrepaidRent?: string;
@@ -73,6 +72,7 @@ export interface FormValues {
 
   leaseToPurchase: boolean;
   leaseToPurchaseDetails: string;
+  leaseToPurchaseDuration: string,
 
   improvementAllowanceEnabled: boolean;  // toggle
   improvementAllowanceAmount: string;    // $/sf amount (numeric in UI)
@@ -126,7 +126,7 @@ export const INITIAL_VALUES: FormValues = {
   renewalOptionsCount: "",
   renewalYears: "",
   startDate: "",
-  rentstartDate:"",
+  rentstartDate: "",
 
   // compat (unused by UI)
   PrepaidRent: undefined,
@@ -168,6 +168,7 @@ export const INITIAL_VALUES: FormValues = {
   rightOfFirstRefusalDetails: "",
   leaseToPurchase: false,
   leaseToPurchaseDetails: "",
+  leaseToPurchaseDuration: "",
 
   improvementAllowanceEnabled: false,
   improvementAllowanceAmount: "",
@@ -259,6 +260,7 @@ export type LoiDTO = {
     contingencies?: string[];
     rightOfFirstRefusal?: boolean;
     leaseToPurchase?: boolean;
+    leaseToPurchaseDuration?: string;
 
     Miscellaneous_items?: string[];
     Miscellaneous_details?: {
@@ -361,7 +363,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     renewalOptionsCount: lt.renewalOptionsCount ?? "",
     renewalYears: lt.renewalYears ?? "",
     startDate: (lt.startDate ?? "").split("T")[0] || "",
-    rentstartDate:(lt.rentstartDate ?? "").split("T")[0] || "",
+    rentstartDate: (lt.rentstartDate ?? "").split("T")[0] || "",
 
     // Step 3
     propertySize: pd.propertySize ?? "",
@@ -382,6 +384,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     rightOfFirstRefusalDetails: "",
     leaseToPurchase: ad.leaseToPurchase ?? hasMisc("Lease to Purchase"),
     leaseToPurchaseDetails: "",
+    leaseToPurchaseDuration: ad.leaseToPurchaseDuration ?? "", // coerce undefined -> false
 
     improvementAllowanceEnabled: !!ad.tenantImprovement,
     improvementAllowanceAmount: extractAmount(ad.tenantImprovement),

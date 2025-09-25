@@ -2,8 +2,7 @@ import React, { useRef, useState } from 'react';
 import {
     Shield,
     CheckCircle,
-    User,
-    Mail,
+
     ChevronLeft,
     FileText,
     ShieldCheck,
@@ -19,16 +18,6 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layouts';
 import Image from 'next/image';
-
-// Type definitions
-interface Party {
-    name: string;
-    role: string;
-    email: string;
-    status: 'pending' | 'completed' | 'declined';
-    color: 'blue' | 'yellow' | 'green' | 'red';
-    required: boolean;
-}
 
 type SignatureTab = 'draw' | 'type';
 
@@ -120,32 +109,6 @@ const ElectronicSignatureInterface: React.FC = () => {
     const pending: number = total - signed;
     const progress: number = (signed / total) * 100;
 
-    const parties: Party[] = [
-        {
-            name: 'John Doe',
-            role: 'Tenant',
-            email: 'john.doe@company.com',
-            status: 'pending',
-            color: 'blue',
-            required: true,
-        },
-        {
-            name: 'Property Management LLC',
-            role: 'Landlord',
-            email: 'contracts@propertymanagement.com',
-            status: 'pending',
-            color: 'yellow',
-            required: false,
-        },
-        {
-            name: 'Sarah Wilson',
-            role: 'Witness',
-            email: 'sarah.wilson@legalfirm.com',
-            status: 'pending',
-            color: 'yellow',
-            required: false,
-        },
-    ];
     return (
         <DashboardLayout>
             <div className="min-h-screen">
@@ -596,7 +559,7 @@ const ElectronicSignatureInterface: React.FC = () => {
                                 <h3 className="font-medium text-gray-900">Signing Parties</h3>
                             </div>
                             <div className="p-4 space-y-4">
-                                {parties.map((person) => (
+                                {/* {parties.map((person) => (
                                     <div
                                         key={person.email}
                                         className={`border rounded-lg  p-4 ${person.required
@@ -625,7 +588,7 @@ const ElectronicSignatureInterface: React.FC = () => {
 
                                         )}
                                     </div>
-                                ))}
+                                ))} */}
                             </div>
                         </div>
 

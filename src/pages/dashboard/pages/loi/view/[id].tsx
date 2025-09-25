@@ -1,13 +1,23 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
-import { ArrowLeft, Edit3 } from "lucide-react";
+import { ArrowLeft, Edit3, Download as DownloadIcon } from "lucide-react";
 import { getLOIDetailsById } from "@/services/loi/asyncThunk";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { RootState } from "@/redux/store";
 
-// ---------- Types ----------
+// NEW: for downloading/export
+import ls from "localstorage-slim";
+import Toast from "@/components/Toast";
+import { exportLoiToDocx } from "@/utils/exportDocx";
+// If you don't have this yet, add in your service:
+// export const dashboardStatusService = { async downloadLoiById(id: string) { return api.get(`/loi/${id}/download`); } }
+import axios from "axios";
+import Config from "@/config/index";
+
+
+/* ---------------- Types (unchanged) ---------------- */
 type MaintenanceSide = { landlord?: boolean; tenant?: boolean };
 type Maintenance = {
   commonAreas?: MaintenanceSide;
@@ -32,7 +42,7 @@ type LeaseTerms = {
   includeRenewalOption?: boolean;
   prepaidRent?: number | string;
   RentEscalation?: number | null;
-  RentEscalationPercent?: number | null;
+  rentEscalationPercent?: number | null;
 };
 
 type AdditionalDetails = {
@@ -44,6 +54,7 @@ type AdditionalDetails = {
   improvementAllowanceAmount?: number;
   improvementAllowanceEnabled?: boolean;
   leaseToPurchase?: boolean;
+  leaseToPurchaseDuration? : string
 };
 
 type PropertyDetails = {
@@ -52,8 +63,8 @@ type PropertyDetails = {
   intendedUse?: string;
   hasExtraSpace?: boolean;
   patio?: string;
-  exclusiveUse?: boolean | string; // sometimes boolean, sometimes string in older data
-  amenities?: string[] | string;   // API gave "8–10" (string)
+  exclusiveUse?: boolean | string;
+  amenities?: string[] | string;
   utilities?: string[];
   maintenance?: Maintenance;
   deliveryCondition?: string;
@@ -72,9 +83,9 @@ type ShapedLoi = {
   id: string;
   title: string;
   address: string;
-  status: string;            // submit_status/status
-  created: string | null;    // ISO
-  updated: string | null;    // ISO
+  status: string;
+  created: string | null;
+  updated: string | null;
   userName: string;
   addFileNumber?: number | string;
   party: Party;
@@ -98,7 +109,7 @@ const StatusPill: React.FC<{ value?: string }> = ({ value }) => {
   return <span className={map[s] || `${base} bg-gray-100 text-gray-800`}>{value || "—"}</span>;
 };
 
-// ---------- helpers ----------
+/* ---------------- helpers (unchanged) ---------------- */
 const asArray = (v?: string[] | string): string[] =>
   Array.isArray(v) ? v : (typeof v === "string" && v.trim() ? [v.trim()] : []);
 
@@ -108,7 +119,6 @@ const yesNo = (v?: boolean | string) => {
   return "—";
 };
 
-// ---------- shape mapper ----------
 type UnknownRecord = Record<string, unknown>;
 
 type LoiLike = {
@@ -143,10 +153,9 @@ const toNumOrStr = (v: unknown): number | string | undefined =>
 const toObj = <T extends object>(v: unknown): T | undefined =>
   v !== null && typeof v === "object" ? (v as T) : undefined;
 
+/** Accepts raw object or envelope { data: {...} } and shapes for display */
 const shapeLoi = (raw: unknown): ShapedLoi | null => {
   if (!raw) return null;
-
-  // Accept either an API envelope (e.g., { data: {...} }) or the object itself.
   const maybeEnvelope = raw as UnknownRecord;
   const base: UnknownRecord =
     typeof maybeEnvelope?.data === "object" && maybeEnvelope.data !== null
@@ -175,6 +184,19 @@ const shapeLoi = (raw: unknown): ShapedLoi | null => {
   };
 };
 
+/* ---------------- NORMALIZE download response to server format ---------------- */
+// If your export function expects a specific server DTO, keep this flexible:
+export type LoiServerData = Record<string, unknown>;
+export function normalizeLoiResponse(response: unknown): LoiServerData {
+  const maybeEnvelope = response as { success?: boolean; status?: number; message?: string; data?: LoiServerData } | undefined;
+  const normalized = maybeEnvelope?.data ?? (response as LoiServerData);
+  if (!normalized || typeof normalized !== "object") {
+    throw new Error("Malformed LOI data from server");
+  }
+  return normalized;
+}
+
+/* ---------------- Component ---------------- */
 export default function SingleLoiPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -188,39 +210,143 @@ export default function SingleLoiPage() {
     if (id) dispatch(getLOIDetailsById(String(id)));
   }, [dispatch, queryId]);
 
-  const m = loi?.propertyDetails?.maintenance;
+  // Download state
+  const [isDownloading, setIsDownloading] = useState(false);
+  const downloadingRef = useRef(false);
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
+  // tiny util to prevent forever-hangs
+  // export const withTimeout = <T,>(p: Promise<T>, ms = 30000) =>
+  //   Promise.race([
+  //     p,
+  //     new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Download timed out")), ms)),
+  //   ]);
+
+  const handleDownload = async () => {
+    // guard against double click / HMR re-entryp
+    if (downloadingRef.current) return;
+    downloadingRef.current = true;
+    setIsDownloading(true);
+
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication tokePn not found");
+
+      // fetch server-side LOI payload
+
+      const response = await axios.post(
+        `${Config.API_ENDPOINT}/dashboard/download_tempalte_data`,
+        currentLOI,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const maybe = response as { success?: boolean; message?: string } | undefined;
+      if (maybe?.success === false) throw new Error(maybe.message || "Failed to fetch LOI");
+      if (maybe?.message) Toast.fire({ icon: "success", title: maybe.message });
+
+      const data: LoiServerData = normalizeLoiResponse(response);
+
+      // export and wait until file is created
+      await exportLoiToDocx(data);
+
+      // show success only if still mounted
+      if (isMountedRef.current) {
+        Toast.fire({ icon: "success", title: "LOI exported successfully" });
+      }
+    } catch (err: unknown) {
+      const msg =
+        typeof err === "string"
+          ? err
+          : (err as { message?: string })?.message || "Could not reset password";
+
+
+      Toast.fire({ icon: "warning", title: { msg } });
+      router.push("/auth/verify-otp");
+
+    } finally {
+      // IMPORTANT: clear the ref FIRST, then the state
+      downloadingRef.current = false;
+      // Always turn loader off; don't rely on a possibly-stale guard here
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <DashboardLayout>
-      {isLoading && <LoadingOverlay visible />}
+      {(isLoading || isDownloading) && <LoadingOverlay visible />}
 
       <div className="p-4 sm:p-6">
         <div className="mb-4 flex items-center gap-2">
-          <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+          >
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
         </div>
 
         {!isLoading && !loiError && loi && (
-          <div className="bg-white rounded-xl p-6 space-y-6">
+          <div className={`bg-white rounded-xl p-6 space-y-6 ${isDownloading ? "opacity-90 pointer-events-none" : ""}`}>
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
-                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{loi.title || "Untitled LOI"}</h1>
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+                  {loi.title || "Untitled LOI"}
+                </h1>
                 <div className="mt-1 text-sm text-gray-500">{loi.address || "—"}</div>
                 <div className="mt-1 text-xs text-gray-500">File #: {loi.addFileNumber ?? "—"}</div>
-                {loi.userName && <div className="mt-1 text-xs text-gray-400">Owner: {loi.userName}</div>}
+                {loi.userName && (
+                  <div className="mt-1 text-xs text-gray-400">Owner: {loi.userName}</div>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 <StatusPill value={loi.status} />
+
+                {/* Edit */}
                 <button
                   onClick={() => router.push(`/dashboard/pages/loi/edit/${loi.id}`)}
-                  className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
                   title="Edit LOI"
+                  aria-label="Edit LOI"
+                  className="
+      inline-flex h-9 items-center gap-2 rounded-xl px-3
+      border border-gray-300 bg-white text-gray-700
+      shadow-sm hover:bg-gray-50 active:bg-gray-100
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50
+      transition-colors
+    "
                 >
-                  <Edit3 className="w-4 h-4" /> Edit
+                  <Edit3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Edit</span>
+                </button>
+
+                {/* Download */}
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  title="Download LOI"
+                  aria-label="Download LOI"
+                  className="
+      inline-flex h-9 items-center gap-2 rounded-xl px-3
+      bg-emerald-600 text-white shadow-sm
+      hover:bg-emerald-700 active:bg-emerald-800
+      disabled:bg-emerald-600/60 disabled:cursor-not-allowed
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60
+      transition-colors
+    "
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {isDownloading ? "Downloading…" : "Download"}
+                  </span>
                 </button>
               </div>
+
             </div>
 
             {/* Meta grid */}
@@ -239,11 +365,15 @@ export default function SingleLoiPage() {
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Created</div>
-                <div className="text-sm text-gray-900">{loi.created ? new Date(loi.created).toLocaleString() : "—"}</div>
+                <div className="text-sm text-gray-900">
+                  {loi.created ? new Date(loi.created).toLocaleString() : "—"}
+                </div>
               </div>
               <div className="p-3 rounded-lg bg-gray-50">
                 <div className="text-xs text-gray-500">Last Updated</div>
-                <div className="text-sm text-gray-900">{loi.updated ? new Date(loi.updated).toLocaleString() : "—"}</div>
+                <div className="text-sm text-gray-900">
+                  {loi.updated ? new Date(loi.updated).toLocaleString() : "—"}
+                </div>
               </div>
             </div>
 
@@ -252,17 +382,51 @@ export default function SingleLoiPage() {
               <div>
                 <div className="text-sm font-medium text-gray-900 mb-2">Lease Terms</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Lease Type</div><div>{loi.leaseTerms.leaseType || "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Duration</div><div>{loi.leaseTerms.leaseDuration ? `${loi.leaseTerms.leaseDuration} months` : "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Start Date</div><div>{loi.leaseTerms.startDate ? new Date(loi.leaseTerms.startDate).toLocaleDateString() : "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Rent Start Date</div><div>{loi.leaseTerms.rentstartDate ? new Date(loi.leaseTerms.rentstartDate).toLocaleDateString() : "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Monthly Rent</div><div>{loi.leaseTerms.monthlyRent !== undefined ? `$${Number(loi.leaseTerms.monthlyRent)}` : "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Security Deposit</div><div>{loi.leaseTerms.securityDeposit !== undefined ? `$${Number(loi.leaseTerms.securityDeposit)}` : "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Include Renewal Option</div><div>{loi.leaseTerms.includeRenewalOption ? "Yes" : "No"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Renewal</div><div>{(loi.leaseTerms.renewalOptionsCount ?? "—")} Options • {(loi.leaseTerms.renewalYears ?? "—")} Years</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Prepaid Rent</div><div>{loi.leaseTerms.prepaidRent !== undefined ? `$${loi.leaseTerms.prepaidRent}` : "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Rent Escalation (Months)</div><div>{loi.leaseTerms.RentEscalation ?? "—"}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Rent Escalation %</div><div>{loi.leaseTerms.RentEscalationPercent ?? "—"}</div></div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Lease Type</div>
+                    <div>{loi.leaseTerms.leaseType || "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Duration</div>
+                    <div>{loi.leaseTerms.leaseDuration ? `${loi.leaseTerms.leaseDuration} months` : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Start Date</div>
+                    <div>{loi.leaseTerms.startDate ? new Date(loi.leaseTerms.startDate).toLocaleDateString() : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Rent Start Date</div>
+                    <div>{loi.leaseTerms.rentstartDate ? new Date(loi.leaseTerms.rentstartDate).toLocaleDateString() : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Monthly Rent</div>
+                    <div>{loi.leaseTerms.monthlyRent !== undefined ? `$${Number(loi.leaseTerms.monthlyRent)}` : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Security Deposit</div>
+                    <div>{loi.leaseTerms.securityDeposit !== undefined ? `$${Number(loi.leaseTerms.securityDeposit)}` : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Include Renewal Option</div>
+                    <div>{loi.leaseTerms.includeRenewalOption ? "Yes" : "No"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Renewal</div>
+                    <div>{(loi.leaseTerms.renewalOptionsCount ?? "—")} Options • {(loi.leaseTerms.renewalYears ?? "—")} Years</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Prepaid Rent</div>
+                    <div>{loi.leaseTerms.prepaidRent !== undefined ? `$${loi.leaseTerms.prepaidRent}` : "—"}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Rent Escalation (Months)</div>
+                    <div>{loi.leaseTerms.RentEscalation ?? "—"}</div>
+                  </div>
+
+                   <div className="bg-gray-50 rounded p-3">
+                    <div className="text-xs text-gray-500">Rent Escalation Percentage</div>
+                    <div>{loi.leaseTerms.rentEscalationPercent ?? "—"}</div>
+                  </div>
                 </div>
               </div>
             )}
@@ -284,12 +448,11 @@ export default function SingleLoiPage() {
                 </div>
 
                 {/* Maintenance Matrix */}
-                {m && (
+                {loi.propertyDetails.maintenance && (
                   <div className="mt-3">
                     <div className="text-sm font-medium text-gray-900 mb-2">Maintenance Responsibilities</div>
                     <div className="overflow-x-auto w-full">
                       <table className="w-full text-xs table-fixed">
-                        {/* Optional: control column widths */}
                         <colgroup>
                           <col className="w-1/2" />
                           <col className="w-1/4" />
@@ -303,20 +466,19 @@ export default function SingleLoiPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {Object.entries(m).map(([k, v]) => (
+                          {Object.entries(loi.propertyDetails.maintenance).map(([k, v]) => (
                             <tr key={k}>
                               <td className="p-2 capitalize">
                                 {k.replace(/([A-Z])/g, " $1").replace(/^hvac$/i, "HVAC")}
                               </td>
-                              <td className="p-2 text-center">{v?.landlord ? "✔" : "—"}</td>
-                              <td className="p-2 text-center">{v?.tenant ? "✔" : "—"}</td>
+                              <td className="p-2 text-center">{(v as MaintenanceSide)?.landlord ? "✔" : "—"}</td>
+                              <td className="p-2 text-center">{(v as MaintenanceSide)?.tenant ? "✔" : "—"}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
-
                 )}
               </div>
             )}
@@ -331,6 +493,9 @@ export default function SingleLoiPage() {
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Improvement Allowance Enabled</div><div>{yesNo(loi.additionalDetails.improvementAllowanceEnabled)}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Improvement Allowance Amount</div><div>{loi.additionalDetails.improvementAllowanceAmount !== undefined ? `$${loi.additionalDetails.improvementAllowanceAmount}` : "—"}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Lease to Purchase</div><div>{yesNo(loi.additionalDetails.leaseToPurchase)}</div></div>
+                  
+                                    <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Lease to Purchase Duration</div><div>{loi.additionalDetails.leaseToPurchaseDuration}</div></div>
+
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Special Conditions</div><div>{loi.additionalDetails.specialConditions || "—"}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Miscellaneous Items</div><div>{loi.additionalDetails.Miscellaneous_items?.join(", ") || "—"}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Contingencies</div><div>{loi.additionalDetails.contingencies || "—"}</div></div>

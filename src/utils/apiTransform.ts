@@ -148,6 +148,8 @@ export const transformToApiPayload = (
     additionalDetails: {
       Miscellaneous_items: miscItems,
       tenantImprovement,
+      leaseToPurchaseDuration: values.leaseToPurchaseDuration || "", // coerce undefined -> false
+
       improvementAllowanceEnabled: !!values.improvementAllowanceEnabled,
       improvementAllowanceAmount: values.improvementAllowanceAmount || "",
       specialConditions: values.specialConditions || "",

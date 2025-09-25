@@ -147,7 +147,9 @@ export type LOIApiPayload = {
     specialConditions: string;
     contingencies: string[];
     rightOfFirstRefusal?: boolean;
+
     leaseToPurchase?: boolean;
+    leaseToPurchaseDuration?: string
   };
 
   submit_status: "Submitted" | "Draft";

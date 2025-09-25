@@ -13,7 +13,7 @@ interface LoadingOverlayProps {
 }
 
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
-  visible = false,
+  visible,
   fullscreen = false,
   className = "",
 }) => {
