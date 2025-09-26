@@ -39,7 +39,7 @@ const DELIVERY_CONDITIONS = [
   { value: "as_is", label: "As-Is, Where-Is" },
   { value: "Shell Condition (basic structure, no interior buildout)", label: "Shell Condition (basic structure, no interior buildout)" },
   { value: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)", label: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)" },
-  { value: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
+  { value: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
   { value: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed) ", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
 ];
 
