@@ -166,7 +166,7 @@ export const LeaseTermsStep: React.FC = () => {
                 className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-10
                            "
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">% *</span>
             </div>
             <ErrorMessage
               name="rentEscalationPercent"

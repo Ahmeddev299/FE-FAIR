@@ -424,60 +424,74 @@ export const VALIDATION_SCHEMAS = {
 
   2: Yup.object({
     rentAmount: Yup.number()
-      .typeError("Enter a valid amount")
-      .min(0, "Must be ≥ 0")
-      .required("Monthly Rent is required"),
-    prepaidRent: Yup.number()
-      .typeError("Enter a valid amount")
-      .min(0, "Must be ≥ 0")
-      .nullable(),
-    securityDeposit: Yup.number()
-      .typeError("Enter a valid amount")
-      .min(0, "Must be ≥ 0")
-      .required("Security Deposit is required"),
-    leaseType: Yup.string().required("Lease Type is required"),
+    .typeError("Enter a valid amount")
+    .min(0, "Must be ≥ 0")
+    .required("Monthly Rent is required"),
 
-    leaseDuration: Yup.number()
-      .typeError("Enter duration in months")
-      .integer("Use whole months")
-      .min(1, "Minimum 1 month")
-      .max(600, "Keep under 600 months")
-      .required("Lease Duration is required"),
+  prepaidRent: Yup.number()
+    .typeError("Enter a valid amount")
+    .min(0, "Must be ≥ 0")
+    .nullable(),
 
-    rentEsclation: Yup.number()
-      .typeError("Enter months between increases")
-      .integer("Use whole months")
-      .min(1, "Minimum 1 month")
-      .max(600, "Keep under 600 months")
-      .nullable(),
+  securityDeposit: Yup.number()
+    .typeError("Enter a valid amount")
+    .min(0, "Must be ≥ 0")
+    .required("Security Deposit is required"),
 
-    rentEscalationPercent: Yup.number()
-      .typeError("Enter a valid percent")
-      .min(0, "Must be ≥ 0")
-      .max(100, "Must be ≤ 100")
-      .nullable(),
+  leaseType: Yup.string().required("Lease Type is required"),
 
-    includeRenewalOption: Yup.boolean(),
-    renewalOptionsCount: Yup.number()
-      .typeError("Enter a valid number")
-      .integer("Use whole numbers")
-      .min(1, "At least 1 option")
-      .when("includeRenewalOption", {
-        is: true,
-        then: (s) => s.required("Required when renewal is included"),
-        otherwise: (s) => s.strip(),
-      }),
-    renewalYears: Yup.number()
-      .typeError("Enter a valid number")
-      .integer("Use whole numbers")
-      .min(1, "At least 1 year")
-      .when("includeRenewalOption", {
-        is: true,
-        then: (s) => s.required("Required when renewal is included"),
-        otherwise: (s) => s.strip(),
-      }),
+  leaseDuration: Yup.number()
+    .typeError("Enter duration in months")
+    .integer("Use whole months")
+    .min(1, "Minimum 1 month")
+    .max(600, "Keep under 600 months")
+    .required("Lease Duration is required"),
 
-    startDate: Yup.date().required("Start Date is required"),
+  // ✅ REQUIRED: cadence in months (matches Field name="RentEscalation")
+  RentEscalation: Yup.number()
+    .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+    .typeError("Enter months between increases")
+    .integer("Use whole months")
+    .min(1, "Minimum 1 month")
+    .max(600, "Keep under 600 months")
+    .required("Rent escalation (months) is required"),
+
+  // ✅ REQUIRED: percent 0–100 (matches Field name="rentEscalationPercent")
+  rentEscalationPercent: Yup.number()
+    .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+    .typeError("Enter a valid percent")
+    .min(0, "Must be ≥ 0")
+    .max(100, "Must be ≤ 100")
+    .required("Rent escalation % is required"),
+
+  includeRenewalOption: Yup.boolean(),
+
+  renewalOptionsCount: Yup.number()
+    .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+    .typeError("Enter a valid number")
+    .integer("Use whole numbers")
+    .min(1, "At least 1 option")
+    .when("includeRenewalOption", {
+      is: true,
+      then: (s) => s.required("Required when renewal is included"),
+      otherwise: (s) => s.strip(),
+    }),
+
+  renewalYears: Yup.number()
+    .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+    .typeError("Enter a valid number")
+    .integer("Use whole numbers")
+    .min(1, "At least 1 year")
+    .when("includeRenewalOption", {
+      is: true,
+      then: (s) => s.required("Required when renewal is included"),
+      otherwise: (s) => s.strip(),
+    }),
+
+  startDate: Yup.date().required("Start Date is required"),
+
+  // If you want this optional, include it; otherwise remove it from schema
+  rentstartDate: Yup.date().nullable(),
   }),
 
   3: Yup.object({

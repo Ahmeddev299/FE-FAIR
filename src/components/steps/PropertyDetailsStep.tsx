@@ -187,7 +187,7 @@ export const PropertyDetailsStep: React.FC = () => {
           {/* Patio */}
           {values?.hasExtraSpace && (
             <div>
-              <label className="mb-2 block text-sm font-medium">Patio</label>
+              <label className="mb-2 block text-sm font-medium">Patio *</label>
               <Field
                 name="patio"
                 type="text"
