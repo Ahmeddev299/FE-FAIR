@@ -314,7 +314,7 @@ export default function SingleLoiPage() {
                   title="Edit LOI"
                   aria-label="Edit LOI"
                   className="
-      inline-flex h-9 items-center gap-2 rounded-xl px-3
+      inline-flex h-10 items-center w-[130px] gap-5 rounded-xl px-3
       border border-gray-300 bg-white text-gray-700
       shadow-sm hover:bg-gray-50 active:bg-gray-100
       focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50
@@ -322,7 +322,7 @@ export default function SingleLoiPage() {
     "
                 >
                   <Edit3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Edit</span>
+                  <span className="hidden sm:inline">Edit LOI </span>
                 </button>
 
                 {/* Download */}
@@ -332,7 +332,7 @@ export default function SingleLoiPage() {
                   title="Download LOI"
                   aria-label="Download LOI"
                   className="
-      inline-flex h-9 items-center gap-2 rounded-xl px-3
+      inline-flex h-10 items-center gap-2 w-[130px] rounded-xl px-3
       bg-emerald-600 text-white shadow-sm
       hover:bg-emerald-700 active:bg-emerald-800
       disabled:bg-emerald-600/60 disabled:cursor-not-allowed
@@ -491,7 +491,7 @@ export default function SingleLoiPage() {
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Tenant Improvement</div><div>{loi.additionalDetails.tenantImprovement || "—"}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Tenant Improvement Provided?</div><div>{loi.additionalDetails.tenantImprovement_check ? "Yes" : "No"}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Improvement Allowance Enabled</div><div>{yesNo(loi.additionalDetails.improvementAllowanceEnabled)}</div></div>
-                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Improvement Allowance Amount</div><div>{loi.additionalDetails.improvementAllowanceAmount !== undefined ? `$${loi.additionalDetails.improvementAllowanceAmount}` : "—"}</div></div>
+                  <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Improvement Allowance Amount</div><div>{loi.additionalDetails.improvementAllowanceAmount !== undefined ? `${loi.additionalDetails.improvementAllowanceAmount}` : "—"}</div></div>
                   <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Lease to Purchase</div><div>{yesNo(loi.additionalDetails.leaseToPurchase)}</div></div>
                   
                                     <div className="bg-gray-50 rounded p-3"><div className="text-xs text-gray-500">Lease to Purchase Duration</div><div>{loi.additionalDetails.leaseToPurchaseDuration}</div></div>

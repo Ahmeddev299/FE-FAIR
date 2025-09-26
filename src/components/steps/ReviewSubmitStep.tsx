@@ -69,8 +69,6 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
     setIsDownloadingLoi(true);
     console.log("[LOI] start");
 
-
-
     try {
       const token = ls.get("access_token", { decrypt: true });
       if (!token) throw new Error("Authentication token not found");

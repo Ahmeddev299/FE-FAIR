@@ -132,7 +132,6 @@ export const LOITable: React.FC<LOITableProps> = ({
     router.push(`/dashboard/pages/loi/view/${id}`);
   };
 
-  // Download selected LOI → sends the selected row as payload
   const handleDownload = async (row: Letter) => {
     if (downloadingRef.current) return;
     downloadingRef.current = true;
@@ -184,7 +183,6 @@ export const LOITable: React.FC<LOITableProps> = ({
       setDownloadingId(null);
     }
   };
-
 
   const showLoading = isLoading || lois == null;
 
@@ -305,51 +303,70 @@ export const LOITable: React.FC<LOITableProps> = ({
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-start">
-                          {/* button group */}
-                          <div className="inline-flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-                            {/* View (outline blue) */}
+                          {/* Action group */}
+                          <div
+                            role="group"
+                            aria-label="LOI actions"
+                            className="
+        inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200
+        bg-white shadow-xs 
+      "
+                          >
+                            {/* View (outline/ghost) */}
                             <button
                               onClick={() => view(row)}
                               disabled={!rowId}
-                              title={!rowId ? "Missing ID" : "View"}
+                              title={!rowId ? 'Missing ID' : 'View LOI'}
                               aria-label="View LOI"
-                              className="
-          inline-flex h-9 items-center gap-2 px-3
-          text-blue-700 hover:bg-blue-50 active:bg-blue-100
-          disabled:text-blue-400 disabled:hover:bg-transparent
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60
+                              className={`
+          inline-flex h-9 items-center gap-1.5 px-3
+          text-slate-700 hover:bg-slate-50 active:bg-slate-100
+          disabled:text-slate-400 disabled:hover:bg-transparent
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 focus-visible:ring-offset-1
           transition
-        "
+        `}
                             >
-                              <Eye className="w-4 h-4" />
-                              <span className="hidden sm:inline text-sm">View</span>
+                              <Eye className="h-4 w-4" />
+                              <span className="hidden sm:inline text-xs font-medium">View</span>
                             </button>
 
                             {/* divider */}
-                            <div className="mx-px my-1 w-px bg-blue-200" aria-hidden />
+                            <span aria-hidden className="my-1 w-px bg-slate-200" />
 
-                            {/* Download (solid blue) */}
+                            {/* Download (primary) */}
                             <button
                               onClick={() => handleDownload(row as Letter)}
                               disabled={!rowId || isRowDownloading}
-                              title={!rowId ? "Missing ID" : "Download DOCX"}
+                              title={!rowId ? 'Missing ID' : 'Download DOCX'}
                               aria-label="Download LOI"
-                              className="
-          inline-flex h-9 items-center gap-2 px-3
+                              className={`
+          inline-flex h-9 items-center gap-1.5 px-3
           bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800
           disabled:bg-blue-400 disabled:cursor-not-allowed
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-1
           transition
-        "
+        `}
                             >
-                              <FileDown className="w-4 h-4" />
-                              <span className="hidden sm:inline text-sm">
-                                {isRowDownloading ? "Downloading…" : "Download"}
-                              </span>
+                              {isRowDownloading ? (
+                                <>
+                                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
+                                  </svg>
+                                  <span className="hidden sm:inline text-xs font-medium">Downloading…</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FileDown className="h-4 w-4" />
+                                  <span className="hidden sm:inline text-xs font-medium">Download</span>
+                                </>
+                              )}
                             </button>
                           </div>
                         </div>
                       </td>
+
+
 
                     </tr>
                   );

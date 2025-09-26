@@ -8,28 +8,28 @@ interface ConfigType {
 
 
 const local: ConfigType = {
-  API_ENDPOINT: "http://192.168.60.145:5000",
+  API_ENDPOINT: "https://8b96816d51b7.ngrok-free.app",
   API_TIMEOUT: 10000,
   MAX_RETRIES: 3,
   DEBUG: true
 };
 
 const dev: ConfigType = {
-  API_ENDPOINT: "http://192.168.60.145:5000",
+  API_ENDPOINT: "https://8b96816d51b7.ngrok-free.app",
   API_TIMEOUT: 15000,
   MAX_RETRIES: 2,
   DEBUG: true,
 };
 
 const stag: ConfigType = {
-API_ENDPOINT: "http://192.168.60.145:5000", // Different from prod
+API_ENDPOINT: "https://8b96816d51b7.ngrok-free.app", // Different from prod
   API_TIMEOUT: 20000,
   MAX_RETRIES: 2,
   DEBUG: false,
 };
 
 const prod: ConfigType = {
-  API_ENDPOINT: "http://192.168.60.145:5000", // Production URL
+  API_ENDPOINT: "https://8b96816d51b7.ngrok-free.app", // Production URL
   API_TIMEOUT: 30000,
   MAX_RETRIES: 1,
   DEBUG: false,
@@ -50,7 +50,7 @@ const config: ConfigType = {
      prod),
 };
 
-// Add runtime validation
+// Add runtime validationP
 if (!config.API_ENDPOINT) {
   throw new Error('API_ENDPOINT is not configured');
 }

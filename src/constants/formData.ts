@@ -403,6 +403,9 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
   };
 };
 
+// helper: make every toggle/checkbox invalid when true
+export const mustBeOff = (msg: string) =>
+  Yup.boolean().oneOf([false], msg).default(false);
 
 /* -------------------- VALIDATION (matches UI) -------------------- */
 export const VALIDATION_SCHEMAS = {
@@ -494,48 +497,55 @@ export const VALIDATION_SCHEMAS = {
     parkingSpaces: Yup.string().required("Parking Spaces is required"),
   }),
 
+
+
   4: Yup.object({
-    // renewalOption: Yup.boolean(),
-    // renewalOptionDetails: Yup.string().when("renewalOption", {
-    //   is: true,
-    //   then: (s) => s.min(2, "Please add details").required("Details required"),
-    //   otherwise: (s) => s.strip(),
-    // }),
+     rightOfFirstRefusal: Yup.boolean().default(false),
 
-    // rightOfFirstRefusal: Yup.boolean(),
-    // rightOfFirstRefusalDetails: Yup.string().when("rightOfFirstRefusal", {
-    //   is: true,
-    //   then: (s) => s.min(2, "Please add details").required("Details required"),
-    //   otherwise: (s) => s.strip(),
-    // }),
+  leaseToPurchase: Yup.boolean().default(false),
+  improvementAllowanceEnabled: Yup.boolean().default(false),
 
-    // leaseToPurchase: Yup.boolean(),
-    // leaseToPurchaseDetails: Yup.string().when("leaseToPurchase", {
-    //   is: true,
-    //   then: (s) => s.min(2, "Please add details").required("Details required"),
-    //   otherwise: (s) => s.strip(),
-    // }),
+  // LTP duration required only when checked
+  leaseToPurchaseDuration: Yup.number()
+    .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+    .when("leaseToPurchase", {
+      is: true,
+      then: (schema) =>
+        schema
+          .typeError("Enter a valid number")
+          .required("Duration is required")
+          .moreThan(0, "Must be greater than 0"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 
-    // improvementAllowanceEnabled: Yup.boolean(),
-    // improvementAllowanceAmount: Yup.number()
-    //   .typeError("Enter a valid amount")
-    //   .min(0, "Must be ≥ 0")
-    //   .when("improvementAllowanceEnabled", {
-    //     is: true,
-    //     then: (s) => s.required("Enter allowance amount"),
-    //     otherwise: (s) => s.strip(),
-    //   }),
+  // ❌ Do NOT require the unit (you don't render it)
+  // keep a safe default and ignore it in validation
+  leaseToPurchaseDurationUnit: Yup.string()
+    .default("months")
+    .notRequired(), // <-- key change: never blocks submit
 
-    // specialConditions: Yup.string().nullable(),
-    // financingApproval: Yup.boolean(),
-    // environmentalAssessment: Yup.boolean(),
-    // zoningCompliance: Yup.boolean(),
-    // permitsLicenses: Yup.boolean(),
-    // propertyInspection: Yup.boolean(),
-    // insuranceApproval: Yup.boolean(),
+  // Improvement allowance amount required only when checked
+  improvementAllowanceAmount: Yup.number()
+    .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+    .when("improvementAllowanceEnabled", {
+      is: true,
+      then: (schema) =>
+        schema
+          .typeError("Enter a valid amount")
+          .required("Amount is required")
+          .moreThan(0, "Must be greater than 0"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+
+  // optional text
+  specialConditions: Yup.string().nullable(),
+
+  // contingencies – all optional
+  financingApproval: Yup.boolean().default(false),
+  environmentalAssessment: Yup.boolean().default(false),
+  zoningCompliance: Yup.boolean().default(false),
+  permitsLicenses: Yup.boolean().default(false),
+  propertyInspection: Yup.boolean().default(false),
+  insuranceApproval: Yup.boolean().default(false),
   }),
-  // If you want to force acceptance on Step 5, uncomment:
-  // 5: Yup.object({
-  //   terms: Yup.boolean().oneOf([true], "You must accept the terms to continue"),
-  // }),
 };

@@ -69,7 +69,6 @@ const buildMiscList = (v: FormValues): string[] => {
   const list: string[] = [];
   if (v.rightOfFirstRefusal) list.push("Right of First Refusal");
   if (v.leaseToPurchase) list.push("Lease to Purchase");
-  if (v.includeRenewalOption || v.renewalOption) list.push("Include renewal option in LOI");
   return list;
 };
 

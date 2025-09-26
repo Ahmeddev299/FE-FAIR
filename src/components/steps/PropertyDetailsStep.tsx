@@ -37,10 +37,10 @@ const PARKING_OPTIONS = ["0–2", "3–5", "6–7", "8–10", "11–15", "16–2
 
 const DELIVERY_CONDITIONS = [
   { value: "as_is", label: "As-Is, Where-Is" },
-  { value: "shell", label: "Shell Condition (basic structure, no interior buildout)" },
-  { value: "vanilla_shell", label: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)" },
-  { value: "turnkey", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
-  { value: "white_box", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
+  { value: "Shell Condition (basic structure, no interior buildout)", label: "Shell Condition (basic structure, no interior buildout)" },
+  { value: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)", label: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)" },
+  { value: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
+  { value: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed) ", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
 ];
 
 // const MAINTENANCE_CATEGORIES = [
