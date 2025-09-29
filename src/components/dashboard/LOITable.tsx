@@ -1,16 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Eye, FileDown } from "lucide-react";
+import { Eye, FileDown, MoreVertical, Send, Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { formatDate } from "@/utils/dateFormatter";
 import { LoadingOverlay } from "../loaders/overlayloader";
 import Toast from "../Toast";
-import { LoiServerData } from "@/services/dashboard/asyncThunk";
+import { getDashboardStatsAsync, LoiServerData } from "@/services/dashboard/asyncThunk";
 import { exportLoiToDocx } from "@/utils/exportDocx";
 import { normalizeLoiResponse } from "@/pages/dashboard/pages/loi/view/[id]";
 import ls from "localstorage-slim";
 import { Letter } from "@/types/loi";
 import axios from "axios";
 import Config from "@/config/index";
+import { DeleteLoiModal } from "../models/loiDeleteModel";
+import { useAppDispatch } from "@/hooks/hooks";
+import { deleteLOIAsync } from "@/services/loi/asyncThunk";
 
 
 type ClauseBlock = { status?: string };
@@ -103,6 +106,70 @@ const truncateWords = (text: string | undefined, limit: number) => {
   return words.length > limit ? words.slice(0, limit).join(" ") + "..." : text;
 };
 
+const RowActionMenu: React.FC<{
+  open: boolean;
+  x: number;
+  y: number;
+  onClose: () => void;
+  onView: () => void;
+  onDownload: () => void;
+  onSendForSign: () => void;
+  onDelete: () => void;
+}> = ({ open, x, y, onClose, onView, onDownload, onSendForSign, onDelete }) => {
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) onClose();
+    };
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("mousedown", onDocClick);
+    window.addEventListener("keydown", onEsc);
+    window.addEventListener("scroll", onClose, { passive: true });
+    window.addEventListener("resize", onClose);
+    return () => {
+      window.removeEventListener("mousedown", onDocClick);
+      window.removeEventListener("keydown", onEsc);
+      window.removeEventListener("scroll", onClose);
+      window.removeEventListener("resize", onClose);
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      ref={menuRef}
+      style={{ position: "fixed", top: y + 8, left: x - 8, zIndex: 50 }}
+      className="w-[150px] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden"
+      role="menu"
+      aria-label="Actions"
+    >
+      <div className="px-3 py-2 text-xs font-semibold text-slate-500">Actions</div>
+      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800"
+        onClick={() => { onView(); onClose(); }}>
+        <Eye className="w-4 h-4" /> View
+      </button>
+      <div className="h-px bg-slate-100" />
+      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800"
+        onClick={() => { onDownload(); onClose(); }}>
+        <FileDown className="w-4 h-4" /> Download
+      </button>
+      <div className="h-px bg-slate-100" />
+      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800"
+        onClick={() => { onSendForSign(); onClose(); }}>
+        <Send className="w-4 h-4" /> Send for Sign
+      </button>
+      <div className="h-px bg-slate-100" />
+      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-rose-600"
+        onClick={() => { onDelete(); onClose(); }}>
+        <Trash2 className="w-4 h-4" /> Delete
+      </button>
+    </div>
+  );
+};
+
 export const LOITable: React.FC<LOITableProps> = ({
   lois,
   isLoading,
@@ -115,8 +182,16 @@ export const LOITable: React.FC<LOITableProps> = ({
 
   // download guards/state
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
+    id: null, x: 0, y: 0
+  });
+  const [deleteModal, setDeleteModal] = React.useState<{ open: boolean; id: string | null }>({
+    open: false,
+    id: null,
+  });
   const downloadingRef = useRef(false);
   const isMountedRef = useRef(true);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -188,7 +263,7 @@ export const LOITable: React.FC<LOITableProps> = ({
 
   return (
 
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="bg-white rounded-xl border border-[#E5E7EB]">
       <div className="px-6 py-5 border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-gray-900">My LOIs</h2>
@@ -285,7 +360,6 @@ export const LOITable: React.FC<LOITableProps> = ({
                 lois.map((row) => {
                   const derived = deriveStatusFromClauses(row);
                   const rowId = row._id || row.id;
-                  const isRowDownloading = downloadingId === rowId; // ✅ FIX
 
                   return (
                     <tr key={rowId} className="hover:bg-gray-50 transition-colors">
@@ -302,78 +376,61 @@ export const LOITable: React.FC<LOITableProps> = ({
                         {row?.updated_at ? formatDate(row.updated_at) : "—"}
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center justify-start">
-                          {/* Action group */}
-                          <div
-                            role="group"
-                            aria-label="LOI actions"
-                            className="
-        inline-flex items-stretch overflow-hidden rounded-lg border border-slate-200
-        bg-white shadow-xs 
-      "
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="h-9 w-9 inline-flex items-center justify-center border-slate-200 hover:bg-slate-50"
+                            aria-haspopup="menu"
+                            aria-expanded={menuState.id === rowId}
+                            onClick={(e) => {
+                              const r = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                              setMenuState((cur) =>
+                                cur.id === rowId ? { id: null, x: 0, y: 0 } : { id: rowId!, x: r.left, y: r.bottom }
+                              );
+                            }}
                           >
-                            {/* View (outline/ghost) */}
-                            <button
-                              onClick={() => view(row)}
-                              disabled={!rowId}
-                              title={!rowId ? 'Missing ID' : 'View LOI'}
-                              aria-label="View LOI"
-                              className={`
-          inline-flex h-9 items-center gap-1.5 px-3
-          text-slate-700 hover:bg-slate-50 active:bg-slate-100
-          disabled:text-slate-400 disabled:hover:bg-transparent
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 focus-visible:ring-offset-1
-          transition
-        `}
-                            >
-                              <Eye className="h-4 w-4" />
-                              <span className="hidden sm:inline text-xs font-medium">View</span>
-                            </button>
+                            <MoreVertical className="w-4 h-4 text-slate-600" />
+                          </button>
 
-                            {/* divider */}
-                            <span aria-hidden className="my-1 w-px bg-slate-200" />
-
-                            {/* Download (primary) */}
-                            <button
-                              onClick={() => handleDownload(row as Letter)}
-                              disabled={!rowId || isRowDownloading}
-                              title={!rowId ? 'Missing ID' : 'Download DOCX'}
-                              aria-label="Download LOI"
-                              className={`
-          inline-flex h-9 items-center gap-1.5 px-3
-          bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800
-          disabled:bg-blue-400 disabled:cursor-not-allowed
-          focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-1
-          transition
-        `}
-                            >
-                              {isRowDownloading ? (
-                                <>
-                                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
-                                  </svg>
-                                  <span className="hidden sm:inline text-xs font-medium">Downloading…</span>
-                                </>
-                              ) : (
-                                <>
-                                  <FileDown className="h-4 w-4" />
-                                  <span className="hidden sm:inline text-xs font-medium">Download</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
+                          <RowActionMenu
+                            open={menuState.id === rowId}
+                            x={menuState.x}
+                            y={menuState.y}
+                            onClose={() => setMenuState({ id: null, x: 0, y: 0 })}
+                            onView={() => view(row)}
+                            onDownload={() => handleDownload(row as Letter)}
+                            onSendForSign={() => {
+                              Toast.fire({ icon: "success", title: "Sent for signature (demo)" });
+                            }}
+                            onDelete={() => {
+                              if (!rowId) return;
+                              setDeleteModal({ open: true, id: rowId });
+                            }}
+                          />
                         </div>
                       </td>
-
-
-
                     </tr>
                   );
                 })}
             </tbody>
           </table>
         </div>
+
+        <DeleteLoiModal
+          isOpen={deleteModal.open}
+          onCancel={() => setDeleteModal({ open: false, id: null })}
+          onConfirm={async () => {
+            if (!deleteModal.id) return;
+
+            try {
+              await dispatch(deleteLOIAsync(deleteModal.id)).unwrap();
+              await dispatch(getDashboardStatsAsync());  
+            } finally {
+              setDeleteModal({ open: false, id: null });
+            }
+          }}
+          title="Delete this LOI?"
+          message="This will permanently remove the LOI and cannot be undone."
+        />
 
         {/* Mobile */}
         <div className="lg:hidden space-y-3">

@@ -99,7 +99,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     hidden md:flex
     fixed md:inset-y-0 md:left-0        /* <-- fix it on screen */
     md:w-64 md:flex-col
-    bg-white border-r border-gray-200
+    bg-[#FAFAFA] border-r border-gray-200
   "
         >
           {/* Logo block */}
@@ -121,7 +121,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           </div>
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-4 py-4 border-b ">
-            <div className="space-y-2">
+            <div className="space-y-4">
               {NAV.map((item) => {
                 const active = isActive(item.href);
                 const Icon = getIcon(item.name);
@@ -206,7 +206,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto bg-gray-50 p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto bg-[#FAFAFA] p-6">{children}</main>
         </div>
 
         {/* MOBILE SIDEBAR */}
@@ -242,7 +242,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   })}
                 </div>
 
-                {/* Mobile divider and user menu */}
                 <div className=" border-gray-200 mt-6 pt-6">
                   <div className="space-y-1">
                     {USER_MENU.map((item) => (

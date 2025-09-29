@@ -119,7 +119,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
   const showLoading = isLoading || leases == null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+  <div className="bg-white rounded-xl border border-[#E5E7EB]">
       {/* Header */}
       <div className="px-6 py-5  border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
