@@ -1,79 +1,68 @@
-import { FormValues } from "@/constants/formData";
-import type { LOIApiPayload } from "@/types/loi";
+// src/utils/apiTransform.ts
+import type { FormValues, LOIApiPayload } from "@/types/loi";
+import {
+  buildContingencies,
+  buildMiscList,
+  mapMaintenanceToDTO,
+  mapUtilitiesToLabels,
+  nonEmpty,
+} from "./mappers/loi";
 
+/** Only the keys we actually add into leaseTerms from this block */
+type EscalationPieces =
+  Partial<NonNullable<LOIApiPayload["leaseTerms"]>> & {
+    /** present when FMV is chosen (not part of LOIApiPayload but harmless to send) */
+    escalationBasis?: "FMV";
+    /** explicitly allow these optional keys even if LOIApiPayload doesn’t list them */
+    rentEscalationType?: "percent" | "fmv";
+    rentEscalationPercent?: string;
+  };
 
-const EMPTY_MAINT = {
-  structural: { landlord: false, tenant: false },
-  nonStructural: { landlord: false, tenant: false },
-  hvac: { landlord: false, tenant: false },
-  plumbing: { landlord: false, tenant: false },
-  electrical: { landlord: false, tenant: false },
-  commonAreas: { landlord: false, tenant: false },
-  utilities: { landlord: false, tenant: false },
-  specialEquipment: { landlord: false, tenant: false },
-} as const;
+/** Small helper to conditionally add a trimmed string prop */
+const addIf = <K extends string>(key: K, val?: string) =>
+  nonEmpty(val) ? ({ [key]: String(val).trim() } as Record<K, string>) : {};
 
-type MaintKey = keyof typeof EMPTY_MAINT;
+/** Address fragments */
+const propertyAddressFrom = (v: FormValues) => ({
+  ...addIf("property_address_S1", v.property_address_S1),
+  ...addIf("property_address_S2", v.property_address_S2),
+  ...addIf("property_city", v.property_city),
+  ...addIf("property_state", v.property_state),
+  ...addIf("property_zip", v.property_zip),
+});
 
-// This alias matches the DTO shape for a single row:
-type MaintenanceRowDTO = { landlord?: boolean; tenant?: boolean };
+const landlordAddressFrom = (v: FormValues) => ({
+  ...addIf("landlord_address_S1", v.landlord_address_S1),
+  ...addIf("landlord_address_S2", v.landlord_address_S2),
+  ...addIf("landlord_city", v.landlord_city),
+  ...addIf("landlord_state", v.landlord_state),
+  ...addIf("landlord_zip", v.landlord_zip),
+});
 
-// This is a partial map of all rows the backend may return:
-type MaintenanceDTO = Partial<Record<MaintKey, MaintenanceRowDTO>>;
+const tenantAddressFrom = (v: FormValues) => ({
+  ...addIf("tenant_address_S1", v.tenant_address_S1),
+  ...addIf("tenant_address_S2", v.tenant_address_S2),
+  ...addIf("tenant_city", v.tenant_city),
+  ...addIf("tenant_state", v.tenant_state),
+  ...addIf("tenant_zip", v.tenant_zip),
+});
 
-const mapMaintenanceToDTO = (m?: MaintenanceDTO): FormValues["maintenance"] => {
-  const src: MaintenanceDTO = m ?? {};
+/** Build the escalation subset with proper typing and without `any` */
+const buildEscalationPieces = (v: FormValues): EscalationPieces => {
+  const out: EscalationPieces = {
+    RentEscalation: v.RentEscalation || "",
+    rentEscalationType: (v.rentEscalationType as "percent" | "fmv") || "percent",
+  };
 
-  const result = (Object.keys(EMPTY_MAINT) as MaintKey[]).reduce(
-    (acc, k) => {
-      const v = src[k] ?? {};
-      acc[k] = {
-        landlord: Boolean(v.landlord),
-        tenant: Boolean(v.tenant),
-      };
-      return acc;
-    },
-    {} as Record<MaintKey, { landlord: boolean; tenant: boolean }>
-  );
+  if (v.rentEscalationType === "percent" && nonEmpty(v.rentEscalationPercent)) {
+    out.rentEscalationPercent = String(v.rentEscalationPercent).trim();
+  } else {
+    // helpful extra flag for backends that look for FMV explicitly
+    out.escalationBasis = "FMV";
+  }
 
-  return result;
-};
-
-const UTIL_LABELS: Record<string, string> = {
-  electricity: "Electricity",
-  waterSewer: "Water/Sewer",
-  naturalGas: "Natural Gas",
-  internetCable: "Internet/Cable",
-  hvac: "HVAC",
-  securitySystem: "Security System",
-  other: "Other",
-};
-
-const mapUtilitiesToLabels = (flags: FormValues["utilities"]): string[] =>
-  Object.entries(flags)
-    .filter(([, v]) => v === true)
-    .map(([k]) => UTIL_LABELS[k] ?? k);
-
-const buildContingencies = (v: FormValues): string[] => {
-  const out: string[] = [];
-  if (v.financingApproval) out.push("Financing Approval");
-  if (v.environmentalAssessment) out.push("Environmental Assessment");
-  if (v.zoningCompliance) out.push("Zoning Compliance");
-  if (v.permitsLicenses) out.push("Permits & Licenses");
-  if (v.propertyInspection) out.push("Property Inspection");
-  if (v.insuranceApproval) out.push("Insurance Approval");
   return out;
 };
-
-const buildMiscList = (v: FormValues): string[] => {
-  const list: string[] = [];
-  if (v.rightOfFirstRefusal) list.push("Right of First Refusal");
-  if (v.leaseToPurchase) list.push("Lease to Purchase");
-  return list;
-};
-
-const nonEmpty = (s?: string | null) =>
-  s && String(s).trim() !== "" ? String(s).trim() : undefined;
 
 export const transformToApiPayload = (
   values: FormValues,
@@ -87,12 +76,20 @@ export const transformToApiPayload = (
 
   const tenantImprovement =
     values.improvementAllowanceEnabled && nonEmpty(values.improvementAllowanceAmount)
-      ? `$${values.improvementAllowanceAmount} per square footage`
+      ? values.improvementAllowanceAmount
       : values.improvementAllowance || "";
+
+  // Address fragments
+  const propertyAddress = propertyAddressFrom(values);
+  const landlordAddress = landlordAddressFrom(values);
+  const tenantAddress = tenantAddressFrom(values);
+
+  // Escalation
+  const escalationPieces = buildEscalationPieces(values);
 
   const payload: LOIApiPayload = {
     title: values.title || "",
-    propertyAddress: values.propertyAddress || "",
+    ...propertyAddress, // structured property address
     addFileNumber: !!values.addFileNumber,
     ...(effectiveDocId ? { doc_id: effectiveDocId } : {}),
 
@@ -101,13 +98,14 @@ export const transformToApiPayload = (
       landlord_email: values.landlordEmail || "",
       tenant_name: values.tenantName,
       tenant_email: values.tenantEmail || "",
-      // NEW
-      ...(nonEmpty(values.landlord_home_town_address)
-        ? { landlord_home_town_address: String(values.landlord_home_town_address).trim() }
-        : {}),
-      ...(nonEmpty(values.tenant_home_town_address)
-        ? { tenant_home_town_address: String(values.tenant_home_town_address).trim() }
-        : {}),
+
+      // legacy single-line (only include when not empty)
+      ...addIf("landlord_home_town_address", values.landlord_home_town_address),
+      ...addIf("tenant_home_town_address", values.tenant_home_town_address),
+
+      // structured
+      ...landlordAddress,
+      ...tenantAddress,
     },
 
     leaseTerms: {
@@ -116,28 +114,29 @@ export const transformToApiPayload = (
       leaseType: values.leaseType || "",
       leaseDuration: values.leaseDuration || "",
       startDate: values.startDate || "",
-      rentstartDate:values.rentstartDate || "", 
-      RentEscalation: values.RentEscalation || "",
+      rentstartDate: values.rentstartDate || "",
       prepaidRent: values.prepaidRent || "",
       includeRenewalOption: !!values.includeRenewalOption,
       renewalYears: values.renewalYears || "",
       renewalOptionsCount: values.renewalOptionsCount || "",
-      // keep if you need it server-side:
-      ...(nonEmpty(values.rentEscalationPercent)
-        ? { rentEscalationPercent: String(values.rentEscalationPercent).trim() }
+
+      // if your form adds this when “Percentage Lease” is selected
+      ...(nonEmpty(values.percentageLeasePercent)
+        ? { percentageLeasePercent: String(values.percentageLeasePercent) }
         : {}),
+
+      ...escalationPieces,
     },
 
     propertyDetails: {
       propertySize: values.propertySize || "",
       intendedUse: values.intendedUse || "",
-      exclusiveUse: values.exclusiveUse, // FIX: boolean
+      exclusiveUse: values.exclusiveUse,
       propertyType: values.propertyType || "",
       hasExtraSpace: !!values.hasExtraSpace,
       ...(nonEmpty(values.patio) ? { patio: values.patio } : {}),
-      amenities: values.parkingSpaces || "", // FIX: string, not array
+      amenities: values.parkingSpaces || "",
       utilities: selectedUtilities,
-      // NEW
       ...(nonEmpty(values.deliveryCondition)
         ? { deliveryCondition: String(values.deliveryCondition).trim() }
         : {}),
@@ -147,8 +146,7 @@ export const transformToApiPayload = (
     additionalDetails: {
       Miscellaneous_items: miscItems,
       tenantImprovement,
-      leaseToPurchaseDuration: values.leaseToPurchaseDuration || "", // coerce undefined -> false
-
+      leaseToPurchaseDuration: values.leaseToPurchaseDuration || "",
       improvementAllowanceEnabled: !!values.improvementAllowanceEnabled,
       improvementAllowanceAmount: values.improvementAllowanceAmount || "",
       specialConditions: values.specialConditions || "",

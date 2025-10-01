@@ -19,7 +19,7 @@ class DashboardBaseService extends HttpService {
     this.get(`/auth/get_logged_in_user`, {});
 
   downloadloi = (data: any, option = {}): Promise<any> =>
-    this.post(this.prefix + `/download_tempalte_data`, data, option);
+    this.post(this.prefix + `/download_template_data`, data, option);
 
   changeLoggedInUser = (body: { fullName: string; role: string }): Promise<any> =>
     this.put(`/auth/update_logged_in_user`, body);

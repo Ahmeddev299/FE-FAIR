@@ -4,6 +4,8 @@ import axios, {
   AxiosRequestConfig,
   AxiosResponse,
   AxiosError,
+  AxiosHeaders,            // 👈 add this
+
   CancelTokenSource
 } from "axios";
 import Config from "../config/index";
@@ -30,14 +32,20 @@ export class HttpService {
     this.axiosInstance.interceptors.request.use(
       (config) => {
         const token = ls.get("access_token", { decrypt: true });
-        // Safely set headers
-        config.headers = {
-          ...(config.headers || {}),
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          ...(Config.API_ENDPOINT.includes("ngrok")
-            ? { "ngrok-skip-browser-warning": "true" }
-            : {}),
-        };
+
+        // Normalize to AxiosHeaders so we can safely .set()
+        const h = AxiosHeaders.from(config.headers);
+
+        if (token) h.set("Authorization", `Bearer ${token}`);
+        if (Config.API_ENDPOINT.includes("ngrok")) {
+          h.set("ngrok-skip-browser-warning", "true");
+        }
+
+        // keep your defaults if you want
+        if (!h.has("Content-Type")) h.set("Content-Type", "application/json");
+        if (!h.has("Accept")) h.set("Accept", "application/json");
+
+        config.headers = h; // ✅ assign back an AxiosHeaders instance
 
         if (Config.DEBUG) {
           console.log(`${config.method?.toUpperCase()} ${config.url}`, {
@@ -47,10 +55,7 @@ export class HttpService {
         }
         return config;
       },
-      (error) => {
-        console.error("Request interceptor error:", error);
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
     // Response interceptor
@@ -58,7 +63,7 @@ export class HttpService {
       (response: AxiosResponse) => {
         if (Config.DEBUG) {
           console.log(
-            `✅ ${response.config.method?.toUpperCase()} ${response.config.url}`,
+            `${response.config.method?.toUpperCase()} ${response.config.url}`,
             { status: response.status, data: response.data }
           );
         }
@@ -69,7 +74,7 @@ export class HttpService {
 
         if (Config.DEBUG) {
           console.error(
-            `❌ ${originalRequest?.method?.toUpperCase()} ${originalRequest?.url}`,
+            `${originalRequest?.method?.toUpperCase()} ${originalRequest?.url}`,
             {
               status: error.response?.status,
               message: (error.response?.data as any) || error.message,
@@ -113,10 +118,10 @@ export class HttpService {
 
   /** Create a cancel token for a request */
   private createCancelToken(key: string): CancelTokenSource {
-    const existing = this.cancelTokenSources.get(key);
-    if (existing) {
-      existing.cancel(`Request ${key} cancelled due to new request`);
-    }
+    // const existing = this.cancelTokenSources.get(key);
+    // if (existing) {
+    //   existing.cancel(`Request ${key} cancelled due to new request`);
+    // }
     const source = axios.CancelToken.source();
     this.cancelTokenSources.set(key, source);
     return source;

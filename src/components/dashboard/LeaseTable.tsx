@@ -200,7 +200,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                 ))}
 
               {!showLoading && Array.isArray(leases) && leases.length === 0 && (
-                <div className="text-center text-sm text-gray-500 py-6">No records found</div>
+                <div className="text-center mx-auto text-sm text-gray-500 py-6">No records found</div>
               )}
 
               {!showLoading &&

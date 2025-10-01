@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Eye, FileDown, MoreVertical, Send, Trash2 } from "lucide-react";
+import { Eye, FileDown, MoreVertical } from "lucide-react";
 import { useRouter } from "next/router";
 import { formatDate } from "@/utils/dateFormatter";
 import { LoadingOverlay } from "../loaders/overlayloader";
@@ -14,7 +14,10 @@ import Config from "@/config/index";
 import { DeleteLoiModal } from "../models/loiDeleteModel";
 import { useAppDispatch } from "@/hooks/hooks";
 import { deleteLOIAsync } from "@/services/loi/asyncThunk";
-
+import DeleteIcon from '@/icons/delete.svg';
+import SignIcon from '@/icons/sign.svg';
+import DownloadIcon from '@/icons/download.svg'
+import ViewIcon from '@/icons/view.svg'
 
 type ClauseBlock = { status?: string };
 type LoiItem = {
@@ -22,7 +25,7 @@ type LoiItem = {
   id?: string;
   _id?: string;
   title?: string;
-  propertyAddress?: string;
+  property_address_S1?: string;
   status?: string;
   lastUpdate?: string;
   clauses?: Record<string, ClauseBlock>;
@@ -146,26 +149,66 @@ const RowActionMenu: React.FC<{
       role="menu"
       aria-label="Actions"
     >
-      <div className="px-3 py-2 text-xs font-semibold text-slate-500">Actions</div>
-      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800"
-        onClick={() => { onView(); onClose(); }}>
-        <Eye className="w-4 h-4" /> View
-      </button>
-      <div className="h-px bg-slate-100" />
-      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800"
-        onClick={() => { onDownload(); onClose(); }}>
-        <FileDown className="w-4 h-4" /> Download
-      </button>
-      <div className="h-px bg-slate-100" />
-      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800"
-        onClick={() => { onSendForSign(); onClose(); }}>
-        <Send className="w-4 h-4" /> Send for Sign
-      </button>
-      <div className="h-px bg-slate-100" />
-      <button className="flex items-center gap-3 px-3 py-2 text-[15px] text-rose-600"
-        onClick={() => { onDelete(); onClose(); }}>
-        <Trash2 className="w-4 h-4" /> Delete
-      </button>
+      <div
+        role="menu"
+        className="
+    w-[176px] rounded-[6px] border border-slate-200 bg-white
+    shadow-[0_6px_18px_rgba(15,23,42,0.08)]
+    antialiased
+  "
+      >
+        <div className="px-[10px] py-[6px] text-[11px] font-semibold text-slate-500">
+          Actions
+        </div>
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+          onClick={() => { onView(); onClose(); }}
+        >
+          <ViewIcon className="w-[14px] h-[14px]" />
+          View
+        </button>
+
+        <div className="mx-[6px] h-px bg-slate-100" />
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+          onClick={() => { onDownload(); onClose(); }}
+        >
+          <DownloadIcon className="w-[14px] h-[14px]" />
+          Download
+        </button>
+
+        <div className="mx-[6px] h-px bg-slate-100" />
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+          onClick={() => { onSendForSign(); onClose(); }}
+        >
+          <SignIcon className="w-[14px] h-[14px]" />
+          Send for Sign
+        </button>
+
+        <div className="mx-[6px] h-px bg-slate-100" />
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-rose-600 hover:bg-rose-50"
+          onClick={() => { onDelete(); onClose(); }}
+        >
+          <DeleteIcon className="w-[14px] h-[14px]" />
+          Delete
+        </button>
+
+      </div>
+
     </div>
   );
 };
@@ -220,7 +263,7 @@ export const LOITable: React.FC<LOITableProps> = ({
       const payload = sanitizeLoiPayload(row);
 
       const resp = await axios.post(
-        `${Config.API_ENDPOINT}/dashboard/download_tempalte_data`,
+        `${Config.API_ENDPOINT}/dashboard/download_template_data`,
         payload,
         {
           headers: {
@@ -367,7 +410,7 @@ export const LOITable: React.FC<LOITableProps> = ({
                         {truncateWords(row.title, 3)}
                       </td>
                       <td className="px-2 py-4 text-sm text-gray-500">
-                        {truncateWords(row.propertyAddress, 3)}
+                        {truncateWords(row.property_address_S1, 3)}
                       </td>
                       <td className="px-2 py-4">
                         <span className={getStatusPill(derived)}>{capitalize(derived)}</span>
@@ -423,7 +466,7 @@ export const LOITable: React.FC<LOITableProps> = ({
 
             try {
               await dispatch(deleteLOIAsync(deleteModal.id)).unwrap();
-              await dispatch(getDashboardStatsAsync());  
+              await dispatch(getDashboardStatsAsync());
             } finally {
               setDeleteModal({ open: false, id: null });
             }
@@ -458,7 +501,7 @@ export const LOITable: React.FC<LOITableProps> = ({
                     <span className={getStatusPill(row.status)}>{row.status}</span>
                   </div>
                   <div className="text-sm text-gray-500 mb-2">
-                    {truncateWords(row.propertyAddress, 4)}
+                    {truncateWords(row.property_address_S1, 4)}
                   </div>
                   <div className="flex items-center gap-2">
                     <button

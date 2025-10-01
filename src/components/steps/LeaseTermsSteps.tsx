@@ -1,13 +1,23 @@
 // components/steps/LeaseTermsStep.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { Info, DollarSign, CalendarDays } from "lucide-react";
-import { FormValues } from "@/constants/formData";
+import { FormValues } from "@/types/loi";
 
 export const LeaseTermsStep: React.FC = () => {
-  const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();
+  const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues & {
+    rentEscalationType?: "percent" | "fmv";
+  }>();
+
+  // If user flips to FMV, clear the percent so validation doesn't nag later
+  useEffect(() => {
+    if (values.rentEscalationType === "fmv" && values.rentEscalationPercent) {
+      setFieldValue("rentEscalationPercent", "");
+      setFieldTouched("rentEscalationPercent", false, false);
+    }
+  }, [values.rentEscalationType, values.rentEscalationPercent, setFieldValue, setFieldTouched]);
 
   return (
     <div className="space-y-6">
@@ -26,9 +36,7 @@ export const LeaseTermsStep: React.FC = () => {
           <div>
             <label className="mb-2 block text-sm font-medium">Monthly Rent *</label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                $
-              </span>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Field
                 name="rentAmount"
                 type="number"
@@ -47,9 +55,7 @@ export const LeaseTermsStep: React.FC = () => {
           <div>
             <label className="mb-2 block text-sm font-medium">Prepaid Rent</label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                $
-              </span>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Field
                 name="prepaidRent"
                 type="number"
@@ -57,19 +63,16 @@ export const LeaseTermsStep: React.FC = () => {
                 min="0"
                 step="0.01"
                 placeholder="5000"
-                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8
-                          "
+                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8"
               />
             </div>
           </div>
 
           {/* Security Deposit */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Security Deposit</label>
+            <label className="mb-2 block text-sm font-medium">Security Deposit *</label>
             <div className="relative">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                $
-              </span>
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Field
                 name="securityDeposit"
                 type="number"
@@ -77,10 +80,10 @@ export const LeaseTermsStep: React.FC = () => {
                 min="0"
                 step="0.01"
                 placeholder="10000"
-                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8
-                        "
+                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pl-8"
               />
             </div>
+            <ErrorMessage name="securityDeposit" component="div" className="mt-1 text-sm text-red-500" />
           </div>
 
           {/* Lease Type (string only) */}
@@ -101,7 +104,38 @@ export const LeaseTermsStep: React.FC = () => {
             </Field>
             <ErrorMessage name="leaseType" component="div" className="mt-1 text-sm text-red-500" />
           </div>
+           {values.leaseType === "Percentage Lease" && (
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Percentage of Gross Sales Revenue *
+            </label>
+            <div className="relative">
+              <Field
+                name="percentageLeasePercent"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                max="100"
+                step="0.1"
+                placeholder="e.g., 6"
+                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-10
+                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                %
+              </span>
+            </div>
+            <ErrorMessage
+              name="percentageLeasePercent"
+              component="div"
+              className="mt-1 text-sm text-red-500"
+            />
+          </div>
+        )}
         </div>
+        {/* NEW: Percentage of Gross Sales (only for Percentage Lease) */}
+    
+
 
         {/* ---------------- Timing Terms ---------------- */}
         <div className="space-y-6 rounded-lg border border-gray-300 p-6">
@@ -112,7 +146,7 @@ export const LeaseTermsStep: React.FC = () => {
 
           {/* Lease Duration (numeric months) */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Lease Duration</label>
+            <label className="mb-2 block text-sm font-medium">Lease Duration *</label>
             <div className="relative">
               <Field
                 name="leaseDuration"
@@ -121,8 +155,7 @@ export const LeaseTermsStep: React.FC = () => {
                 min="1"
                 step="1"
                 placeholder="e.g., 36"
-                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-16
-                           "
+                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-16"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                 months
@@ -133,17 +166,16 @@ export const LeaseTermsStep: React.FC = () => {
 
           {/* Rent Escalation cadence (numeric months) */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Rent Escalation</label>
+            <label className="mb-2 block text-sm font-medium">Rent Escalation *</label>
             <div className="relative">
               <Field
-                name="RentEscalation"  // keep original key
+                name="RentEscalation" // keep or/iginal key
                 type="number"
                 inputMode="numeric"
                 min="1"
                 step="1"
                 placeholder="e.g., 12"
-                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-16
-                           "
+                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-16"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                 months
@@ -152,28 +184,60 @@ export const LeaseTermsStep: React.FC = () => {
             <ErrorMessage name="RentEscalation" component="div" className="mt-1 text-sm text-red-500" />
           </div>
 
-          {/* Rent Escalation % */}
+          {/* Escalation Type: % or FMV */}
           <div>
-            <div className="relative">
-              <Field
-                name="rentEscalationPercent"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                max="100"
-                step="0.1"
-                placeholder="%"
-                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-10
-                           "
-              />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">% *</span>
-            </div>
-            <ErrorMessage
-              name="rentEscalationPercent"
-              component="div"
-              className="mt-1 text-sm text-red-500"
-            />
+            <label className="mb-2 block text-sm font-medium">Escalation Type *</label>
+            <Field
+              as="select"
+              name="rentEscalationType"
+              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
+                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                const v = e.target.value as "percent" | "fmv";
+                setFieldValue("rentEscalationType", v);
+                if (v === "fmv") {
+                  setFieldValue("rentEscalationPercent", "");
+                  setFieldTouched("rentEscalationPercent", false, false);
+                }
+              }}
+            >
+              <option value="percent">Percentage (%)</option>
+              <option value="fmv">Fair Market Value (FMV)</option>
+            </Field>
+            <ErrorMessage name="rentEscalationType" component="div" className="mt-1 text-sm text-red-500" />
           </div>
+
+          {/* Rent Escalation % (only when type = percent) */}
+          {values.rentEscalationType !== "fmv" && (
+            <div>
+              <div className="relative">
+                <Field
+                  name="rentEscalationPercent"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  placeholder="%"
+                  className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-10"
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">% *</span>
+              </div>
+              <ErrorMessage
+                name="rentEscalationPercent"
+                component="div"
+                className="mt-1 text-sm text-red-500"
+              />
+            </div>
+          )}
+
+          {/* FMV helper (when type = fmv) */}
+          {/* {values.rentEscalationType === "fmv" && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              Escalations will adjust to <strong>Fair Market Value</strong> at each cadence. You can
+              clarify appraisal mechanics in “Additional Terms”.
+            </div>
+          )} */}
 
           {/* Include renewal option */}
           <div className="flex items-center gap-3">
@@ -201,7 +265,7 @@ export const LeaseTermsStep: React.FC = () => {
           {/* Two inputs shown only when checked */}
           {values?.includeRenewalOption && (
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3 border p-1 border-gray-300 rounded-lg pl-10 ">
+              <div className="flex flex-wrap items-center gap-3 border p-1 border-gray-300 rounded-lg pl-10">
                 <Field
                   name="renewalOptionsCount"
                   type="number"
@@ -209,8 +273,7 @@ export const LeaseTermsStep: React.FC = () => {
                   min="1"
                   step="1"
                   placeholder="__"
-                  className="w-20 rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 text-center
-                           "
+                  className="w-20 rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 text-center"
                 />
                 <span className="text-gray-700">Options for</span>
                 <Field
@@ -220,18 +283,13 @@ export const LeaseTermsStep: React.FC = () => {
                   min="1"
                   step="1"
                   placeholder="__"
-                  className="w-20 rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 text-center
-                             "
+                  className="w-20 rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 text-center"
                 />
                 <span className="text-gray-700">Years</span>
               </div>
 
               <div className="flex gap-6">
-                <ErrorMessage
-                  name="renewalOptionsCount"
-                  component="div"
-                  className="text-sm text-red-500"
-                />
+                <ErrorMessage name="renewalOptionsCount" component="div" className="text-sm text-red-500" />
                 <ErrorMessage name="renewalYears" component="div" className="text-sm text-red-500" />
               </div>
             </div>
@@ -239,16 +297,17 @@ export const LeaseTermsStep: React.FC = () => {
 
           {/* Preferred Start Date */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Commencement  Date</label>
+            <label className="mb-2 block text-sm font-medium">Commencement Date *</label>
             <Field
               name="startDate"
               type="date"
               className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
                          focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
             />
+            <ErrorMessage name="startDate" component="div" className="mt-1 text-sm text-red-500" />
           </div>
 
-           <div>
+          <div>
             <label className="mb-2 block text-sm font-medium">Rent Commencement Start Date</label>
             <Field
               name="rentstartDate"
@@ -256,6 +315,7 @@ export const LeaseTermsStep: React.FC = () => {
               className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
                          focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
             />
+            <ErrorMessage name="rentstartDate" component="div" className="mt-1 text-sm text-red-500" />
           </div>
         </div>
       </div>

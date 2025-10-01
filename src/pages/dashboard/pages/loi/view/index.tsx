@@ -10,18 +10,17 @@ import {
   Filter as Funnel,
   ChevronDown,
   MoreVertical,
-  Eye,
-  Send,
-  Trash2,
   X,
 } from "lucide-react";
-
+import DeleteIcon from '@/icons/delete.svg';
+import SignIcon from '@/icons/sign.svg';
+import ViewIcon from '@/icons/view.svg'
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 
 // DASHBOARD fetch (your existing async thunk)
-import { getDashboardStatsAsync, getloiDataAsync } from "@/services/dashboard/asyncThunk";
+import { getDashboardStatsAsync, getErrorMessage, getloiDataAsync } from "@/services/dashboard/asyncThunk";
 // LOI thunks for delete & refresh list in its slice
 import { deleteLOIAsync } from "@/services/loi/asyncThunk";
 
@@ -162,8 +161,6 @@ const RowActionMenu: React.FC<{
 
   if (!open) return null;
 
-  const item = "flex items-center gap-3 px-3 py-2 text-[15px] text-slate-800 hover:bg-slate-50 transition";
-
   return (
     <div
       ref={menuRef}
@@ -172,20 +169,46 @@ const RowActionMenu: React.FC<{
       role="menu"
       aria-label="Actions"
     >
-      <div className="px-3 py-2 text-xs font-semibold text-slate-500">Actions</div>
-      <button className={item} onClick={() => { onView(); onClose(); }}>
-        <Eye className="w-4 h-4" /> View
-      </button>
-      <div className="h-px bg-slate-100" />
-   
-      <div className="h-px bg-slate-100" />
-      <button className={item} onClick={() => { onSendForSign(); onClose(); }}>
-        <Send className="w-4 h-4" /> Send for Sign
-      </button>
-      <div className="h-px bg-slate-100" />
-      <button className={`${item} text-rose-600 hover:bg-rose-50`} onClick={() => { onDelete(); onClose(); }}>
-        <Trash2 className="w-4 h-4" /> Delete
-      </button>
+        <div className="px-[10px] py-[6px] text-[11px] font-semibold text-slate-500">
+          Actions
+        </div>
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+          onClick={() => { onView(); onClose(); }}
+        >
+          <ViewIcon className="w-[14px] h-[14px]" />
+          View
+        </button>
+
+        <div className="mx-[6px] h-px bg-slate-100" />
+
+        <div className="mx-[6px] h-px bg-slate-100" />
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+          onClick={() => { onSendForSign(); onClose(); }}
+        >
+          <SignIcon className="w-[14px] h-[14px]" />
+          Send for Sign
+        </button>
+
+        <div className="mx-[6px] h-px bg-slate-100" />
+
+        <button
+          role="menuitem"
+          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+               text-[13px] leading-[18px] text-rose-600 hover:bg-rose-50"
+          onClick={() => { onDelete(); onClose(); }}
+        >
+          <DeleteIcon className="w-[14px] h-[14px]" />
+          Delete
+        </button>
+
     </div>
   );
 };
@@ -297,7 +320,7 @@ export default function LoiListPage() {
     setSortBy("updatedAt");
     setSortDir("desc");
     // if you added router.query date/type, clear them too:
-    const {  ...rest } = router.query;
+    const { ...rest } = router.query;
     router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
     setPage(1);
   };
@@ -491,7 +514,7 @@ export default function LoiListPage() {
                           Status <SortIcon active={sortBy === "status"} dir={sortDir} />
                         </div>
                       </th>
-                  
+
                       <th className="px-5 py-3 text-left">Action</th>
                     </tr>
                   </thead>
@@ -512,7 +535,7 @@ export default function LoiListPage() {
                             <td className="px-5 py-4 font-medium text-gray-900">{truncateWords(row.title, 8)}</td>
                             <td className="px-5 py-4 text-gray-700">{truncateWords(row.propertyAddress ?? row.property_address, 10)}</td>
                             <td className="px-5 py-4"><StatusPill value={row.status} /></td>
-                     
+
                             <td className="px-5 py-4">
                               <div className="relative">
                                 <button
@@ -595,10 +618,10 @@ export default function LoiListPage() {
               try {
                 await dispatch(deleteLOIAsync(id)).unwrap();
                 // refresh the dashboard list (and any other slice that needs it)
-                await dispatch(getDashboardStatsAsync()).unwrap().catch(() => {});
+                await dispatch(getDashboardStatsAsync()).unwrap().catch(() => { });
                 Toast.fire({ icon: "success", title: "LOI deleted" });
-              } catch (err: any) {
-                Toast.fire({ icon: "error", title: err?.message || "Delete failed" });
+              } catch (err: unknown) {
+                Toast.fire({ icon: "error", title: getErrorMessage(err) });
               } finally {
                 setDeleteModal({ open: false, id: null });
               }

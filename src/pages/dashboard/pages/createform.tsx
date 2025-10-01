@@ -6,7 +6,7 @@ import { submitLOIAsync, getLOIDetailsById, runAiAssistantAsync } from '@/servic
 import { useAppDispatch } from '@/hooks/hooks';
 import { useFormStepper } from '../../../hooks/useFormStepper';
 import { transformToApiPayload } from '../../../utils/apiTransform';
-import { INITIAL_VALUES, VALIDATION_SCHEMAS, EDIT_INITIAL_VALUES, FormValues } from '../../../constants/formData'
+import { INITIAL_VALUES, VALIDATION_SCHEMAS, EDIT_INITIAL_VALUES } from '../../../constants/formData'
 import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
@@ -18,6 +18,7 @@ import { ReviewSubmitStep } from '@/components/steps/ReviewSubmitStep';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
 import AiAssistantModal from '@/components/models/aIAssistant';
+import { FormValues } from '@/types/loi';
 
 interface Props {
   mode?: "edit" | "create";

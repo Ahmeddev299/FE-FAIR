@@ -19,8 +19,7 @@ const getStatus = (err: unknown): number | undefined => {
 };
 import Toast from "@/components/Toast";
 import { LoadingOverlay } from "../loaders/overlayloader";
-import { FormValues } from "@/constants/formData";
-import type { LOIApiPayload } from "@/types/loi";
+import type { FormValues, LOIApiPayload } from "@/types/loi";
 import { isObject, LoiServerData, UnknownRecord } from "@/services/dashboard/asyncThunk";
 import axios from "axios";
 
@@ -77,7 +76,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
       console.log("[LOI] calling API…");
 
       const response = await axios.post(
-        `${Config.API_ENDPOINT}/dashboard/download_tempalte_data`,
+        `${Config.API_ENDPOINT}/dashboard/download_template_data`,
         clientPayload,
         {
           headers: {

@@ -13,7 +13,6 @@ export type UnknownRecord = Record<string, unknown>;
 
 export type LoiServerData = UnknownRecord; // <-- the server's normalized "real" LOI data (what exportLoiToDocx expects)
 
-
 export type LoggedInUser = {
   id?: string;
   _id?: string;
@@ -28,7 +27,6 @@ export type UpdateLoggedInUserInput = {
   fullName: string;
   role: string; // API expects e.g. "tenant"
 };
-
 
 export const isObject = (v: unknown): v is UnknownRecord =>
   typeof v === "object" && v !== null;

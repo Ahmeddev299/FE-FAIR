@@ -1,6 +1,8 @@
 // components/dashboard/QuickActions.tsx
 import React from 'react';
-import Image from "next/image";
+import DocImage from '@/icons/margin.svg'
+import UploadImage from '@/icons/upload.svg'
+import TermImage from '@/icons/teminate.svg'
 
 interface QuickActionsProps {
   onStartNewLOI: () => void;
@@ -24,11 +26,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           className="w-full flex items-center justify-start gap-2 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
           onClick={onStartNewLOI}
         >
-          <Image
-            src="/star.png"
-            alt="Start New LOI"
-            width={30}
-            height={24}
+          <DocImage
             className="w-6 h-4"
           />
           <span className='truncate inline-block text-xs max-w-[150px]'>Start New LOI</span>
@@ -39,11 +37,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           className="w-full flex items-center justify-start gap-2 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
           onClick={uploadLOI}
         >
-          <Image
-            src="/start-loi-2.png"
-            alt="Upload LOI"
-            width={30}
-            height={24}
+          <UploadImage
             className="w-6 h-4"
           />
           <span className='truncate inline-block text-xs max-w-[150px]'>Upload LOI</span>
@@ -54,11 +48,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           className="w-full flex items-center justify-start gap-2 bg-[#3B82F6] text-white py-2.5 px-4 rounded-lg hover:bg-blue-600 transition text-sm font-medium"
           onClick={onUploadLease}
         >
-          <Image
-            src="/start-loi-2.png"
-            alt="Upload Document"
-            width={24}
-            height={24}
+          <UploadImage
             className="w-7 h-4"
           />
           <span className="truncate inline-block text-xs max-w-[150px]">Upload Lease Document</span>
@@ -69,11 +59,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           className="w-full flex items-center justify-start gap-2 bg-red-500 text-white py-2.5 px-4 rounded-lg hover:bg-red-600 transition text-sm font-medium"
           onClick={onTerminateLease}
         >
-          <Image
-            src="/start-loi-1.png"
-            alt="Terminate Lease"
-            width={24}
-            height={24}
+          <TermImage
             className="w-7 h-4"
           />
           <span className='truncate inline-block text-xs max-w-[150px]'>Terminate Lease</span>

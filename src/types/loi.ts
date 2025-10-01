@@ -1,3 +1,232 @@
+export const EMPTY_MAINT = {
+  structural: { landlord: false, tenant: false },
+  nonStructural: { landlord: false, tenant: false },
+  hvac: { landlord: false, tenant: false },
+  plumbing: { landlord: false, tenant: false },
+  electrical: { landlord: false, tenant: false },
+  commonAreas: { landlord: false, tenant: false },
+  utilities: { landlord: false, tenant: false },
+  specialEquipment: { landlord: false, tenant: false },
+} as const;
+
+
+export type MaintKey = keyof typeof EMPTY_MAINT;
+
+export type MaintenanceRowDTO = { landlord?: boolean; tenant?: boolean };
+
+export type MaintenanceDTO = Partial<Record<MaintKey, MaintenanceRowDTO>>;
+
+export type LoiDTO = {
+  title?: string;
+  loiId: string;
+  // legacy single-line (keep for backward compat)
+  propertyAddress?: string;
+
+  // ✅ NEW: structured property address (all optional)
+  property_address_S1?: string;
+  property_address_S2?: string;
+  property_city?: string;
+  property_state?: string; // 2-letter
+  property_zip?: string;
+
+  addFileNumber: boolean;
+  doc_id: string;
+
+  partyInfo?: {
+    landlord_name?: string;
+    landlord_email?: string;
+    tenant_name?: string;
+    tenant_email?: string;
+
+    // legacy single-line addresses (keep)
+    landlord_home_town_address?: string;
+    tenant_home_town_address?: string;
+
+    // ✅ NEW: structured landlord address
+    landlord_address_S1?: string;
+    landlord_address_S2?: string;
+    landlord_city?: string;
+    landlord_state?: string; // 2-letter
+    landlord_zip?: string;
+
+    // ✅ NEW: structured tenant address
+    tenant_address_S1?: string;
+    tenant_address_S2?: string;
+    tenant_city?: string;
+    tenant_state?: string;   // 2-letter
+    tenant_zip?: string;
+  };
+
+  leaseTerms?: {
+    monthlyRent?: string;
+    securityDeposit?: string;
+    leaseDuration?: string;   // months
+    startDate?: string;       // ISO
+    rentstartDate?: string;
+    prepaidRent?: string;
+    leaseType?: string;
+
+    // legacy/alt spellings
+    RentEscalation?: string;
+    PrepaidRent?: string;
+    LeaseType?: string;
+    rentEsclation?: string; // legacy misspelling
+
+    // ✅ NEW
+    rentEscalationType?: "percent" | "fmv";
+    rentEscalationPercent?: string;
+
+    includeRenewalOption?: boolean;
+    renewalYears?: string;
+    renewalOptionsCount?: string;
+    percentageLeasePercent?: string
+  };
+
+  propertyDetails?: {
+    propertySize?: string;
+    patio?: string;
+    intendedUse?: string;
+    exclusiveUse?: string;
+    propertyType?: string;
+    amenities?: string;       // "8–10"
+    utilities?: string[];     // ["Electricity", ...]
+    hasExtraSpace?: boolean;
+
+    deliveryCondition?: string;
+
+    maintenance?: {
+      structural?: { landlord?: boolean; tenant?: boolean };
+      nonStructural?: { landlord?: boolean; tenant?: boolean };
+      hvac?: { landlord?: boolean; tenant?: boolean };
+      plumbing?: { landlord?: boolean; tenant?: boolean };
+      electrical?: { landlord?: boolean; tenant?: boolean };
+      commonAreas?: { landlord?: boolean; tenant?: boolean };
+      utilities?: { landlord?: boolean; tenant?: boolean };
+      specialEquipment?: { landlord?: boolean; tenant?: boolean };
+    };
+  };
+
+  additionalDetails?: {
+    tenantImprovement?: string;
+    renewalOption?: boolean;
+    specialConditions?: string;
+    contingencies?: string[];
+    rightOfFirstRefusal?: boolean;
+    leaseToPurchase?: boolean;
+    leaseToPurchaseDuration?: string;
+
+    Miscellaneous_items?: string[];
+    Miscellaneous_details?: {
+      rightOfFirstRefusalDetails?: string;
+      leaseToPurchaseDetails?: string;
+    };
+  };
+};
+
+export interface FormValues {
+  doc_id: string;
+  title: string;
+  propertyAddress: string;
+  landlordName: string;
+  landlordEmail: string;
+  tenantName: string;
+  tenantEmail: string;
+  landlord_home_town_address: string;
+  tenant_home_town_address: string;
+  addFileNumber: boolean;
+
+  property_address_S1: string;
+  property_address_S2: string;
+  property_city: string;
+  property_state: string;
+  property_zip: string;
+
+  landlord_address_S1: string;
+  landlord_address_S2: string;
+  landlord_city: string;
+  landlord_state: string;
+  landlord_zip: string;
+
+  tenant_address_S1: string;
+  tenant_address_S2: string;
+  tenant_city: string;
+  tenant_state: string;
+  tenant_zip: string;
+
+  rentAmount: string;
+  prepaidRent: string;
+  securityDeposit: string;
+  leaseType: string;
+  leaseDuration: string;
+  rentEscalationPercent: string;
+  includeRenewalOption: boolean;
+  renewalOptionsCount: string;
+  renewalYears: string;
+  startDate: string;
+  rentstartDate: string;
+  deliveryCondition: string,
+  maintenance: {
+    structural: { landlord: boolean, tenant: boolean },
+    nonStructural: { landlord: boolean, tenant: boolean },
+    hvac: { landlord: boolean, tenant: boolean },
+    plumbing: { landlord: boolean, tenant: boolean },
+    electrical: { landlord: boolean, tenant: boolean },
+    commonAreas: { landlord: boolean, tenant: boolean },
+    utilities: { landlord: boolean, tenant: boolean },
+    specialEquipment: { landlord: boolean, tenant: boolean },
+  },
+  rentEscalationType: string,
+  RentEscalation?: string;
+  PrepaidRent?: string;
+  LeaseType?: string;
+  percentageLeasePercent: string; // % of gross sales revenue for Percentage Lease
+
+  // Step 3 (Property Details)
+  propertySize: string;
+  hasExtraSpace: boolean;
+  patio: string;
+  intendedUse: string;
+  exclusiveUse: string;
+  propertyType: string;
+  parkingSpaces: string;
+  utilities: {
+    electricity: boolean;
+    waterSewer: boolean;
+    naturalGas: boolean;
+    internetCable: boolean;
+    hvac: boolean;
+    securitySystem: boolean;
+    other: boolean;
+  };
+
+  // Step 4 (Additional Terms)
+  renewalOption: boolean;
+  renewalOptionDetails: string;
+
+  rightOfFirstRefusal: boolean;
+  rightOfFirstRefusalDetails: string;
+
+  leaseToPurchase: boolean;
+  leaseToPurchaseDetails: string;
+  leaseToPurchaseDuration: string,
+
+  improvementAllowanceEnabled: boolean;
+  improvementAllowanceAmount: string;
+
+  improvementAllowance: string;
+  specialConditions: string;
+
+  financingApproval: boolean;
+  environmentalAssessment: boolean;
+  zoningCompliance: boolean;
+  permitsLicenses: boolean;
+  propertyInspection: boolean;
+  insuranceApproval: boolean;
+
+  // Step 5
+  terms: boolean;
+}
+
 export interface Step {
   id: number;
   title: string;
@@ -9,7 +238,7 @@ export type SubmitStatus = 'Draft' | 'Submitted';
 // "@/types/loi"
 export type LOIApiPayload = {
   title: string;
-  propertyAddress: string;
+
   addFileNumber: boolean;
   doc_id?: string;
 
@@ -24,21 +253,31 @@ export type LOIApiPayload = {
     tenant_home_town_address?: string;
   };
 
-  leaseTerms: {
+    leaseTerms?: {
     monthlyRent: string;
     securityDeposit: string;
-    leaseType: string;
-    leaseDuration: string;     // months
-    startDate: string;         // yyyy-mm-dd
-    RentEscalation?: string;
+    leaseDuration: string;
+    startDate: string;
+    rentstartDate?: string;
     prepaidRent: string;
-    includeRenewalOption: boolean;
-    renewalYears: string;
-    renewalOptionsCount: string;
-    rentstartDate: string;
+    leaseType: string;
 
-    // Optional (kept for compatibility)
+    // legacy
+    RentEscalation?: string;
+    PrepaidRent?: string;
+    LeaseType?: string;
+    rentEsclation?: string;
+
+    // escalation
+    rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
+
+    includeRenewalOption: boolean;
+    renewalYears?: string;
+    renewalOptionsCount?: string;
+
+    // ✅ make optional
+    percentageLeasePercent?: string;
   };
 
   propertyDetails: {
@@ -146,7 +385,7 @@ export interface CustomFieldProps {
 }
 
 export interface FileData {
-   name: string;
+  name: string;
   size: string;      // e.g. "12.34 KB"
   type: string;      // mime type
   file: File;
@@ -292,8 +531,8 @@ export type UILeaseBrief = {
   documentId?: string;        // e.g., "2025-001"
   status?: string;            // e.g., "Signed", "Draft", "Pending"
   tags?: string[];            // e.g., ["Termination Clause", "Indemnity"]
-  sizeLabel?: string;     
-  updatedAt?:string    // e.g., "2.4 MB"
+  sizeLabel?: string;
+  updatedAt?: string    // e.g., "2.4 MB"
 };
 
 export type UILeaseFull = {

@@ -3,7 +3,7 @@
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { RefreshCw, Wrench, FileText, AlertTriangle } from "lucide-react";
-import { FormValues } from "@/constants/formData";
+import { FormValues } from "@/types/loi";
 
 export const AdditionalTermsStep: React.FC = () => {
   const { values, setFieldValue, setFieldTouched } = useFormikContext<FormValues>();

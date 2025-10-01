@@ -4,7 +4,7 @@
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { Info, Building2, Car, Zap, Wrench, ChevronRight } from "lucide-react";
-import { FormValues } from "@/constants/formData";
+import { FormValues } from "@/types/loi";
 
 const PROPERTY_TYPES = [
   "Shopping Center",
