@@ -1,6 +1,6 @@
 import { FormValues, LoiDTO, Step } from "@/types/loi";
 import * as Yup from "yup";
-import { extractAmount, mapMaintenanceFromDTO, mapUtilitiesToBoolean, normalizeParkingSpaces, parseSingleLineAddress, STATE_2, ZIP_5_9 } from "./helpers";
+import { extractAmount, mapMaintenanceFromDTO, mapUtilitiesToBoolean, normalizeParkingSpaces, parseSingleLineAddress,  ZIP_5_9 } from "./helpers";
 
 export const STEPS: Step[] = [
   { id: 1, title: "Basic Information", subtitle: "Property and party details" },
@@ -229,7 +229,6 @@ export const VALIDATION_SCHEMAS = {
     property_city: Yup.string().trim().required("City is required"),
     property_state: Yup.string()
       .trim()
-      .matches(STATE_2, "Use 2-letter state code")
       .required("State is required"),
     property_zip: Yup.string()
       .trim()
@@ -244,13 +243,13 @@ export const VALIDATION_SCHEMAS = {
     landlord_address_S1: Yup.string().trim().required("Landlord street is required"),
     landlord_address_S2: Yup.string().trim().nullable(),
     landlord_city: Yup.string().trim().required("Landlord city is required"),
-    landlord_state: Yup.string().trim().matches(STATE_2, "Use 2-letter state code").required("Landlord state is required"),
+    landlord_state: Yup.string().trim().required("Landlord state is required"),
     landlord_zip: Yup.string().trim().matches(ZIP_5_9, "Invalid ZIP").required("Landlord ZIP is required"),
 
     tenant_address_S1: Yup.string().trim().required("Tenant street is required"),
     tenant_address_S2: Yup.string().trim().nullable(),
     tenant_city: Yup.string().trim().required("Tenant city is required"),
-    tenant_state: Yup.string().trim().matches(STATE_2, "Use 2-letter state code").required("Tenant state is required"),
+    tenant_state: Yup.string().trim().required("Tenant state is required"),
     tenant_zip: Yup.string().trim().matches(ZIP_5_9, "Invalid ZIP").required("Tenant ZIP is required"),
   }),
 

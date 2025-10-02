@@ -346,70 +346,100 @@ export const PartyDropdowns: React.FC<Props> = ({
         {/* Landlord Address – structured */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Landlord Address</label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2">
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {/* Street 1 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
               <input
                 name="landlord_address_S1"
                 placeholder="Street Address Line 1"
+                autoComplete="address-line1"
                 value={String(values["landlord_address_S1"] ?? "")}
                 onChange={(e) => setFieldValue("landlord_address_S1", e.target.value)}
                 onBlur={onBlurTouch("landlord_address_S1")}
-                className="w-full rounded-lg border border-gray-300 p-3 "
+                className="w-full rounded-lg border border-gray-300 p-3"
               />
-              <ErrorMessage name="landlord_address_S1" component="div" className="text-sm text-red-500" />
+              <ErrorMessage
+                name="landlord_address_S1"
+                component="div"
+                className="text-sm text-red-500"
+              />
             </div>
-            <div className="sm:col-span-2">
+
+            {/* Street 2 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
               <input
                 name="landlord_address_S2"
                 placeholder="Street Address Line 2 (optional)"
+                autoComplete="address-line2"
                 value={String(values["landlord_address_S2"] ?? "")}
                 onChange={(e) => setFieldValue("landlord_address_S2", e.target.value)}
                 onBlur={onBlurTouch("landlord_address_S2")}
                 className="w-full rounded-lg border border-gray-300 p-3"
               />
-              <ErrorMessage name="landlord_address_S2" component="div" className="text-sm text-red-500" />
+              <ErrorMessage
+                name="landlord_address_S2"
+                component="div"
+                className="text-sm text-red-500"
+              />
             </div>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <input
-                  name="landlord_city"
-                  placeholder="City"
-                  value={String(values["landlord_city"] ?? "")}
-                  onChange={(e) => setFieldValue("landlord_city", e.target.value)}
-                  onBlur={onBlurTouch("landlord_city")}
-                  className=" rounded-lg border border-gray-300 p-3"
-                />
-                <ErrorMessage name="landlord_city" component="div" className="text-sm text-red-500" />
 
-              </div>
-
-              <div className="flex-1">
-                <input
-                  name="landlord_state"
-                  placeholder="State"
-                  value={String(values["landlord_state"] ?? "")}
-                  onChange={(e) => setFieldValue("landlord_state", e.target.value)}
-                  onBlur={onBlurTouch("landlord_state")}
-                  className=" rounded-lg border border-gray-300 p-3"
-                />
-                <ErrorMessage name="landlord_state" component="div" className="text-sm text-red-500" />
-
-              </div>
+            {/* City */}
+            <div className="col-span-1">
+              <input
+                name="landlord_city"
+                placeholder="City"
+                autoComplete="address-level2"
+                value={String(values["landlord_city"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_city", e.target.value)}
+                onBlur={onBlurTouch("landlord_city")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_city"
+                component="div"
+                className="text-sm text-red-500"
+              />
             </div>
-          </div>
-          <div className="flex-1">
-            <input
-              name="landlord_zip"
-              placeholder="Zip Code"
-              value={String(values["landlord_zip"] ?? "")}
-              onChange={(e) => setFieldValue("landlord_zip", e.target.value)}
-              onBlur={onBlurTouch("landlord_zip")}
-              className="w-full rounded-lg border border-gray-300 p-3"
-            />
-            <ErrorMessage name="landlord_zip" component="div" className="text-sm text-red-500" />
 
+            {/* State/Province */}
+            <div className="col-span-1">
+              <input
+                name="landlord_state"
+                placeholder="State"
+                autoComplete="address-level1"
+                value={String(values["landlord_state"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_state", e.target.value)}
+                onBlur={onBlurTouch("landlord_state")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_state"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
+
+            {/* Zip/Postal */}
+            <div className="col-span-1">
+              <input
+                name="landlord_zip"
+                placeholder="Zip / Postal Code"
+                autoComplete="postal-code"
+                value={String(values["landlord_zip"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_zip", e.target.value)}
+                onBlur={onBlurTouch("landlord_zip")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_zip"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
           </div>
         </div>
+
       </div>
 
       <hr className="my-2 border-gray-200" />
@@ -451,11 +481,14 @@ export const PartyDropdowns: React.FC<Props> = ({
         {/* Tenant Address – structured */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Tenant Address</label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2">
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {/* Street 1 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
               <input
                 name="tenant_address_S1"
                 placeholder="Street Address Line 1"
+                autoComplete="address-line1"
                 value={String(values["tenant_address_S1"] ?? "")}
                 onChange={(e) => setFieldValue("tenant_address_S1", e.target.value)}
                 onBlur={onBlurTouch("tenant_address_S1")}
@@ -463,10 +496,13 @@ export const PartyDropdowns: React.FC<Props> = ({
               />
               <ErrorMessage name="tenant_address_S1" component="div" className="text-sm text-red-500" />
             </div>
-            <div className="sm:col-span-2">
+
+            {/* Street 2 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
               <input
                 name="tenant_address_S2"
                 placeholder="Street Address Line 2 (optional)"
+                autoComplete="address-line2"
                 value={String(values["tenant_address_S2"] ?? "")}
                 onChange={(e) => setFieldValue("tenant_address_S2", e.target.value)}
                 onBlur={onBlurTouch("tenant_address_S2")}
@@ -475,48 +511,50 @@ export const PartyDropdowns: React.FC<Props> = ({
               <ErrorMessage name="tenant_address_S2" component="div" className="text-sm text-red-500" />
             </div>
 
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <input
-                  name="tenant_city"
-                  placeholder="City"
-                  value={String(values["tenant_city"] ?? "")}
-                  onChange={(e) => setFieldValue("tenant_city", e.target.value)}
-                  onBlur={onBlurTouch("tenant_city")}
-                  className=" rounded-lg border border-gray-300 p-3 text-gray-700"
-                />
-                <ErrorMessage name="tenant_city" component="div" className="text-sm text-red-500" />
+            {/* City */}
+            <div className="col-span-1">
+              <input
+                name="tenant_city"
+                placeholder="City"
+                autoComplete="address-level2"
+                value={String(values["tenant_city"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_city", e.target.value)}
+                onBlur={onBlurTouch("tenant_city")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_city" component="div" className="text-sm text-red-500" />
+            </div>
 
-              </div>
+            {/* State */}
+            <div className="col-span-1">
+              <input
+                name="tenant_state"
+                placeholder="State"
+                autoComplete="address-level1"
+                value={String(values["tenant_state"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_state", e.target.value)}
+                onBlur={onBlurTouch("tenant_state")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_state" component="div" className="text-sm text-red-500" />
+            </div>
 
-
-              <div className="flex-1">
-                <input
-                  name="tenant_state"
-                  placeholder="State"
-                  value={String(values["tenant_state"] ?? "")}
-                  onChange={(e) => setFieldValue("tenant_state", e.target.value)}
-                  onBlur={onBlurTouch("tenant_state")}
-                  className="rounded-lg border p-3 border-gray-300 text-gray-700"
-                />
-                <ErrorMessage name="tenant_state" component="div" className="text-sm text-red-500" />
-
-              </div>
+            {/* Zip */}
+            <div className="col-span-1">
+              <input
+                name="tenant_zip"
+                placeholder="Zip Code"
+                autoComplete="postal-code"
+                value={String(values["tenant_zip"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_zip", e.target.value)}
+                onBlur={onBlurTouch("tenant_zip")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_zip" component="div" className="text-sm text-red-500" />
             </div>
           </div>
-          <div className="flex-1">
-            <input
-              name="tenant_zip"
-              placeholder="Zip Code"
-              value={String(values["tenant_zip"] ?? "")}
-              onChange={(e) => setFieldValue("tenant_zip", e.target.value)}
-              onBlur={onBlurTouch("tenant_zip")}
-              className="rounded-lg border p-3 border-gray-300 text-gray-700"
-            />
-            <ErrorMessage name="tenant_zip" component="div" className="text-sm text-red-500" />
-
-          </div>
         </div>
+
       </div>
 
       {/* Hidden ids & legacy fields */}

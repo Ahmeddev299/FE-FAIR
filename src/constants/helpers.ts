@@ -54,5 +54,5 @@ export const mapUtilitiesToBoolean = (list?: readonly string[]) => ({
 export const mustBeOff = (msg: string) =>
   Yup.boolean().oneOf([false], msg).default(false);
 
-export const STATE_2 = /^[A-Za-z]{2}$/;                
+// export const STATE_2 = /^[A-Za-z]{3}$/;                
 export const ZIP_5_9 = /^\d{5}(?:-\d{4})?$/;        

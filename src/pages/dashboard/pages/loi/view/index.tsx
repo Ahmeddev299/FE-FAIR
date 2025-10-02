@@ -169,45 +169,45 @@ const RowActionMenu: React.FC<{
       role="menu"
       aria-label="Actions"
     >
-        <div className="px-[10px] py-[6px] text-[11px] font-semibold text-slate-500">
-          Actions
-        </div>
+      <div className="px-[10px] py-[6px] text-[11px] font-semibold text-slate-500">
+        Actions
+      </div>
 
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
                text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
-          onClick={() => { onView(); onClose(); }}
-        >
-          <ViewIcon className="w-[14px] h-[14px]" />
-          View
-        </button>
+        onClick={() => { onView(); onClose(); }}
+      >
+        <ViewIcon className="w-[14px] h-[14px]" />
+        View
+      </button>
 
-        <div className="mx-[6px] h-px bg-slate-100" />
+      <div className="mx-[6px] h-px bg-slate-100" />
 
-        <div className="mx-[6px] h-px bg-slate-100" />
+      <div className="mx-[6px] h-px bg-slate-100" />
 
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
                text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
-          onClick={() => { onSendForSign(); onClose(); }}
-        >
-          <SignIcon className="w-[14px] h-[14px]" />
-          Send for Sign
-        </button>
+        onClick={() => { onSendForSign(); onClose(); }}
+      >
+        <SignIcon className="w-[14px] h-[14px]" />
+        Send for Sign
+      </button>
 
-        <div className="mx-[6px] h-px bg-slate-100" />
+      <div className="mx-[6px] h-px bg-slate-100" />
 
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
                text-[13px] leading-[18px] text-rose-600 hover:bg-rose-50"
-          onClick={() => { onDelete(); onClose(); }}
-        >
-          <DeleteIcon className="w-[14px] h-[14px]" />
-          Delete
-        </button>
+        onClick={() => { onDelete(); onClose(); }}
+      >
+        <DeleteIcon className="w-[14px] h-[14px]" />
+        Delete
+      </button>
 
     </div>
   );
@@ -577,6 +577,7 @@ export default function LoiListPage() {
                 <div className="text-center text-sm text-gray-500 py-6">No records found</div>
               ) : (
                 pagedRows.map((row, idx) => {
+                  const rowId = String(row._id || row.id || idx);
                   const id = row._id || row.id;
                   return (
                     <div key={String(id ?? idx)} className="rounded-lg border border-gray-200 p-3">
@@ -586,15 +587,30 @@ export default function LoiListPage() {
                           <div className="text-sm text-gray-700">{truncateWords(row.propertyAddress ?? row.property_address, 10)}</div>
                           <StatusPill value={row.status} />
                         </div>
-                        <button
-                          className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-slate-200 hover:bg-slate-50"
-                          onClick={(e) => {
-                            const r = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
-                            setMenuState({ id: id ?? String(idx), x: r.left, y: r.bottom });
-                          }}
-                        >
-                          <MoreVertical className="w-4 h-4 text-slate-600" />
-                        </button>
+                        <div className="relative">
+                          <button
+                            className="h-9 w-9 inline-flex items-center justify-center rounded-md  border-slate-200 hover:bg-slate-50"
+                            aria-haspopup="menu"
+                            aria-expanded={menuState.id === id}
+                            onClick={(e) => {
+                              const r = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                              setMenuState((cur) =>
+                                cur.id === id ? { id: null, x: 0, y: 0 } : { id: id ?? rowId, x: r.left, y: r.bottom }
+                              );
+                            }}
+                          >
+                            <MoreVertical className="w-4 h-4 text-slate-600" />
+                          </button>
+                          <RowActionMenu
+                            open={menuState.id === (id ?? rowId)}
+                            x={menuState.x}
+                            y={menuState.y}
+                            onClose={() => setMenuState({ id: null, x: 0, y: 0 })}
+                            onView={() => openDetail(id)}
+                            onSendForSign={() => handleSendForSign(row)}
+                            onDelete={() => handleDelete(row)}
+                          />
+                        </div>
                       </div>
                     </div>
                   );

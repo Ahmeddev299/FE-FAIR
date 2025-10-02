@@ -74,10 +74,9 @@ const sanitizeLoiPayload = <T extends object>(row: T): Omit<T, SanitizableKeys> 
   return working as Omit<T, SanitizableKeys>;
 };
 
-
 const deriveStatusFromClauses = (row: LoiItem) => {
   const blocks = row?.clauses ? Object.values(row.clauses) : [];
-  if (!blocks.length) return norm(row.status) || "in review";
+  if (!blocks.length) return norm(row.status) || "In Process";
   const statuses = blocks.map((b) => norm(b.status)).filter(Boolean);
   if (!statuses.length) return norm(row.status) || "in review";
   const allApproved = statuses.every((s) => s === "approved");

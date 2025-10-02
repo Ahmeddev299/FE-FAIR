@@ -3,23 +3,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  Bell,
-  ChevronDown,
-  LayoutGrid,
-  FileText,
-  Upload as UploadIcon,
-  FolderOpen,
-  Signature,
-  MinusCircle,
-  CreditCard,
-  Database,
-  User,
-  LogOut,
-} from "lucide-react";
+import dashboardIcon from '@/icons/billing.svg'
+import docIcon from '@/icons/doc-icon.svg'
+import leaseIcon from '@/icons/leases.svg'
+import uploadLeaseIcon from '@/icons/upload-lease-icon.svg'
+import eSignIcon from '@/icons/e-sign.svg'
+import terminateLeaseIcon from '@/icons/terminate-lease.svg'
+import BillingIcon from '@/icons/billing.svg'
+import StorageIcon from '@/icons/storage.svg'
+import SettingIcon from '@/icons/setting.svg'
+import LIcon from '@/icons/logout-icon.svg'
+
 import { selectUser, userLogout } from "../../redux/slices/userSlice";
 import { ProtectedRoute } from "../layouts/protectedRoutes";
 import { LogoutModal } from "../models/logoutModel";
+import {  LayoutGrid, User } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -64,21 +62,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const getIcon = (label: string) => {
     switch (label) {
       case "Dashboard":
-        return LayoutGrid;
+        return dashboardIcon;
       case "Start LOI":
-        return FileText;
+        return docIcon;
       case "Upload Lease":
-        return UploadIcon;
+        return uploadLeaseIcon;
       case "Leases":
-        return FolderOpen;
+        return leaseIcon;
       case "E-Signature":
-        return Signature;
+        return eSignIcon;
       case "Terminate Lease":
-        return MinusCircle;
+        return terminateLeaseIcon;
       case "Billing & Plan":
-        return CreditCard;
+        return BillingIcon;
       case "Storage":
-        return Database;
+        return StorageIcon;
       default:
         return LayoutGrid;
     }
@@ -110,10 +108,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 <Image
                   src="/logo.png"
                   alt="Fair"
-                  width={220}          // intrinsic resolution (keeps sharp)
+                  width={220}
                   height={80}
                   priority
-                  className="h-[98px] w-auto object-contain"  // h-14 = 56px tall
+                  className="h-[98px] w-auto object-contain"
                 />
               </div>
             </Link>
@@ -130,16 +128,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex text-[#555555] font-semibold items-center gap-4  px-3 py-2.5 text-[14px] transition-colors
+                    className={`flex text-[#555555] font-semibold items-center gap-4  px-3 py-1.5 text-[14px] transition-colors
                       ${active ? "bg-[#2D8EEF] text-white font-medium" : "text-gray-600 hover:bg-gray-50"}`}
                   >
                     <Icon
-                      className={`h-5 w-5 text-[#555555] ${active ? "text-white" : "text-gray-500"}`}
+                      className={`h-9 w-9 text-[#555555] ${active ? "text-white" : "text-gray-500"}`}
                       strokeWidth={2}   // thicker stroke
                     />
 
 
-                    <span>{item.name}</span>
+                    <span className="mt-3 text-[16px]">{item.name}</span>
                   </Link>
                 );
               })}
@@ -153,17 +151,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-3 text-[#555555] font-semibold px-3 py-2.5 text-[16px] text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-4 text-[#555555] font-semibold px-3 py-1.5 text-[16px] text-gray-600 hover:bg-gray-50 transition-colors"
                   >
-                    <User className="h-5 w-5 text-gray-500" strokeWidth={2} />
-                    <span>{item.name}</span>
+                    <SettingIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
+                    <span className="mt-4">{item.name}</span>
                   </Link>
                 ))}
                 <button
                   onClick={handleLogout}
                   className="flex w-full items-center gap-3 px-3 py-2.5 font-semibold text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
-                  <LogOut className="h-5 w-5 text-gray-500" strokeWidth={2} />
+                  <LIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
+
                   <span>Logout</span>
                 </button>
               </div>
@@ -190,7 +189,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               <h1 className="text-xl font-semibold text-gray-800">{pageTitle}</h1>
               <div className="flex items-center gap-4">
                 <button className="relative rounded p-2 text-gray-600 hover:bg-gray-100" aria-label="Notifications">
-                  <Bell className="h-5 w-5" />
+                  <SettingIcon className="h-5 w-5" />
                   <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
                 </button>
                 <div className="flex items-center gap-2">
@@ -200,7 +199,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   <span className="text-sm font-medium text-gray-700">
                     {profile?.name || profile?.email || "User"}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                  <SettingIcon className="h-4 w-4 text-gray-400" />
                 </div>
               </div>
             </div>
@@ -262,7 +261,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       }}
                       className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      <LogOut className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                      <LIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
+
                       <span>Logout</span>
                     </button>
                   </div>
