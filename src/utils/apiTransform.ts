@@ -119,6 +119,7 @@ export const transformToApiPayload = (
       includeRenewalOption: !!values.includeRenewalOption,
       renewalYears: values.renewalYears || "",
       renewalOptionsCount: values.renewalOptionsCount || "",
+      rentStartMode : values.rentStartMode || "",
 
       // if your form adds this when “Percentage Lease” is selected
       ...(nonEmpty(values.percentageLeasePercent)

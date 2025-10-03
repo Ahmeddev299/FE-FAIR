@@ -98,7 +98,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full mx-auto">
         <Formik
           initialValues={initialData || INITIAL_VALUES}
           enableReinitialize

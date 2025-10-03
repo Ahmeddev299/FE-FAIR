@@ -27,7 +27,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       className={clsx(
         fullscreen ? "fixed inset-0" : "absolute inset-0",
         "z-50 flex items-center justify-center",
-        "bg-black/20 backdrop-blur-sm", // dim + blur background
+        "bg-black/20 backdrop-blur-sm", // dim + blur background 
         className
       )}
     >

@@ -34,7 +34,7 @@ export const LeaseTermsStep: React.FC = () => {
 
           {/* Monthly Rent */}
           <div>
-            <label className="mb-2 block text-sm font-medium">Monthly Rent *</label>
+            <label className="mb-2 block text-sm font-medium">Base Rent *</label>
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Field
@@ -104,37 +104,37 @@ export const LeaseTermsStep: React.FC = () => {
             </Field>
             <ErrorMessage name="leaseType" component="div" className="mt-1 text-sm text-red-500" />
           </div>
-           {values.leaseType === "Percentage Lease" && (
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Percentage of Gross Sales Revenue *
-            </label>
-            <div className="relative">
-              <Field
-                name="percentageLeasePercent"
-                type="number"
-                inputMode="decimal"
-                min="0"
-                max="100"
-                step="0.1"
-                placeholder="e.g., 6"
-                className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-10
+          {values.leaseType === "Percentage Lease" && (
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Percentage of Gross Sales Revenue *
+              </label>
+              <div className="relative">
+                <Field
+                  name="percentageLeasePercent"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  placeholder="e.g., 6"
+                  className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 pr-10
                          focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                />
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  %
+                </span>
+              </div>
+              <ErrorMessage
+                name="percentageLeasePercent"
+                component="div"
+                className="mt-1 text-sm text-red-500"
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                %
-              </span>
             </div>
-            <ErrorMessage
-              name="percentageLeasePercent"
-              component="div"
-              className="mt-1 text-sm text-red-500"
-            />
-          </div>
-        )}
+          )}
         </div>
         {/* NEW: Percentage of Gross Sales (only for Percentage Lease) */}
-    
+
 
 
         {/* ---------------- Timing Terms ---------------- */}
@@ -295,28 +295,39 @@ export const LeaseTermsStep: React.FC = () => {
             </div>
           )}
 
-          {/* Preferred Start Date */}
+          {/* Lease Commencement */}
           <div>
             <label className="mb-2 block text-sm font-medium">Commencement Date *</label>
             <Field
               name="startDate"
               type="date"
-              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
-                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 focus:ring-2 focus:ring-blue-500"
             />
             <ErrorMessage name="startDate" component="div" className="mt-1 text-sm text-red-500" />
           </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium">Rent Commencement Start Date</label>
+          {/* Rent Commencement + mode */}
+          <div className="space-y-2 border p-3 border-gray-200">
+            <label className="block text-sm font-medium">Rent Commencement Date</label>
             <Field
               name="rentstartDate"
               type="date"
-              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
-                         focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              className="w-full rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3 focus:ring-2 focus:ring-blue-500"
             />
-            <ErrorMessage name="rentstartDate" component="div" className="mt-1 text-sm text-red-500" />
+            <div className="mt-2 grid gap-2 rounded-lg border border-gray-200 p-3 sm:grid-cols-2">
+              <label className="flex items-center gap-2 text-sm">
+                <Field type="radio" name="rentStartMode" value="all" />
+                <span>All Rent starts on this date</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Field type="radio" name="rentStartMode" value="base-only" />
+                <span>Only Base Rent starts on this date</span>
+              </label>
+            </div>
+
           </div>
+
+
         </div>
       </div>
 

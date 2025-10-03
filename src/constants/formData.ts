@@ -2,6 +2,8 @@ import { FormValues, LoiDTO, Step } from "@/types/loi";
 import * as Yup from "yup";
 import { extractAmount, mapMaintenanceFromDTO, mapUtilitiesToBoolean, normalizeParkingSpaces, parseSingleLineAddress,  ZIP_5_9 } from "./helpers";
 
+type RentStartMode = "all" | "base-only";
+
 export const STEPS: Step[] = [
   { id: 1, title: "Basic Information", subtitle: "Property and party details" },
   { id: 2, title: "Lease Terms", subtitle: "Key lease particulars" },
@@ -44,6 +46,7 @@ export const INITIAL_VALUES: FormValues = {
   renewalYears: "",
   startDate: "",
   rentstartDate: "",
+   rentStartMode: "all" as RentStartMode, // All Rent (default)
   percentageLeasePercent: "", // % of gross sales revenue for Percentage Lease
 
   PrepaidRent: undefined,
@@ -63,7 +66,7 @@ export const INITIAL_VALUES: FormValues = {
     naturalGas: false,
     internetCable: false,
     hvac: false,
-    securitySystem: false,
+    securitySystem: false, 
     other: false,
   },
   maintenance: {
@@ -178,12 +181,12 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     rentEscalationType,
     percentageLeasePercent: lt.percentageLeasePercent ?? "",// % of gross sales revenue for Percentage Lease
 
-
     includeRenewalOption: !!lt.includeRenewalOption,
     renewalOptionsCount: lt.renewalOptionsCount ?? "",
     renewalYears: lt.renewalYears ?? "",
     startDate: (lt.startDate ?? "").split("T")[0] || "",
     rentstartDate: (lt.rentstartDate ?? "").split("T")[0] || "",
+    rentStartMode: (lt.rentStartMode ?? "").split("T")[0] || "",
 
     propertySize: pd.propertySize ?? "",
     hasExtraSpace: !!pd.hasExtraSpace,
@@ -359,8 +362,6 @@ export const VALIDATION_SCHEMAS = {
     propertyType: Yup.string().required("Property type is required"),
     parkingSpaces: Yup.string().required("Parking Spaces is required"),
   }),
-
-
 
   4: Yup.object({
     rightOfFirstRefusal: Yup.boolean().default(false),

@@ -112,7 +112,7 @@ export default function LetterOfIntentDashboard() {
       ) : (
         <div className="min-h-screen">
           {/* page container */}
-          <div className="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          <div className="mx-auto w-full  px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             {/* header card */}
             <div className="mb-6 rounded-lg bg-white p-4 shadow-sm sm:p-6">
               <h1 className="mb-1 text-xl font-bold text-gray-900 sm:text-2xl">
@@ -223,7 +223,7 @@ export default function LetterOfIntentDashboard() {
               <div className="block md:hidden">
                 <div className="divide-y divide-gray-200">
                   {drafts.length === 0 ? (
-                    <div className="p-4 text-sm text-gray-500">No drafts yet.</div>
+                    <div className="p-4 text-sm text-center text-gray-500">No drafts yet.</div>
                   ) : (
                     drafts.map((letter: Letter) => {
                       const isRowDownloading = downloadingId === letter?.id;
@@ -307,7 +307,7 @@ export default function LetterOfIntentDashboard() {
                     {/* Rows */}
                     <div className="divide-y divide-gray-200">
                       {drafts.length === 0 ? (
-                        <div className="px-6 py-4 text-sm text-gray-500">No drafts yet.</div>
+                        <div className="px-6 py-4 text-sm  text-center text-gray-500">No drafts yet.</div>
                       ) : (
                         drafts.map((letter: Letter) => {
                           const isRowDownloading = downloadingId === letter?.id;

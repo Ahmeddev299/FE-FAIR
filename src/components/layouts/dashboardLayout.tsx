@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
-import dashboardIcon from '@/icons/billing.svg'
+import dashboardIcon from '@/icons/dashboard-icon.svg'
 import docIcon from '@/icons/doc-icon.svg'
 import leaseIcon from '@/icons/leases.svg'
 import uploadLeaseIcon from '@/icons/upload-lease-icon.svg'
@@ -17,7 +17,7 @@ import LIcon from '@/icons/logout-icon.svg'
 import { selectUser, userLogout } from "../../redux/slices/userSlice";
 import { ProtectedRoute } from "../layouts/protectedRoutes";
 import { LogoutModal } from "../models/logoutModel";
-import {  LayoutGrid, User } from "lucide-react";
+import { LayoutGrid, User } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,7 +34,7 @@ const NAV = [
   { name: "Storage", href: "/dashboard/pages/tenantStorage" },
 ];
 
-const USER_MENU = [{ name: "Profile", href: "/dashboard/pages/profile" }];
+const USER_MENU = [{ name: "Settings", href: "/dashboard/pages/setting" }];
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const router = useRouter();
@@ -118,8 +118,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
           </div>
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto px-4 py-4 border-b ">
-            <div className="space-y-4">
+          <nav className="flex-1 overflow-y-auto px-4 py-2 border-b ">
+            <div className="space-y-3">
               {NAV.map((item) => {
                 const active = isActive(item.href);
                 const Icon = getIcon(item.name);
@@ -128,16 +128,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex text-[#555555] font-semibold items-center gap-4  px-3 py-1.5 text-[14px] transition-colors
+                    className={`flex text-[#555555] font-semibold items-center gap-3 px-3 text-[14px] transition-colors
                       ${active ? "bg-[#2D8EEF] text-white font-medium" : "text-gray-600 hover:bg-gray-50"}`}
                   >
                     <Icon
-                      className={`h-9 w-9 text-[#555555] ${active ? "text-white" : "text-gray-500"}`}
+                      className={`h-9 w-9 mb-2 text-[#555555] ${active ? "text-white" : "text-gray-500"}`}
                       strokeWidth={2}   // thicker stroke
                     />
-
-
-                    <span className="mt-3 text-[16px]">{item.name}</span>
+                    <span className="mt-1 text-[14px]">{item.name}</span>
                   </Link>
                 );
               })}
@@ -151,19 +149,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-4 text-[#555555] font-semibold px-3 py-1.5 text-[16px] text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 text-[#555555] font-semibold px-3 py-1.5 text-[16px] text-gray-600 hover:bg-gray-50 transition-colors"
                   >
                     <SettingIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
-                    <span className="mt-4">{item.name}</span>
+                    <span className="mt-3">{item.name}</span>
                   </Link>
                 ))}
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 px-3 py-2.5 font-semibold text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center gap-3 px-3 font-semibold text-[14px] text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   <LIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
 
-                  <span>Logout</span>
+                  <span className="mt-3 text-[14px]">Logout</span>
                 </button>
               </div>
             </div>
@@ -184,16 +182,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           </div>
 
           {/* Header */}
-          <header className="h-[60px] sticky top-0 z-10 bg-white shadow-sm">
-            <div className="flex items-center justify-between px-5 pt-3">
+          <header className="sticky top-0 z-30 bg-white/90 backdrop-blur shadow-sm">
+            <div className="flex items-center justify-between px-5 h-[60px]">
               <h1 className="text-xl font-semibold text-gray-800">{pageTitle}</h1>
+
               <div className="flex items-center gap-4">
-                <button className="relative rounded p-2 text-gray-600 hover:bg-gray-100" aria-label="Notifications">
+                <button
+                  className="relative rounded p-2 text-gray-600 hover:bg-gray-100"
+                  aria-label="Notifications"
+                >
                   <SettingIcon className="h-5 w-5" />
                   <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
                 </button>
+
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 flex items-center justify-center rounded-full bg-[#8B5A2B] text-white text-sm font-medium">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5A2B] text-white text-sm font-medium">
                     M
                   </div>
                   <span className="text-sm font-medium text-gray-700">
@@ -204,6 +207,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               </div>
             </div>
           </header>
+
 
           <main className="flex-1 overflow-y-auto bg-[#FAFAFA] p-6">{children}</main>
         </div>

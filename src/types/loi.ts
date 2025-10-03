@@ -71,7 +71,7 @@ export type LoiDTO = {
     PrepaidRent?: string;
     LeaseType?: string;
     rentEsclation?: string; // legacy misspelling
-
+rentStartMode?: string;
     // ✅ NEW
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
@@ -160,6 +160,7 @@ export interface FormValues {
   leaseDuration: string;
   rentEscalationPercent: string;
   includeRenewalOption: boolean;
+  rentStartMode: string;
   renewalOptionsCount: string;
   renewalYears: string;
   startDate: string;
@@ -271,7 +272,7 @@ export type LOIApiPayload = {
     // escalation
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
-
+rentStartMode?: string;
     includeRenewalOption: boolean;
     renewalYears?: string;
     renewalOptionsCount?: string;
