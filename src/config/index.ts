@@ -35,7 +35,6 @@ const prod: ConfigType = {
   DEBUG: false,
 };
 
-// Validate environment variable
 const stage = process.env.NEXT_PUBLIC_STAGE;
 const validStages = ['local', 'dev', 'stag', 'prod'];
 
