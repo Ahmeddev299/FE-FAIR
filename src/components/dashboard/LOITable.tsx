@@ -222,7 +222,6 @@ export const LOITable: React.FC<LOITableProps> = ({
 }) => {
   const router = useRouter();
 
-  // download guards/state
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
     id: null, x: 0, y: 0
