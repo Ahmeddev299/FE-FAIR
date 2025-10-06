@@ -9,10 +9,9 @@ import { LOIApiPayload } from "@/types/loi";
 
 /** Small helpers */
 type RejectString = { rejectValue: string };
-type UnknownRecord = Record<string, unknown>;
+export type UnknownRecord = Record<string, unknown>;
 
 export type LoiServerData = UnknownRecord; // <-- the server's normalized "real" LOI data (what exportLoiToDocx expects)
-
 
 export type LoggedInUser = {
   id?: string;
@@ -29,11 +28,10 @@ export type UpdateLoggedInUserInput = {
   role: string; // API expects e.g. "tenant"
 };
 
-
-const isObject = (v: unknown): v is UnknownRecord =>
+export const isObject = (v: unknown): v is UnknownRecord =>
   typeof v === "object" && v !== null;
 
-const getErrorMessage = (err: unknown): string => {
+export const getErrorMessage = (err: unknown): string => {
   if (!err) return "Unexpected error";
   if (typeof err === "string") return err;
   if (err instanceof Error) return err.message;
@@ -54,7 +52,7 @@ const getErrorMessage = (err: unknown): string => {
   return "An error occurred";
 };
 
-const getStatus = (err: unknown): number | undefined => {
+export const getStatus = (err: unknown): number | undefined => {
   if (!isObject(err)) return undefined;
 
   const direct = err.status;

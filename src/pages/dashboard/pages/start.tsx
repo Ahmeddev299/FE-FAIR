@@ -159,7 +159,7 @@ export default function LetterOfIntentDashboard() {
         <LoadingOverlay visible />
       ) : (
         <div className="min-h-screen">
-          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8">
+          <div className="w-full mx-auto px-3 sm:px-6 lg:px-8 py-8">
             {/* Intro */}
             <div className="bg-white p-5 sm:p-6 rounded-lg shadow-sm mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Start a New Letter of Intent</h1>
@@ -323,13 +323,13 @@ export default function LetterOfIntentDashboard() {
                     <h3 className="font-medium text-gray-900 mb-3">What you will get:</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {[
-                        'Professional LOI template',
-                        'AI-powered suggestions',
-                        'Save and resume anytime',
-                        'Export to PDF',
+                        "Professional LOI template",
+                        "AI-powered suggestions",
+                        "Save and resume anytime",
+                        "Export to PDF",
                       ].map((text, i) => (
                         <div className="flex items-center" key={i}>
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                          <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                           <span className="text-sm text-gray-700">{text}</span>
                         </div>
                       ))}

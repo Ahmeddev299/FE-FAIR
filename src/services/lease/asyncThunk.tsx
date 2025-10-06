@@ -187,9 +187,9 @@ export const updateClauseCurrentVersionAsync = createAsyncThunk(
       HttpService.setToken(token);
 console.log("clauseid", clauseId)
       const res = await leaseBaseService.updateClauseDetailOrCurrentVersion(clauseId, {
-        clause_id: clauseId,   // ✅ backend exact
-        clause_key,            // ✅ backend exact
-        details,               // ✅ backend exact
+        clause_id: clauseId,   
+        clause_key,            
+        details,               
         action: "manual_edit",
       });
 
@@ -204,11 +204,7 @@ console.log("clauseid", clauseId)
   }
 );
 
-// clause_key: clauseName,
-//           details,p
 
-// ---------- Accept AI suggestion ----------
-/** ---------- Accept AI suggestion ---------- */
 export const acceptClauseSuggestionAsync = createAsyncThunk<
   { clauseId: string; clause_key: string; details: string },   // ✅ return type includes details
   AcceptSuggestionArgs                                         // ✅ arg type

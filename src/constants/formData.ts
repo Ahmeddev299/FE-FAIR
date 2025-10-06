@@ -1,97 +1,9 @@
+import { FormValues, LoiDTO, Step } from "@/types/loi";
 import * as Yup from "yup";
+import { extractAmount, mapMaintenanceFromDTO, mapUtilitiesToBoolean, normalizeParkingSpaces, parseSingleLineAddress,  ZIP_5_9 } from "./helpers";
 
-/* -------------------- TYPES -------------------- */
-export type Step = { id: number; title: string; subtitle: string };
+type RentStartMode = "all" | "base-only";
 
-export interface FormValues {
-  // Step 1
-  doc_id: string;
-  title: string;
-  propertyAddress: string;
-  landlordName: string;
-  landlordEmail: string;
-  tenantName: string;
-  tenantEmail: string;
-  landlord_home_town_address: string;
-  tenant_home_town_address: string;
-  addFileNumber: boolean;
-
-  // Step 2 (Lease Terms)
-  rentAmount: string;                 // $/month (numeric in UI)
-  prepaidRent: string;                // $Z
-  securityDeposit: string;            // $
-  leaseType: string;                  // string only
-  leaseDuration: string;              // months (numeric in UI)
-  rentEscalationPercent: string;      // % 0..100 (numeric in UI)
-  includeRenewalOption: boolean;      // checkbox to reveal the two fields below
-  renewalOptionsCount: string;        // integer >= 1
-  renewalYears: string;               // integer >= 1
-  startDate: string;                  // yyyy-mm-dd
-  rentstartDate: string;
-  deliveryCondition: string,
-  maintenance: {
-    structural: { landlord: boolean, tenant: boolean },
-    nonStructural: { landlord: boolean, tenant: boolean },
-    hvac: { landlord: boolean, tenant: boolean },
-    plumbing: { landlord: boolean, tenant: boolean },
-    electrical: { landlord: boolean, tenant: boolean },
-    commonAreas: { landlord: boolean, tenant: boolean },
-    utilities: { landlord: boolean, tenant: boolean },
-    specialEquipment: { landlord: boolean, tenant: boolean },
-  },
-
-
-  // (kept for backend compatibility if other code references them)
-  RentEscalation?: string;
-  PrepaidRent?: string;
-  LeaseType?: string;
-
-  // Step 3 (Property Details)
-  propertySize: string;               // sq ft (numeric in UI)
-  hasExtraSpace: boolean;             // show Patio when true
-  patio: string;                      // text, required only if hasExtraSpace
-  intendedUse: string;
-  exclusiveUse: string;
-  propertyType: string;
-  parkingSpaces: string;              // e.g. "8–10"
-  utilities: {
-    electricity: boolean;
-    waterSewer: boolean;
-    naturalGas: boolean;
-    internetCable: boolean;
-    hvac: boolean;
-    securitySystem: boolean;
-    other: boolean;
-  };
-
-  // Step 4 (Additional Terms)
-  renewalOption: boolean;             // misc checkbox (separate from includeRenewalOption)
-  renewalOptionDetails: string;
-
-  rightOfFirstRefusal: boolean;
-  rightOfFirstRefusalDetails: string;
-
-  leaseToPurchase: boolean;
-  leaseToPurchaseDetails: string;
-
-  improvementAllowanceEnabled: boolean;  // toggle
-  improvementAllowanceAmount: string;    // $/sf amount (numeric in UI)
-
-  improvementAllowance: string;          // legacy text field (kept for compatibility)
-  specialConditions: string;
-
-  financingApproval: boolean;
-  environmentalAssessment: boolean;
-  zoningCompliance: boolean;
-  permitsLicenses: boolean;
-  propertyInspection: boolean;
-  insuranceApproval: boolean;
-
-  // Step 5
-  terms: boolean;
-}
-
-/* -------------------- STEPS -------------------- */
 export const STEPS: Step[] = [
   { id: 1, title: "Basic Information", subtitle: "Property and party details" },
   { id: 2, title: "Lease Terms", subtitle: "Key lease particulars" },
@@ -100,9 +12,7 @@ export const STEPS: Step[] = [
   { id: 5, title: "Review & Submit", subtitle: "Final review" },
 ];
 
-/* -------------------- INITIAL VALUES -------------------- */
 export const INITIAL_VALUES: FormValues = {
-  // Step 1
   title: "",
   addFileNumber: false,
   doc_id: "",
@@ -114,7 +24,15 @@ export const INITIAL_VALUES: FormValues = {
   landlord_home_town_address: "",
   tenant_home_town_address: "",
 
-  // Step 2
+  property_address_S1: "", property_address_S2: "",
+  property_city: "", property_state: "", property_zip: "",
+
+  landlord_address_S1: "", landlord_address_S2: "",
+  landlord_city: "", landlord_state: "", landlord_zip: "",
+
+  tenant_address_S1: "", tenant_address_S2: "",
+  tenant_city: "", tenant_state: "", tenant_zip: "",
+
   rentAmount: "",
   prepaidRent: "",
   securityDeposit: "",
@@ -122,32 +40,34 @@ export const INITIAL_VALUES: FormValues = {
   leaseDuration: "",
   RentEscalation: "",
   rentEscalationPercent: "",
+  rentEscalationType: "percent",
   includeRenewalOption: false,
   renewalOptionsCount: "",
   renewalYears: "",
   startDate: "",
-  rentstartDate:"",
+  rentstartDate: "",
+   rentStartMode: "all" as RentStartMode, // All Rent (default)
+  percentageLeasePercent: "", // % of gross sales revenue for Percentage Lease
 
-  // compat (unused by UI)
   PrepaidRent: undefined,
   LeaseType: undefined,
 
-  // Step 3
   propertySize: "",
   hasExtraSpace: false,
   patio: "",
+  patioSize:"",
   intendedUse: "",
   exclusiveUse: "",
   propertyType: "",
   parkingSpaces: "",
-  deliveryCondition: "", // required in validation
+  deliveryCondition: "",
   utilities: {
     electricity: false,
     waterSewer: false,
     naturalGas: false,
     internetCable: false,
     hvac: false,
-    securitySystem: false,
+    securitySystem: false, 
     other: false,
   },
   maintenance: {
@@ -168,6 +88,7 @@ export const INITIAL_VALUES: FormValues = {
   rightOfFirstRefusalDetails: "",
   leaseToPurchase: false,
   leaseToPurchaseDetails: "",
+  leaseToPurchaseDuration: "",
 
   improvementAllowanceEnabled: false,
   improvementAllowanceAmount: "",
@@ -181,175 +102,76 @@ export const INITIAL_VALUES: FormValues = {
   propertyInspection: false,
   insuranceApproval: false,
 
-  // Step 5
   terms: false,
 };
 
 
-export type LoiDTO = {
-  title?: string;
-  loiId: string;
-  propertyAddress?: string;
-  addFileNumber: boolean;
-  doc_id: string;
-
-  partyInfo?: {
-    landlord_name?: string;
-    landlord_email?: string;
-    tenant_name?: string;
-    tenant_email?: string;
-
-    // NEW: addresses
-    landlord_home_town_address?: string;
-    tenant_home_town_address?: string;
-  };
-
-  leaseTerms?: {
-    monthlyRent?: string;
-    securityDeposit?: string;
-    leaseDuration?: string;   // months
-    startDate?: string;       // ISO string
-    rentstartDate?: string;
-    prepaidRent?: string;
-    leaseType?: string;
-
-    // legacy/alt spellings
-    RentEscalation?: string;
-    PrepaidRent?: string;
-    LeaseType?: string;
-
-    // UI fields
-    rentEscalationPercent?: string;
-    includeRenewalOption?: boolean;
-    renewalYears?: string;
-    renewalOptionsCount?: string;
-    rentEsclation?: string; // legacy misspelling
-  };
-
-  propertyDetails?: {
-    propertySize?: string;
-    patio?: string;
-    intendedUse?: string;
-    exclusiveUse?: string;   // now boolean in UI
-    propertyType?: string;
-    amenities?: string;       // Parking spaces (e.g., "8–10")
-    utilities?: string[];     // e.g., ["Electricity","HVAC"]
-    hasExtraSpace?: boolean;
-
-    // NEW:
-    deliveryCondition?: string; // "as_is" | "shell" | "vanilla_shell" | "turnkey" | "white_box"
-
-    // NEW: maintenance responsibilities
-    maintenance?: {
-      structural?: { landlord?: boolean; tenant?: boolean };
-      nonStructural?: { landlord?: boolean; tenant?: boolean };
-      hvac?: { landlord?: boolean; tenant?: boolean };
-      plumbing?: { landlord?: boolean; tenant?: boolean };
-      electrical?: { landlord?: boolean; tenant?: boolean };
-      commonAreas?: { landlord?: boolean; tenant?: boolean };
-      utilities?: { landlord?: boolean; tenant?: boolean };
-      specialEquipment?: { landlord?: boolean; tenant?: boolean };
-    };
-  };
-
-  additionalDetails?: {
-    tenantImprovement?: string;
-    renewalOption?: boolean;
-    specialConditions?: string;
-    contingencies?: string[];
-    rightOfFirstRefusal?: boolean;
-    leaseToPurchase?: boolean;
-
-    Miscellaneous_items?: string[];
-    Miscellaneous_details?: {
-      rightOfFirstRefusalDetails?: string;
-      leaseToPurchaseDetails?: string;
-    };
-  };
-};
-/* -------------------- HELPERS -------------------- */
-const mapUtilitiesToBoolean = (list?: readonly string[]) => ({
-  electricity: !!list?.includes("Electricity"),
-  waterSewer: !!list?.includes("Water/Sewer"),
-  naturalGas: !!list?.includes("Natural Gas"),
-  internetCable: !!list?.includes("Internet/Cable"),
-  hvac: !!list?.includes("HVAC"),
-  securitySystem: !!list?.includes("Security System"),
-  other: !!list?.includes("Other"),
-});
-
-const normalizeParkingSpaces = (amenities?: unknown): string => {
-  if (!amenities) return "";
-  return String(amenities).trim();
-};
-
-type MaintenanceRowDTO = { landlord?: boolean; tenant?: boolean };
-
-type MaintenanceDTO = Partial<Record<MaintKey, MaintenanceRowDTO>>;
-
-/* Maintenance mappers */
-const EMPTY_MAINT = {
-  structural: { landlord: false, tenant: false },
-  nonStructural: { landlord: false, tenant: false },
-  hvac: { landlord: false, tenant: false },
-  plumbing: { landlord: false, tenant: false },
-  electrical: { landlord: false, tenant: false },
-  commonAreas: { landlord: false, tenant: false },
-  utilities: { landlord: false, tenant: false },
-  specialEquipment: { landlord: false, tenant: false },
-} as const;
-
-type MaintKey = keyof typeof EMPTY_MAINT;
-const mapMaintenanceFromDTO = (m?: MaintenanceDTO): FormValues["maintenance"] => {
-  const src: MaintenanceDTO = m ?? {};
-
-  const result = (Object.keys(EMPTY_MAINT) as MaintKey[]).reduce(
-    (acc, k) => {
-      const v = src[k] ?? {};
-      acc[k] = {
-        landlord: Boolean(v.landlord),
-        tenant: Boolean(v.tenant),
-      };
-      return acc;
-    },
-    {} as Record<MaintKey, { landlord: boolean; tenant: boolean }>
-  );
-
-  return result;
-};
-
-
-// Extract first numeric token from a string (e.g. "$12.50/sf" -> "12.50")
-const extractAmount = (s?: string): string => {
-  const m = String(s ?? "").match(/[\d,.]+/);
-  return m ? m[0].replace(/,/g, "") : "";
-};
-
 export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
-  const lt: NonNullable<LoiDTO["leaseTerms"]> = loi.leaseTerms ?? {};
-  const pd: NonNullable<LoiDTO["propertyDetails"]> = loi.propertyDetails ?? {};
-  const ad: NonNullable<LoiDTO["additionalDetails"]> = loi.additionalDetails ?? {};
+  const lt = loi.leaseTerms ?? {};
+  const pd = loi.propertyDetails ?? {};
+  const ad = loi.additionalDetails ?? {};
 
-  const misc: string[] = Array.isArray(ad.Miscellaneous_items) ? ad.Miscellaneous_items : [];
-  const hasMisc = (label: string) => misc.includes(label);
+  const explicitType = lt.rentEscalationType as ("percent" | "fmv") | undefined;
+  const hasPct = String(lt.rentEscalationPercent ?? "").trim() !== "";
+  const rentEscalationType: "percent" | "fmv" = explicitType ?? (hasPct ? "percent" : "fmv");
+
+  const propStruct = {
+    property_address_S1: loi.property_address_S1 ?? "",
+    property_address_S2: loi.property_address_S2 ?? "",
+    property_city: loi.property_city ?? "",
+    property_state: loi.property_state ?? "",
+    property_zip: loi.property_zip ?? "",
+  };
+  const propNeedsParse =
+    !propStruct.property_address_S1 &&
+    !propStruct.property_city &&
+    !propStruct.property_state &&
+    !propStruct.property_zip;
+
+  const parsedLegacy = propNeedsParse ? parseSingleLineAddress(loi.propertyAddress) : {
+    property_address_S1: "",
+    property_address_S2: "",
+    property_city: "",
+    property_state: "",
+    property_zip: "",
+  };
+
+  const pi = loi.partyInfo ?? {};
 
   return {
-    // Step 1
+    // ---------- Step 1 ----------
     title: loi.title ?? "",
-    propertyAddress: loi.propertyAddress ?? "",
     addFileNumber: !!loi.addFileNumber,
     doc_id: loi.loiId,
 
-    landlordName: loi.partyInfo?.landlord_name ?? "",
-    landlordEmail: loi.partyInfo?.landlord_email ?? "",
-    tenantName: loi.partyInfo?.tenant_name ?? "",
-    tenantEmail: loi.partyInfo?.tenant_email ?? "",
+    propertyAddress: loi.propertyAddress ?? "",
 
-    // NEW addresses
-    landlord_home_town_address: loi.partyInfo?.landlord_home_town_address ?? "",
-    tenant_home_town_address: loi.partyInfo?.tenant_home_town_address ?? "",
+    property_address_S1: propStruct.property_address_S1 || parsedLegacy.property_address_S1,
+    property_address_S2: propStruct.property_address_S2 || parsedLegacy.property_address_S2,
+    property_city: propStruct.property_city || parsedLegacy.property_city,
+    property_state: propStruct.property_state || parsedLegacy.property_state,
+    property_zip: propStruct.property_zip || parsedLegacy.property_zip,
 
-    // Step 2
+    landlordName: pi.landlord_name ?? "",
+    landlordEmail: pi.landlord_email ?? "",
+    tenantName: pi.tenant_name ?? "",
+    tenantEmail: pi.tenant_email ?? "",
+
+    landlord_home_town_address: pi.landlord_home_town_address ?? "",
+    tenant_home_town_address: pi.tenant_home_town_address ?? "",
+
+    landlord_address_S1: pi.landlord_address_S1 ?? "",
+    landlord_address_S2: pi.landlord_address_S2 ?? "",
+    landlord_city: pi.landlord_city ?? "",
+    landlord_state: pi.landlord_state ?? "",
+    landlord_zip: pi.landlord_zip ?? "",
+
+    tenant_address_S1: pi.tenant_address_S1 ?? "",
+    tenant_address_S2: pi.tenant_address_S2 ?? "",
+    tenant_city: pi.tenant_city ?? "",
+    tenant_state: pi.tenant_state ?? "",
+    tenant_zip: pi.tenant_zip ?? "",
+
     rentAmount: lt.monthlyRent ?? "",
     prepaidRent: lt.prepaidRent ?? lt.PrepaidRent ?? "",
     securityDeposit: lt.securityDeposit ?? "",
@@ -357,16 +179,20 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     leaseDuration: lt.leaseDuration ?? "",
     RentEscalation: lt.RentEscalation ?? lt.rentEsclation ?? "",
     rentEscalationPercent: lt.rentEscalationPercent ?? "",
-    includeRenewalOption: (lt.includeRenewalOption ?? hasMisc("Include renewal option in LOI")) || false,
+    rentEscalationType,
+    percentageLeasePercent: lt.percentageLeasePercent ?? "",// % of gross sales revenue for Percentage Lease
+
+    includeRenewalOption: !!lt.includeRenewalOption,
     renewalOptionsCount: lt.renewalOptionsCount ?? "",
     renewalYears: lt.renewalYears ?? "",
     startDate: (lt.startDate ?? "").split("T")[0] || "",
-    rentstartDate:(lt.rentstartDate ?? "").split("T")[0] || "",
+    rentstartDate: (lt.rentstartDate ?? "").split("T")[0] || "",
+    rentStartMode: (lt.rentStartMode ?? "").split("T")[0] || "",
 
-    // Step 3
     propertySize: pd.propertySize ?? "",
     hasExtraSpace: !!pd.hasExtraSpace,
     patio: pd.patio ?? "",
+    patioSize: pd.patioSize ?? "",
     intendedUse: pd.intendedUse ?? "",
     exclusiveUse: pd.exclusiveUse ?? "",
     propertyType: pd.propertyType ?? "",
@@ -375,13 +201,13 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     utilities: mapUtilitiesToBoolean(pd.utilities),
     maintenance: mapMaintenanceFromDTO(pd.maintenance),
 
-    // Step 4 — derive from Miscellaneous_items
-    renewalOption: hasMisc("Include renewal option in LOI"),
+    renewalOption: !!ad.renewalOption,
     renewalOptionDetails: "",
-    rightOfFirstRefusal: ad.rightOfFirstRefusal ?? hasMisc("Right of First Refusal"),
+    rightOfFirstRefusal: !!ad.rightOfFirstRefusal,
     rightOfFirstRefusalDetails: "",
-    leaseToPurchase: ad.leaseToPurchase ?? hasMisc("Lease to Purchase"),
+    leaseToPurchase: !!ad.leaseToPurchase,
     leaseToPurchaseDetails: "",
+    leaseToPurchaseDuration: ad.leaseToPurchaseDuration ?? "",
 
     improvementAllowanceEnabled: !!ad.tenantImprovement,
     improvementAllowanceAmount: extractAmount(ad.tenantImprovement),
@@ -395,25 +221,41 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     propertyInspection: !!ad.contingencies?.includes("Property Inspection"),
     insuranceApproval: !!ad.contingencies?.includes("Insurance Approval"),
 
-    // Step 5
     terms: false,
   };
 };
 
-
-/* -------------------- VALIDATION (matches UI) -------------------- */
 export const VALIDATION_SCHEMAS = {
   1: Yup.object({
     title: Yup.string().required("LOI Title is required"),
-    propertyAddress: Yup.string().required("Property Address is required"),
-    landlordName: Yup.string().required("Landlord Name is required"),
-    landlordEmail: Yup.string()
-      .email("Invalid email")
-      .required("Landlord Email is required"),
-    tenantName: Yup.string().required("Tenant Name is required"),
-    tenantEmail: Yup.string()
-      .email("Invalid email")
-      .required("Tenant Email is required"),
+
+    property_address_S1: Yup.string().trim().required("Street Address Line 1 is required"),
+    property_address_S2: Yup.string().trim().nullable(),
+    property_city: Yup.string().trim().required("City is required"),
+    property_state: Yup.string()
+      .trim()
+      .required("State is required"),
+    property_zip: Yup.string()
+      .trim()
+      .matches(ZIP_5_9, "Use 12345 or 12345-6789")
+      .required("ZIP is required"),
+
+    landlordName: Yup.string().trim().required("Landlord Name is required"),
+    landlordEmail: Yup.string().trim().email("Invalid email").required("Landlord Email is required"),
+    tenantName: Yup.string().trim().required("Tenant Name is required"),
+    tenantEmail: Yup.string().trim().email("Invalid email").required("Tenant Email is required"),
+
+    landlord_address_S1: Yup.string().trim().required("Landlord street is required"),
+    landlord_address_S2: Yup.string().trim().nullable(),
+    landlord_city: Yup.string().trim().required("Landlord city is required"),
+    landlord_state: Yup.string().trim().required("Landlord state is required"),
+    landlord_zip: Yup.string().trim().matches(ZIP_5_9, "Invalid ZIP").required("Landlord ZIP is required"),
+
+    tenant_address_S1: Yup.string().trim().required("Tenant street is required"),
+    tenant_address_S2: Yup.string().trim().nullable(),
+    tenant_city: Yup.string().trim().required("Tenant city is required"),
+    tenant_state: Yup.string().trim().required("Tenant state is required"),
+    tenant_zip: Yup.string().trim().matches(ZIP_5_9, "Invalid ZIP").required("Tenant ZIP is required"),
   }),
 
   2: Yup.object({
@@ -421,14 +263,18 @@ export const VALIDATION_SCHEMAS = {
       .typeError("Enter a valid amount")
       .min(0, "Must be ≥ 0")
       .required("Monthly Rent is required"),
+
     prepaidRent: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
       .typeError("Enter a valid amount")
       .min(0, "Must be ≥ 0")
       .nullable(),
+
     securityDeposit: Yup.number()
       .typeError("Enter a valid amount")
       .min(0, "Must be ≥ 0")
       .required("Security Deposit is required"),
+
     leaseType: Yup.string().required("Lease Type is required"),
 
     leaseDuration: Yup.number()
@@ -438,21 +284,34 @@ export const VALIDATION_SCHEMAS = {
       .max(600, "Keep under 600 months")
       .required("Lease Duration is required"),
 
-    rentEsclation: Yup.number()
+    RentEscalation: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
       .typeError("Enter months between increases")
       .integer("Use whole months")
       .min(1, "Minimum 1 month")
       .max(600, "Keep under 600 months")
-      .nullable(),
+      .required("Rent escalation (months) is required"),
+
+    rentEscalationType: Yup.mixed<"percent" | "fmv">()
+      .oneOf(["percent", "fmv"])
+      .required("Choose an escalation type"),
 
     rentEscalationPercent: Yup.number()
-      .typeError("Enter a valid percent")
-      .min(0, "Must be ≥ 0")
-      .max(100, "Must be ≤ 100")
-      .nullable(),
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+      .when("rentEscalationType", {
+        is: "percent",
+        then: (s) =>
+          s.typeError("Enter a valid percent")
+            .min(0, "Must be ≥ 0")
+            .max(100, "Must be ≤ 100")
+            .required("Rent escalation % is required"),
+        otherwise: (s) => s.strip(),
+      }),
 
     includeRenewalOption: Yup.boolean(),
+
     renewalOptionsCount: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
       .typeError("Enter a valid number")
       .integer("Use whole numbers")
       .min(1, "At least 1 option")
@@ -461,7 +320,9 @@ export const VALIDATION_SCHEMAS = {
         then: (s) => s.required("Required when renewal is included"),
         otherwise: (s) => s.strip(),
       }),
+
     renewalYears: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
       .typeError("Enter a valid number")
       .integer("Use whole numbers")
       .min(1, "At least 1 year")
@@ -472,6 +333,19 @@ export const VALIDATION_SCHEMAS = {
       }),
 
     startDate: Yup.date().required("Start Date is required"),
+    rentstartDate: Yup.date().nullable(),
+    percentageLeasePercent: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+      .when("leaseType", {
+        is: "Percentage Lease",
+        then: (s) =>
+          s
+            .typeError("Enter a valid percent")
+            .min(0, "Must be ≥ 0")
+            .max(100, "Must be ≤ 100")
+            .required("Enter % of gross sales revenue"),
+        otherwise: (s) => s.strip(), // remove from submission for other lease types
+      }),
   }),
 
   3: Yup.object({
@@ -492,47 +366,46 @@ export const VALIDATION_SCHEMAS = {
   }),
 
   4: Yup.object({
-    // renewalOption: Yup.boolean(),
-    // renewalOptionDetails: Yup.string().when("renewalOption", {
-    //   is: true,
-    //   then: (s) => s.min(2, "Please add details").required("Details required"),
-    //   otherwise: (s) => s.strip(),
-    // }),
+    rightOfFirstRefusal: Yup.boolean().default(false),
 
-    // rightOfFirstRefusal: Yup.boolean(),
-    // rightOfFirstRefusalDetails: Yup.string().when("rightOfFirstRefusal", {
-    //   is: true,
-    //   then: (s) => s.min(2, "Please add details").required("Details required"),
-    //   otherwise: (s) => s.strip(),
-    // }),
+    leaseToPurchase: Yup.boolean().default(false),
+    improvementAllowanceEnabled: Yup.boolean().default(false),
 
-    // leaseToPurchase: Yup.boolean(),
-    // leaseToPurchaseDetails: Yup.string().when("leaseToPurchase", {
-    //   is: true,
-    //   then: (s) => s.min(2, "Please add details").required("Details required"),
-    //   otherwise: (s) => s.strip(),
-    // }),
+    leaseToPurchaseDuration: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+      .when("leaseToPurchase", {
+        is: true,
+        then: (schema) =>
+          schema
+            .typeError("Enter a valid number")
+            .required("Duration is required")
+            .moreThan(0, "Must be greater than 0"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
 
-    // improvementAllowanceEnabled: Yup.boolean(),
-    // improvementAllowanceAmount: Yup.number()
-    //   .typeError("Enter a valid amount")
-    //   .min(0, "Must be ≥ 0")
-    //   .when("improvementAllowanceEnabled", {
-    //     is: true,
-    //     then: (s) => s.required("Enter allowance amount"),
-    //     otherwise: (s) => s.strip(),
-    //   }),
+    leaseToPurchaseDurationUnit: Yup.string()
+      .default("months")
+      .notRequired(),
 
-    // specialConditions: Yup.string().nullable(),
-    // financingApproval: Yup.boolean(),
-    // environmentalAssessment: Yup.boolean(),
-    // zoningCompliance: Yup.boolean(),
-    // permitsLicenses: Yup.boolean(),
-    // propertyInspection: Yup.boolean(),
-    // insuranceApproval: Yup.boolean(),
+    improvementAllowanceAmount: Yup.number()
+      .transform((val, orig) => (orig === "" || orig == null ? undefined : val))
+      .when("improvementAllowanceEnabled", {
+        is: true,
+        then: (schema) =>
+          schema
+            .typeError("Enter a valid amount")
+            .required("Amount is required")
+            .moreThan(0, "Must be greater than 0"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+
+    specialConditions: Yup.string().nullable(),
+
+    financingApproval: Yup.boolean().default(false),
+    environmentalAssessment: Yup.boolean().default(false),
+    zoningCompliance: Yup.boolean().default(false),
+    permitsLicenses: Yup.boolean().default(false),
+    propertyInspection: Yup.boolean().default(false),
+    insuranceApproval: Yup.boolean().default(false),
   }),
-  // If you want to force acceptance on Step 5, uncomment:
-  // 5: Yup.object({
-  //   terms: Yup.boolean().oneOf([true], "You must accept the terms to continue"),
-  // }),
 };

@@ -322,7 +322,7 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
             setDetailsOpen(false);
             setDetailsClause((prev) => (prev ? { ...prev, status: 'Needs Review' } : prev));
           }}
-          onRequestReview={() => setDetailsOpen(false)}
+          // onRequestReview={() => setDetailsOpen(false)}
           onAddComment={async (text) => {
             if (!clauseDocId || !detailsClause?.name || !leaseId) return;
 

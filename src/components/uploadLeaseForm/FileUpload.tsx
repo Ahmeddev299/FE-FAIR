@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { FormikTouched } from 'formik';
-import { FileData,  SetFieldValue, ExtendedFormikErrors } from '@/types/loi';
-import { FormValues } from '@/constants/formData';
+import { FileData,  SetFieldValue, ExtendedFormikErrors, FormValues } from '@/types/loi';
 
 interface FileUploadProps {
     uploadedFile: FileData | null;
@@ -85,7 +84,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     }}
                     className="hidden"
                     id="file-upload"
-                />
+            />
                 <label htmlFor="file-upload" className="cursor-pointer">
                     <div className="rounded-full p-4 mx-auto mb-4 flex items-center justify-center">
                         <Image alt="upload" src="/file.png" height={60} width={60} />

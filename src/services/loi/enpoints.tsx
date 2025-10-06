@@ -9,14 +9,17 @@ class LoiBaseService extends HttpService {
    * @paramdata
    */
   auth = (data: any): Promise<any> => this.get(this.prefix + ``, data);
-  submitLOI = (data: any): Promise<any> =>
-    this.post(this.prefix + `/submit_loi`, data);
+    submitLOI = (data: any): Promise<any> =>
+      this.post(this.prefix + `/submit_loi`, data);
   draftLOI = (): Promise<any> =>
     this.get(this.prefix + `/mydraft_loi`, {});
   singledraftLOI = (id: string): Promise<any> =>
     this.get(this.prefix + `/get_single_loi/${id}`, {});
   aiAssistant = (data: any): Promise<any> =>
     this.post(this.prefix + `/ai_assistent`, data); // NOTE: 'assistent' spelling from your screenshot
+  deleteLOI = (id: string): Promise<any> =>
+    this.delete(`${this.prefix}/delete_loi/${id}`, {});
+
   submitLOIByFile = (file: File): Promise<any> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -25,6 +28,7 @@ class LoiBaseService extends HttpService {
       headers: { "Content-Type": "multipart/form-data" },
     });
   };
+
 
 }
 

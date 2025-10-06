@@ -88,23 +88,23 @@ export default function LeasesPage() {
             /> */}
           </div>
         </div>
-    </div>
+      </div>
 
-        <LeasesTable
-          leases={leases}
-          isLoading={showLoader}
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          onLimitChange={handleLimitChange}
-          onRowClick={(id) => {
-            const row = leases.find(l => l.id === id) as UILeaseBrief & { _clauseDocId?: string };
-            const clauseDocId = row?._clauseDocId;
-            router.push(`/dashboard/pages/lease/clauses/${id}${clauseDocId ? `?clauseDocId=${clauseDocId}` : ""}`);
-          }}
-        />
+      <LeasesTable
+        leases={leases}
+        isLoading={showLoader}
+        page={page}
+        limit={limit}
+        total={total}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        onLimitChange={handleLimitChange}
+        onRowClick={(id) => {
+          const row = leases.find(l => l.id === id) as UILeaseBrief & { _clauseDocId?: string };
+          const clauseDocId = row?._clauseDocId;
+          router.push(`/dashboard/pages/lease/clauses/${id}${clauseDocId ? `?clauseDocId=${clauseDocId}` : ""}`);
+        }}
+      />
     </DashboardLayout>
   );
 }

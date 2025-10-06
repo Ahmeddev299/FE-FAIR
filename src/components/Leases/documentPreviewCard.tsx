@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import { Eye } from 'lucide-react';
 

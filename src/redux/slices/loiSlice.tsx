@@ -6,6 +6,7 @@ import {
   getDraftLOIsAsync,
   runAiAssistantAsync,
   submitLOIByFileAsync,
+  deleteLOIAsync,
 } from "@/services/loi/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
@@ -194,21 +195,38 @@ export const loiSlice = createSlice({
       .addCase(submitLOIAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
         state.submitSuccess = true;
-        // Optionally add the new LOI to the list
-        if (action?.payload?.data) {
-          state?.loiList?.unshift(action?.payload?.data);
-        }
-        Toast.fire({
-          icon: "success", title: action.message || "LOI Submitted Successfully"
-        });
 
+        const payload = action.payload; // { status, message, success, data }
+
+        if (payload?.data) {
+          // Case A: loiList is an array
+          if (Array.isArray(state.loiList)) {
+            state.loiList.unshift(payload.data);
+
+            // Case B: loiList is a paginated object like { data: [], total: ... }
+          } else if (state.loiList && Array.isArray(state.loiList.data)) {
+            state.loiList.data.unshift(payload.data);
+            if (typeof state.loiList.total === "number") {
+              state.loiList.total += 1;
+            }
+
+            // Case C: loiList was missing – initialize as array
+          } else {
+            state.loiList = [payload.data];
+          }
+        }
+
+        Toast.fire({
+          icon: "success",
+          title: payload?.message || "LOI Submitted Successfully",
+        });
       })
       .addCase(submitLOIAsync.rejected, (state: any, action: any) => {
         state.isLoading = false;
-        state.loiError = action.payload;
-        Toast.fire({ icon: "error", title: action.payload });
+        state.loiError = action.payload || action.error?.message || "Submission failed";
+        Toast.fire({ icon: "error", title: state.loiError });
       })
-
+      
       .addCase(getDraftLOIsAsync.pending, (state) => {
         state.isLoading = true;
       })
@@ -275,6 +293,27 @@ export const loiSlice = createSlice({
         Toast.fire({ icon: "success", title: "LOI File Submitted Successfully" });
       })
       .addCase(submitLOIByFileAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loiError = action.payload as string;
+        Toast.fire({ icon: "error", title: action.payload as string });
+      })
+      .addCase(deleteLOIAsync.pending, (state) => {
+        state.isLoading = true;
+        state.loiError = "";
+      })
+      .addCase(deleteLOIAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.deleteSuccess = true;
+
+        const id = action.payload?.id;
+        console.log("id", id)
+        // Remove from list if it's in the dashboard summary shape
+        if (id && state.loiList?.my_loi) {
+          state.loiList.my_loi = state.loiList.my_loi.filter((r: any) => r.id !== id);
+        }
+        Toast.fire({ icon: "success", title: "LOI deleted" });
+      })
+      .addCase(deleteLOIAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.loiError = action.payload as string;
         Toast.fire({ icon: "error", title: action.payload as string });

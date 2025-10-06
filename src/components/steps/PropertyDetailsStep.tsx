@@ -4,7 +4,7 @@
 import React from "react";
 import { Field, ErrorMessage, useFormikContext } from "formik";
 import { Info, Building2, Car, Zap, Wrench, ChevronRight } from "lucide-react";
-import { FormValues } from "@/constants/formData";
+import { FormValues } from "@/types/loi";
 
 const PROPERTY_TYPES = [
   "Shopping Center",
@@ -37,10 +37,10 @@ const PARKING_OPTIONS = ["0–2", "3–5", "6–7", "8–10", "11–15", "16–2
 
 const DELIVERY_CONDITIONS = [
   { value: "as_is", label: "As-Is, Where-Is" },
-  { value: "shell", label: "Shell Condition (basic structure, no interior buildout)" },
-  { value: "vanilla_shell", label: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)" },
-  { value: "turnkey", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
-  { value: "white_box", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
+  { value: "Shell Condition (basic structure, no interior buildout)", label: "Shell Condition (basic structure, no interior buildout)" },
+  { value: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)", label: "Vanilla Shell (basic finishes, minimal HVAC, lighting, flooring)" },
+  { value: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)", label: "Turnkey / Built-Out (ready for immediate occupancy with agreed improvements)" },
+  { value: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed) ", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
 ];
 
 // const MAINTENANCE_CATEGORIES = [
@@ -187,7 +187,7 @@ export const PropertyDetailsStep: React.FC = () => {
           {/* Patio */}
           {values?.hasExtraSpace && (
             <div>
-              <label className="mb-2 block text-sm font-medium">Patio</label>
+              <label className="mb-2 block text-sm font-medium">Patio *</label>
               <Field
                 name="patio"
                 type="text"
@@ -197,7 +197,33 @@ export const PropertyDetailsStep: React.FC = () => {
               />
               <ErrorMessage name="patio" component="div" className="mt-1 text-sm text-red-500" />
             </div>
+            
           )}
+
+          
+          {/* Patio */}
+          {values?.hasExtraSpace && (
+            <div>
+            <label className="mb-2 block text-sm font-medium">Patio Size (sq ft) *</label>
+            <div className="flex gap-2">
+              <Field
+                name="patioSize"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                placeholder="e.g., 2500"
+                className="flex-1 rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
+                           focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <span className="rounded-lg border-0 ring-1 ring-inset ring-gray-200 bg-gray-50 p-3 text-gray-500">
+                sq ft
+              </span>
+            </div>
+            <ErrorMessage name="patioSize" component="div" className="mt-1 text-sm text-red-500" />
+          </div>
+            
+          )}
+
 
           {/* Intended Use */}
           <div>

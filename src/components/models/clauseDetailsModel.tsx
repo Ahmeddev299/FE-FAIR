@@ -1,8 +1,8 @@
 // src/components/models/ClauseDetailsModel.tsx
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { X, History, Check, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { X, History, Check, AlertTriangle, Pencil } from 'lucide-react';
 import type { ExtendedClause } from '@/types/loi';
 
 export type ClauseHistoryComment = {
@@ -30,13 +30,15 @@ export type ClauseHistoryEntry = {
 
 type Props = {
   onClose: () => void;
-  clause: ExtendedClause; // parent ensures this exists (it already gates rendering)
+  clause: ExtendedClause;
   history?: ClauseHistoryEntry;
+
   onApprove?: () => void;
   onReject?: () => void;
-  onRequestReview?: () => void;
 
-  // Return the created comment so modal can append locally
+  // Saves edited "Current Version"
+  onSaveCurrentVersion?: (text: string) => Promise<boolean | void>;
+
   onAddComment?:
     | ((text: string) => Promise<ClauseHistoryComment | undefined>)
     | ((text: string) => ClauseHistoryComment | undefined);
@@ -48,10 +50,9 @@ export default function ClauseDetailsModel({
   history,
   onApprove,
   onReject,
-  onRequestReview,
   onAddComment,
+  onSaveCurrentVersion,
 }: Props) {
-  // Hooks must always run; don't early-return before these.
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = 'auto'; };
@@ -61,21 +62,42 @@ export default function ClauseDetailsModel({
   const [submitting, setSubmitting] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
 
-  // Initialize comments from API history
   const initialComments = useMemo<ClauseHistoryComment[]>(
     () => (Array.isArray(history?.comment) ? history!.comment : []),
     [history]
   );
-
-  // Keep comments local to modal (don’t mutate clause/UIClause types)
   const [localComments, setLocalComments] = useState<ClauseHistoryComment[]>(initialComments);
+  useEffect(() => setLocalComments(initialComments), [initialComments]);
 
-  // Reset local comments when clause/history changes
+  const displayStatus = history?.status ?? clause.status ?? 'Pending';
+  const displayRisk = history?.risk ?? clause.risk ?? 'Low';
+  const originalText = history?.clause_details ?? clause.originalText ?? clause.currentVersion ?? '—';
+  const aiSuggested = history?.ai_suggested_clause_details ?? clause.aiSuggestion ?? '—';
+  const initialCurrent = history?.current_version ?? clause.currentVersion ?? '';
+
+  // ===== Editable current version state =====
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentText, setCurrentText] = useState<string>(initialCurrent);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // keep currentText in sync when clause/history changes (e.g. after save/refresh)
   useEffect(() => {
-    setLocalComments(initialComments);
-  }, [initialComments]);
+    setCurrentText(initialCurrent);
+    setIsEditing(false);
+    setIsSaving(false);
+  }, [initialCurrent]);
 
-  const handleSubmit = async () => {
+  const initialCurrentRef = useRef(initialCurrent);
+  useEffect(() => { initialCurrentRef.current = initialCurrent; }, [initialCurrent]);
+
+  const hasUnsaved = currentText !== initialCurrentRef.current;
+
+  const aiScore =
+    typeof history?.ai_confidence_score === 'number'
+      ? `${Math.round(history.ai_confidence_score * 100)}%`
+      : undefined;
+
+  const handleSubmitComment = async () => {
     const text = commentText.trim();
     if (!text || !onAddComment) return;
     setSubmitting(true);
@@ -88,17 +110,32 @@ export default function ClauseDetailsModel({
     }
   };
 
-  // Derived fields (prefer history when present)
-  const displayStatus = history?.status ?? clause.status ?? 'Pending';
-  const displayRisk = history?.risk ?? clause.risk ?? 'Low';
-  const originalText = history?.clause_details ?? clause.originalText ?? clause.currentVersion ?? '—';
-  const aiSuggested  = history?.ai_suggested_clause_details ?? clause.aiSuggestion ?? '—';
-  const currentVersion = history?.current_version ?? clause.currentVersion ?? '—';
+  const handleSaveCurrent = async () => {
+    if (!onSaveCurrentVersion || !hasUnsaved) return;
+    setIsSaving(true);
+    try {
+      await onSaveCurrentVersion(currentText);
+ 
+      initialCurrentRef.current = currentText;
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-  const aiScore =
-    typeof history?.ai_confidence_score === 'number'
-      ? `${Math.round(history.ai_confidence_score * 100)}%`
-      : undefined;
+  const handleApprove = async () => {
+    // If user edited but didn’t save, save first; then approve.
+    if (onSaveCurrentVersion && hasUnsaved) {
+      setIsSaving(true);
+      try {
+        await onSaveCurrentVersion(currentText);
+        initialCurrentRef.current = currentText;
+      } finally {
+        setIsSaving(false);
+      }
+    }
+    onApprove?.();
+  };
 
   return (
     <>
@@ -164,8 +201,43 @@ export default function ClauseDetailsModel({
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium text-gray-900">Current Version</h3>
+
+                  {onSaveCurrentVersion && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing((v) => !v)}
+                      className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      {isEditing ? 'Cancel' : 'Edit'}
+                    </button>
+                  )}
                 </div>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{currentVersion}</p>
+
+                {!isEditing ? (
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{currentText || '—'}</p>
+                ) : (
+                  <>
+                    <textarea
+                      value={currentText}
+                      onChange={(e) => setCurrentText(e.target.value)}
+                      rows={8}
+                      className="w-full p-3 border border-emerald-300 rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                      placeholder="Edit the current version..."
+                    />
+                    <div className="mt-2 flex items-center justify-end gap-2">
+                      <span className="text-xs text-gray-400">{currentText.length} chars</span>
+                      <button
+                        type="button"
+                        onClick={handleSaveCurrent}
+                        disabled={isSaving || !hasUnsaved}
+                        className="px-3 py-1.5 text-xs rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                      >
+                        {isSaving ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -199,7 +271,7 @@ export default function ClauseDetailsModel({
                   />
                   <div className="flex justify-end mt-2">
                     <button
-                      onClick={handleSubmit}
+                      onClick={handleSubmitComment}
                       disabled={submitting || !commentText.trim()}
                       className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-60"
                       type="button"
@@ -221,18 +293,13 @@ export default function ClauseDetailsModel({
                 <X className="w-4 h-4 mr-2" />
                 Reject
               </button>
+      
               <button
-                className="flex items-center px-4 py-2 border border-yellow-500 text-yellow-700 bg-yellow-50 rounded-md hover:bg-yellow-100 text-sm"
-                onClick={onRequestReview}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-60"
+                onClick={handleApprove}
                 type="button"
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Request Review
-              </button>
-              <button
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                onClick={onApprove}
-                type="button"
+                disabled={isSaving}
+                title={isSaving ? 'Saving edits…' : 'Approve'}
               >
                 <Check className="w-4 h-4 mr-2" />
                 Approve

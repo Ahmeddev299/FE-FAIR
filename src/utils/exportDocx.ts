@@ -56,6 +56,13 @@ export interface LOIFooter {
   tenant_name?: string;
   tenant_email?: string;
   tenant_emial?: string; // typo supported
+  tenant_address_S2?: string;
+  tenant_address_S1?: string;
+  tenant_zip?: string;
+  tenant_city?: string;
+  tenant_state?: string;
+
+
 }
 
 export interface LOIResponseBody {
@@ -211,9 +218,9 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
       return v === "N/A" ? null : v;
     };
 
-     const fileName = (): string => {
-     
-        const sanitizedTitle = headerData.re ;
+    const fileName = (): string => {
+
+      const sanitizedTitle = headerData.re;
       return `${sanitizedTitle}.docx`;
     };
 
@@ -235,6 +242,8 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
       const safeParagraphs = Array.isArray(valueParagraphs)
         ? valueParagraphs
         : [bodyParagraph("N/A")];
+
+
 
       return new TableRow({
         children: [
@@ -276,12 +285,46 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
 
     // Header with logo (raster only; SVG falls back to text)
     function createHeader() {
-  const logoRuns: (ImageRun | TextRun)[] = [];
+      const logoRuns: (ImageRun | TextRun)[] = [];
 
-  if (logoBase64 && typeof logoBase64 === "string" && logoBase64.length > 0) {
-    try {
-      if (looksLikeSvg(logoBase64)) {
-        // Fallback text if SVG (docx needs raster)
+      if (logoBase64 && typeof logoBase64 === "string" && logoBase64.length > 0) {
+        try {
+          if (looksLikeSvg(logoBase64)) {
+            // Fallback text if SVG (docx needs raster)
+            logoRuns.push(
+              new TextRun({
+                text: "Action Behavior Centers",
+                font: "Times New Roman",
+                size: 18,
+                bold: true,
+                color: "4A90E2",
+              })
+            );
+          } else {
+            const imgType =
+              getRasterTypeFromDataUri(logoBase64) || "png"; // default
+            const bytes = base64ToUint8Array(logoBase64);
+            logoRuns.push(
+              new ImageRun({
+                data: bytes,
+                type: imgType, // "png" | "jpg" | "gif" | "bmp"
+                transformation: { width: 150, height: 60 },
+              })
+            );
+          }
+        } catch (e) {
+          console.warn("Error creating logo image:", e);
+          logoRuns.push(
+            new TextRun({
+              text: "Action Behavior Centers",
+              font: "Times New Roman",
+              size: 18,
+              bold: true,
+              color: "4A90E2",
+            })
+          );
+        }
+      } else {
         logoRuns.push(
           new TextRun({
             text: "Action Behavior Centers",
@@ -291,107 +334,73 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
             color: "4A90E2",
           })
         );
-      } else {
-        const imgType =
-          getRasterTypeFromDataUri(logoBase64) || "png"; // default
-        const bytes = base64ToUint8Array(logoBase64);
-        logoRuns.push(
-          new ImageRun({
-            data: bytes,
-            type: imgType, // "png" | "jpg" | "gif" | "bmp"
-            transformation: { width: 150, height: 60 },
-          })
-        );
       }
-    } catch (e) {
-      console.warn("Error creating logo image:", e);
-      logoRuns.push(
-        new TextRun({
-          text: "Action Behavior Centers",
-          font: "Times New Roman",
-          size: 18,
-          bold: true,
-          color: "4A90E2",
-        })
-      );
-    }
-  } else {
-    logoRuns.push(
-      new TextRun({
-        text: "Action Behavior Centers",
-        font: "Times New Roman",
-        size: 18,
-        bold: true,
-        color: "4A90E2",
-      })
-    );
-  }
 
-  return new Header({
-    children: [
-      // Single-cell table to span full width; all content centered
-      new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        layout: TableLayoutType.FIXED,
-        borders: {
-          top: { style: BorderStyle.NONE, size: 0 },
-          bottom: { style: BorderStyle.NONE, size: 0 },
-          left: { style: BorderStyle.NONE, size: 0 },
-          right: { style: BorderStyle.NONE, size: 0 },
-          insideHorizontal: { style: BorderStyle.NONE, size: 0 },
-          insideVertical: { style: BorderStyle.NONE, size: 0 },
-        },
-        rows: [
-          new TableRow({
-            children: [
-              new TableCell({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                margins: { top: 100, bottom: 100, left: 0, right: 0 },
-                verticalAlign: VerticalAlign.CENTER,
+      return new Header({
+        children: [
+          // Single-cell table to span full width; all content centered
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            layout: TableLayoutType.FIXED,
+            borders: {
+              top: { style: BorderStyle.NONE, size: 0 },
+              bottom: { style: BorderStyle.NONE, size: 0 },
+              left: { style: BorderStyle.NONE, size: 0 },
+              right: { style: BorderStyle.NONE, size: 0 },
+              insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+              insideVertical: { style: BorderStyle.NONE, size: 0 },
+            },
+            rows: [
+              new TableRow({
                 children: [
-                  // Logo (or fallback text), centered
-                  new Paragraph({
-                    children: logoRuns,
-                    alignment: AlignmentType.CENTER,
-                    spacing: { after: 100 },
-                  }),
-                  // Title, centered
-                  new Paragraph({
+                  new TableCell({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    margins: { top: 100, bottom: 100, left: 0, right: 0 },
+                    verticalAlign: VerticalAlign.CENTER,
                     children: [
-                      new TextRun({
-                        text: "FAIR LEASES GROUP",
-                        font: "Times New Roman",
-                        size: 18,
-                        bold: true,
-                        color: "1E5A96",
+                      // Logo (or fallback text), centered
+                      new Paragraph({
+                        children: logoRuns,
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 100 },
+                      }),
+                      // Title, centered
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "FAIR LEASES GROUP",
+                            font: "Times New Roman",
+                            size: 18,
+                            bold: true,
+                            color: "1E5A96",
+                          }),
+                        ],
+                        alignment: AlignmentType.CENTER,
                       }),
                     ],
-                    alignment: AlignmentType.CENTER,
                   }),
                 ],
               }),
             ],
           }),
-        ],
-      }),
 
-      // Thin divider line, centered
-      new Paragraph({
-        children: [
-          new TextRun({
-            text:
-              "________________________________________________________________________________",
-            font: "Times New Roman",
-            size: 16,
-            color: "CCCCCC",
+          // Thin divider line, centered
+          new Paragraph({
+            children: [
+              new TextRun({
+                text:
+                  "________________________________________________________________________________",
+                font: "Times New Roman",
+                size: 16,
+                color: "CCCCCC",
+              }),
+            ],
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 200, after: 200 },
           }),
         ],
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 200, after: 200 },
-      }),
-    ],
-  });
-}
+      });
+    }
 
 
     const footer = new Footer({
@@ -508,6 +517,8 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
       }
     };
 
+    const zip = safe(footerData?.tenant_zip);
+    const state = safe(footerData?.tenant_state);
     // Create document
     const doc = new Document({
       sections: [
@@ -532,8 +543,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
               children: [
                 new TextRun({
                   text:
-                    safe(footerData?.tenant_name) ||
-                    "1000 N Lamar Blvd, Suite 410, Austin, TX 78701",
+                    safe(footerData?.tenant_name),
                   font: "Times New Roman",
                   size: 22,
                 }),
@@ -544,7 +554,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
             new Paragraph({
               children: [
                 new TextRun({
-                  text: safe(footerData?.tenant_emial),
+                  text: safe(footerData?.tenant_email),
                   font: "Times New Roman",
                   size: 22,
                   color: "0000FF",
@@ -554,16 +564,63 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
               spacing: { after: 80 },
             }),
 
-             new Paragraph({
+            new Paragraph({
               children: [
                 new TextRun({
-                  text: safe(headerData?.tenant_home_town_address),
+                  text: safe(footerData?.tenant_address_S1),
                   font: "Times New Roman",
                   size: 22,
                 }),
               ],
               spacing: { after: 80 },
             }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: safe(footerData?.tenant_address_S2),
+                  font: "Times New Roman",
+                  size: 22,
+                }),
+              ],
+              spacing: { after: 80 },
+            }),
+
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: safe(footerData?.tenant_city),
+                  font: "Times New Roman",
+                  size: 22,
+                }),
+              ],
+              spacing: { after: 80 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: [zip, state].filter(Boolean).join(", "), // "12345, CA" / "12345" / "CA"
+                  font: "Times New Roman",
+                  size: 22,
+                }),
+              ],
+              spacing: { after: 80 },
+            }),
+
+
+            // new Paragraph({
+            //   children: [
+            //     new TextRun({
+            //       text: safe(footerData?.tenant_zip),
+            //       font: "Times New Roman",
+            //       size: 22,
+            //     }),
+            //   ],
+            //   spacing: { after: 80 },
+            // }),
+
 
             // Re: line
             new Paragraph({
@@ -682,7 +739,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
                         new Paragraph({
                           children: [
                             new TextRun({
-                              text: safe(footerData.tenant_name) || "Tenant Name",
+                              text: safe(footerData.tenant_name),
                               size: 22,
                               font: "Times New Roman",
                               underline: { type: UnderlineType.SINGLE },
@@ -706,12 +763,12 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
                         }),
 
                         // Tenant email (supports typo key as well)
-                        ...(footerData.tenant_emial || footerData.tenant_email
+                        ...(footerData.tenant_email
                           ? [
                             new Paragraph({
                               children: [
                                 new TextRun({
-                                  text: safe(footerData.tenant_emial || footerData.tenant_email),
+                                  text: safe(footerData.tenant_email),
                                   font: "Times New Roman",
                                   size: 20,
                                   color: "0000FF",
@@ -722,6 +779,8 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
                             }),
                           ]
                           : []),
+
+
                       ],
                     }),
 
@@ -762,6 +821,19 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
                           ],
                           spacing: { after: 80 },
                         }),
+
+                        // new Paragraph({
+                        //   children: [
+                        //     new TextRun({ text: "Its: ", size: 22, font: "Times New Roman" }),
+                        //     new TextRun({
+                        //       text: "Partner",
+                        //       size: 22,
+                        //       font: "Times New Roman",
+                        //       underline: { type: UnderlineType.SINGLE },
+                        //     }),
+                        //   ],
+                        //   spacing: { after: 80 },
+                        // }),
 
                         ...(headerData.landlord_email
                           ? [

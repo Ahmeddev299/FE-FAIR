@@ -12,28 +12,26 @@ export const submitLOIAsync = createAsyncThunk(
     try {
       const token: string = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
-      const response = await loiBaseService.submitLOI(data);
 
-      // Additional check for API-level errors
-      if (response.success === false && response.status === 400) {
-        return rejectWithValue(response.message);
+      // res is the API payload (e.g. { success, status, message, data })
+      const res = await loiBaseService.submitLOI(data);
+
+      if (res?.success === false && res?.status === 400) {
+        return rejectWithValue(res?.message ?? "Bad Request");
       }
 
-      return response.data;
+      // return the payload AS-IS
+      return res;
     } catch (error: any) {
-      // Handle different error scenarios
-      if (error.response?.data?.message) {
-        return rejectWithValue(error.response.data.message);
-      } else if (error.response?.message) {
-        return rejectWithValue(error.response.message);
-      } else if (error.message) {
-        return rejectWithValue(error.message);
-      } else {
-        return rejectWithValue('An unexpected error occurred while submitting LOI');
-      }
+      if (error.response?.data?.message) return rejectWithValue(error.response.data.message);
+      if (error.response?.message) return rejectWithValue(error.response.message);
+      if (error.message) return rejectWithValue(error.message);
+      return rejectWithValue("An unexpected error occurred while submitting LOI");
     }
   }
 );
+
+
 // in asyncThunk.ts or wherever you define thunks
 export const getDraftLOIsAsync = createAsyncThunk(
   "loi/fetchDrafts",
@@ -125,3 +123,27 @@ export const submitLOIByFileAsync = createAsyncThunk<
   }
 }
 );
+
+export const deleteLOIAsync = createAsyncThunk<
+  { id: string },         // return payload
+  string,                 // arg: loiId
+  { rejectValue: string } // rejection payload
+>("loi/delete", async (loiId, { rejectWithValue }) => {
+  try {
+    const token: string = `${ls.get("access_token", { decrypt: true })}`;
+    HttpService.setToken(token);
+    const response = await loiBaseService.deleteLOI(loiId);
+
+    if (response?.success === false) {
+      return rejectWithValue(response?.message || "Failed to delete LOI");
+    }
+    return { id: loiId };
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.message ||
+      err?.message ||
+      "Delete failed";
+    return rejectWithValue(msg);
+  }
+});

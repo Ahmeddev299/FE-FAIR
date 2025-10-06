@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useRef, useState, useEffect } from "react";
-import { useFormikContext } from "formik";
+import { useFormikContext, ErrorMessage } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLandlordsAsync, fetchTenantsAsync } from "@/services/auth/partyAsyncThunk";
 import { selectParty } from "@/redux/slices/partySlice";
@@ -34,8 +34,9 @@ const EmailCombobox: React.FC<{
   emails: string[];
   onSelectEmail: (email: string) => void;
   onAddNew: () => void;
+  onClose?: () => void; // <-- added so we can set touched
   disabled?: boolean;
-}> = ({ valueWhenClosed, placeholder, loading, emails, onSelectEmail, onAddNew, disabled }) => {
+}> = ({ valueWhenClosed, placeholder, loading, emails, onSelectEmail, onAddNew, onClose, disabled }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -47,11 +48,12 @@ const EmailCombobox: React.FC<{
       if (!rootRef.current?.contains(e.target as Node)) {
         setOpen(false);
         setQuery("");
+        onClose?.();
       }
     };
     document.addEventListener("mousedown", onDocDown);
     return () => document.removeEventListener("mousedown", onDocDown);
-  }, []);
+  }, [onClose]);
 
   const filtered = useMemo(() => {
     const s = query.trim().toLowerCase();
@@ -65,6 +67,7 @@ const EmailCombobox: React.FC<{
       onAddNew();
       setOpen(false);
       setQuery("");
+      onClose?.();
       return;
     }
     const email = filtered[idx];
@@ -72,6 +75,7 @@ const EmailCombobox: React.FC<{
       onSelectEmail(email);
       setOpen(false);
       setQuery("");
+      onClose?.();
     }
   };
 
@@ -108,11 +112,16 @@ const EmailCombobox: React.FC<{
             } else if (e.key === "Escape") {
               setOpen(false);
               setQuery("");
+              onClose?.();
             }
           }}
           placeholder={placeholder}
           className="w-full rounded-lg border-none p-3 pr-9 outline-none"
           onClick={() => !disabled && setOpen(true)}
+          onBlur={() => {
+            // when the input itself blurs (e.g., tabbing out)
+            if (!open) onClose?.();
+          }}
         />
         {/* caret icon */}
         <button
@@ -122,6 +131,7 @@ const EmailCombobox: React.FC<{
           onClick={() => {
             if (disabled) return;
             setOpen((o) => !o);
+            if (open) onClose?.();
             setTimeout(() => inputRef.current?.focus(), 0);
           }}
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 hover:bg-gray-100"
@@ -143,8 +153,7 @@ const EmailCombobox: React.FC<{
                 type="button"
                 onMouseEnter={() => setActive(filtered.length)}
                 onClick={() => commit(filtered.length)}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${active === filtered.length ? "bg-blue-50" : ""
-                  }`}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${active === filtered.length ? "bg-blue-50" : ""}`}
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-violet-100 text-violet-600">+</span>
                 Add new landlord…
@@ -160,7 +169,6 @@ const EmailCombobox: React.FC<{
                   {email}
                 </button>
               ))}
-
             </>
           )}
         </div>
@@ -183,7 +191,11 @@ export const PartyDropdowns: React.FC<Props> = ({
   const { landlords, tenants, loadingLandlords } = useSelector(selectParty) as PartySlice;
   const loggedInUser = useSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
 
-  const { values, setFieldValue } = useFormikContext<Record<string, string | number | boolean | undefined>>();
+  const {
+    values,
+    setFieldValue,
+    setFieldTouched, // <-- so errors show
+  } = useFormikContext<Record<string, string | number | boolean | undefined>>();
   const [addingNew, setAddingNew] = useState(false);
 
   /* load lists + current user */
@@ -214,8 +226,7 @@ export const PartyDropdowns: React.FC<Props> = ({
     return landlords.find((l) => (l.email ?? "").trim().toLowerCase() === email);
   }, [landlords, values, landlordEmailName]);
 
-  /* sync id/name for existing or clear id for new;
-     only collapse "addingNew" if an actual existing is selected */
+  /* sync id/name for existing or clear id for new */
   useEffect(() => {
     if (selectedExisting) {
       const id = partyId(selectedExisting);
@@ -223,17 +234,16 @@ export const PartyDropdowns: React.FC<Props> = ({
       if (values[landlordIdName] !== id) setFieldValue(landlordIdName, id);
       if (values[landlordNameName] !== name) setFieldValue(landlordNameName, name);
       if (legacyLandlordNameName && values[legacyLandlordNameName] !== name) setFieldValue(legacyLandlordNameName, name);
-      if (addingNew) setAddingNew(false); // only exit add-new after selecting an existing
+      if (addingNew) setAddingNew(false);
     } else {
       if (values[landlordIdName]) setFieldValue(landlordIdName, "");
-      // keep name as user-entered when creating new
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedExisting, landlordIdName, landlordNameName, legacyLandlordNameName, setFieldValue]);
 
-  /* backfill email ONLY when editing an existing record (has id) and NOT addingNew */
+  /* backfill email when editing existing (not addingNew) */
   useEffect(() => {
-    if (addingNew) return; // <- critical guard
+    if (addingNew) return;
     if (!values[landlordEmailName] && landlords?.length && values[landlordIdName]) {
       const match = landlords.find((l) => partyId(l) === values[landlordIdName]);
       if (match?.email) setFieldValue(landlordEmailName, match.email);
@@ -245,16 +255,6 @@ export const PartyDropdowns: React.FC<Props> = ({
     const nameFromUser = (loggedInUser?.name ?? loggedInUser?.fullName ?? "").trim();
     const emailFromUser = (loggedInUser?.email ?? "").trim();
 
-    // if (nameFromUser && values[tenantNameName] !== nameFromUser) {
-    //   setFieldValue(tenantNameName, nameFromUser);
-    //   if (legacyTenantNameName && values[legacyTenantNameName] !== nameFromUser) {
-    //     setFieldValue(legacyTenantNameName, nameFromUser);
-    //   }
-    // }
-    // if (emailFromUser && values[tenantEmailName] !== emailFromUser) {
-    //   setFieldValue(tenantEmailName, emailFromUser);
-    // }
-
     const m =
       tenants.find(
         (t) =>
@@ -263,14 +263,16 @@ export const PartyDropdowns: React.FC<Props> = ({
       ) || undefined;
 
     if (!values[tenantIdName] && m) setFieldValue(tenantIdName, partyId(m));
-  }, [loggedInUser, tenants, tenantIdName, tenantNameName, tenantEmailName, legacyTenantNameName, setFieldValue, values]);
+  }, [loggedInUser, tenants, tenantIdName, setFieldValue, values]);
 
-  /* combobox closed value:
-     when addingNew, keep this empty so typing in “New Landlord Email” doesn't mirror */
+  /* combobox closed value */
   const landlordEmailDisplay = useMemo(() => {
     if (addingNew) return "";
     return String(values[landlordEmailName] ?? "");
   }, [values, landlordEmailName, addingNew]);
+
+  /* Field helper to reduce repetition */
+  const onBlurTouch = (name: string) => () => setFieldTouched(name, true);
 
   return (
     <div className="space-y-6 rounded-xl border border-gray-200 bg-white p-6">
@@ -279,6 +281,7 @@ export const PartyDropdowns: React.FC<Props> = ({
         Party Information
       </h3>
 
+      {/* Landlord */}
       <div className="space-y-4">
         <h4 className="text-base font-semibold">Landlord Information</h4>
 
@@ -292,8 +295,10 @@ export const PartyDropdowns: React.FC<Props> = ({
             placeholder="Property Owner or Management Company"
             value={String(values[landlordNameName] ?? "")}
             onChange={(e) => setFieldValue(landlordNameName, e.target.value)}
+            onBlur={onBlurTouch(landlordNameName)}
             className="w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
           />
+          <ErrorMessage name={landlordNameName} component="div" className="text-sm text-red-500" />
         </div>
 
         <div className="space-y-1">
@@ -307,49 +312,139 @@ export const PartyDropdowns: React.FC<Props> = ({
             onSelectEmail={(email) => {
               setFieldValue(landlordEmailName, email);
               setAddingNew(false);
+              setFieldTouched(landlordEmailName, true);
             }}
             onAddNew={() => {
               setFieldValue(landlordIdName, "");
               setAddingNew(true);
+              setFieldTouched(landlordEmailName, true);
             }}
+            onClose={() => setFieldTouched(landlordEmailName, true)}
           />
+          <ErrorMessage name={landlordEmailName} component="div" className="text-sm text-red-500" />
         </div>
 
         {addingNew && (
-          <div className="grid gap-4">
-
-            <div className="space-y-1 sm:col-span-1">
-              <label className="text-sm font-medium text-gray-700">New Landlord Email</label>
-              <input
-                type="email"
-                name={landlordEmailName}
-                placeholder="landlord@domain.com"
-                value={String(values[landlordEmailName] ?? "")}
-                onChange={(e) => {
-                  setFieldValue(landlordEmailName, e.target.value);
-                  if (values[landlordIdName]) setFieldValue(landlordIdName, "");
-                }}
-                className="w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">New Landlord Email</label>
+            <input
+              type="email"
+              name={landlordEmailName}
+              placeholder="landlord@domain.com"
+              value={String(values[landlordEmailName] ?? "")}
+              onChange={(e) => {
+                setFieldValue(landlordEmailName, e.target.value);
+                if (values[landlordIdName]) setFieldValue(landlordIdName, "");
+              }}
+              onBlur={onBlurTouch(landlordEmailName)}
+              className="w-full rounded-lg border C p-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+            />
+            <ErrorMessage name={landlordEmailName} component="div" className="text-sm text-red-500" />
           </div>
         )}
 
-        {/* Landlord Address (new) */}
+        {/* Landlord Address – structured */}
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Landlord Address</label>
-          <input
-            type="text"
-            name="landlord_home_town_address"
-            placeholder="Landlord Home Town Address"
-            value={String(values["landlord_home_town_address"] ?? "")}
-            onChange={(e) => setFieldValue("landlord_home_town_address", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-          />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {/* Street 1 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
+              <input
+                name="landlord_address_S1"
+                placeholder="Street Address Line 1"
+                autoComplete="address-line1"
+                value={String(values["landlord_address_S1"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_address_S1", e.target.value)}
+                onBlur={onBlurTouch("landlord_address_S1")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_address_S1"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
+
+            {/* Street 2 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
+              <input
+                name="landlord_address_S2"
+                placeholder="Street Address Line 2 (optional)"
+                autoComplete="address-line2"
+                value={String(values["landlord_address_S2"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_address_S2", e.target.value)}
+                onBlur={onBlurTouch("landlord_address_S2")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_address_S2"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
+
+            {/* City */}
+            <div className="col-span-1">
+              <input
+                name="landlord_city"
+                placeholder="City"
+                autoComplete="address-level2"
+                value={String(values["landlord_city"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_city", e.target.value)}
+                onBlur={onBlurTouch("landlord_city")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_city"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
+
+            {/* State/Province */}
+            <div className="col-span-1">
+              <input
+                name="landlord_state"
+                placeholder="State"
+                autoComplete="address-level1"
+                value={String(values["landlord_state"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_state", e.target.value)}
+                onBlur={onBlurTouch("landlord_state")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_state"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
+
+            {/* Zip/Postal */}
+            <div className="col-span-1">
+              <input
+                name="landlord_zip"
+                placeholder="Zip / Postal Code"
+                autoComplete="postal-code"
+                value={String(values["landlord_zip"] ?? "")}
+                onChange={(e) => setFieldValue("landlord_zip", e.target.value)}
+                onBlur={onBlurTouch("landlord_zip")}
+                className="w-full rounded-lg border border-gray-300 p-3"
+              />
+              <ErrorMessage
+                name="landlord_zip"
+                component="div"
+                className="text-sm text-red-500"
+              />
+            </div>
+          </div>
         </div>
+
       </div>
 
       <hr className="my-2 border-gray-200" />
+
+      {/* Tenant */}
       <div className="space-y-4">
         <h4 className="text-base font-semibold">Tenant Information</h4>
 
@@ -363,34 +458,101 @@ export const PartyDropdowns: React.FC<Props> = ({
             placeholder="Your Company Name"
             value={String(values[tenantNameName] ?? "")}
             onChange={(e) => setFieldValue(tenantNameName, e.target.value)}
-            className="w-full rounded-lg border border-gray-300  p-3 text-gray-700"
+            onBlur={onBlurTouch(tenantNameName)}
+            className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
           />
+          <ErrorMessage name={tenantNameName} component="div" className="text-sm text-red-500" />
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">
-            Tenant Email
-          </label>
+          <label className="text-sm font-medium text-gray-700">Tenant Email</label>
           <input
             type="email"
             name={tenantEmailName}
             placeholder="your@company.com"
             value={String(values[tenantEmailName] ?? "")}
             onChange={(e) => setFieldValue(tenantEmailName, e.target.value)}
-            className="w-full rounded-lg border border-gray-300  p-3 text-gray-700"
-          />
-        </div>
-        {/* Tenant Address (new) */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Tenant Address</label>
-          <input
-            type="text"
-            name="tenant_home_town_address"
-            placeholder="Tenant Home Town Address"
-            value={String(values["tenant_home_town_address"] ?? "")}
-            onChange={(e) => setFieldValue("tenant_home_town_address", e.target.value)}
+            onBlur={onBlurTouch(tenantEmailName)}
             className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
           />
+          <ErrorMessage name={tenantEmailName} component="div" className="text-sm text-red-500" />
+        </div>
+
+        {/* Tenant Address – structured */}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Tenant Address</label>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {/* Street 1 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
+              <input
+                name="tenant_address_S1"
+                placeholder="Street Address Line 1"
+                autoComplete="address-line1"
+                value={String(values["tenant_address_S1"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_address_S1", e.target.value)}
+                onBlur={onBlurTouch("tenant_address_S1")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_address_S1" component="div" className="text-sm text-red-500" />
+            </div>
+
+            {/* Street 2 */}
+            <div className="col-span-1 sm:col-span-2 md:col-span-3">
+              <input
+                name="tenant_address_S2"
+                placeholder="Street Address Line 2 (optional)"
+                autoComplete="address-line2"
+                value={String(values["tenant_address_S2"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_address_S2", e.target.value)}
+                onBlur={onBlurTouch("tenant_address_S2")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_address_S2" component="div" className="text-sm text-red-500" />
+            </div>
+
+            {/* City */}
+            <div className="col-span-1">
+              <input
+                name="tenant_city"
+                placeholder="City"
+                autoComplete="address-level2"
+                value={String(values["tenant_city"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_city", e.target.value)}
+                onBlur={onBlurTouch("tenant_city")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_city" component="div" className="text-sm text-red-500" />
+            </div>
+
+            {/* State */}
+            <div className="col-span-1">
+              <input
+                name="tenant_state"
+                placeholder="State"
+                autoComplete="address-level1"
+                value={String(values["tenant_state"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_state", e.target.value)}
+                onBlur={onBlurTouch("tenant_state")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_state" component="div" className="text-sm text-red-500" />
+            </div>
+
+            {/* Zip */}
+            <div className="col-span-1">
+              <input
+                name="tenant_zip"
+                placeholder="Zip Code"
+                autoComplete="postal-code"
+                value={String(values["tenant_zip"] ?? "")}
+                onChange={(e) => setFieldValue("tenant_zip", e.target.value)}
+                onBlur={onBlurTouch("tenant_zip")}
+                className="w-full rounded-lg border border-gray-300 p-3 text-gray-700"
+              />
+              <ErrorMessage name="tenant_zip" component="div" className="text-sm text-red-500" />
+            </div>
+          </div>
         </div>
 
       </div>

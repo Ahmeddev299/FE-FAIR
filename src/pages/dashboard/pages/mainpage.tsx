@@ -44,11 +44,10 @@ function MainPage() {
     return (
         <DashboardLayout>
             {isLoading ? (
-                <LoadingOverlay visible />
+                <LoadingOverlay visible  />
             ) : (
                 <div className="flex-1 overflow-auto">
                     <DashboardHeader userName="ahmed" />
-
                     <div className="p-4 sm:p-6 lg:p-0 mt-4">
                         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                             <div className="xl:col-span-3 space-y-6">
