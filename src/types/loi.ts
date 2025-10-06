@@ -22,7 +22,7 @@ export type LoiDTO = {
   // legacy single-line (keep for backward compat)
   propertyAddress?: string;
 
-  // ✅ NEW: structured property address (all optional)
+  // NEW: structured property address (all optional)
   property_address_S1?: string;
   property_address_S2?: string;
   property_city?: string;
@@ -38,41 +38,37 @@ export type LoiDTO = {
     tenant_name?: string;
     tenant_email?: string;
 
-    // legacy single-line addresses (keep)
     landlord_home_town_address?: string;
     tenant_home_town_address?: string;
 
-    // ✅ NEW: structured landlord address
     landlord_address_S1?: string;
     landlord_address_S2?: string;
     landlord_city?: string;
     landlord_state?: string; // 2-letter
     landlord_zip?: string;
 
-    // ✅ NEW: structured tenant address
     tenant_address_S1?: string;
     tenant_address_S2?: string;
     tenant_city?: string;
-    tenant_state?: string;   // 2-letter
+    tenant_state?: string;   
     tenant_zip?: string;
   };
 
   leaseTerms?: {
     monthlyRent?: string;
     securityDeposit?: string;
-    leaseDuration?: string;   // months
-    startDate?: string;       // ISO
+    leaseDuration?: string;  
+    startDate?: string;      
     rentstartDate?: string;
     prepaidRent?: string;
     leaseType?: string;
-
-    // legacy/alt spellings
+   
     RentEscalation?: string;
     PrepaidRent?: string;
     LeaseType?: string;
-    rentEsclation?: string; // legacy misspelling
-rentStartMode?: string;
-    // ✅ NEW
+    rentEsclation?: string;
+    rentStartMode?: string;
+  
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
 
@@ -85,11 +81,12 @@ rentStartMode?: string;
   propertyDetails?: {
     propertySize?: string;
     patio?: string;
+    patioSize?: string;
     intendedUse?: string;
     exclusiveUse?: string;
     propertyType?: string;
-    amenities?: string;       // "8–10"
-    utilities?: string[];     // ["Electricity", ...]
+    amenities?: string;      
+    utilities?: string[];    
     hasExtraSpace?: boolean;
 
     deliveryCondition?: string;
@@ -180,12 +177,13 @@ export interface FormValues {
   RentEscalation?: string;
   PrepaidRent?: string;
   LeaseType?: string;
-  percentageLeasePercent: string; // % of gross sales revenue for Percentage Lease
+  percentageLeasePercent: string; 
 
   // Step 3 (Property Details)
   propertySize: string;
   hasExtraSpace: boolean;
   patio: string;
+  patioSize: string;
   intendedUse: string;
   exclusiveUse: string;
   propertyType: string;
@@ -272,26 +270,26 @@ export type LOIApiPayload = {
     // escalation
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
-rentStartMode?: string;
+    rentStartMode?: string;
     includeRenewalOption: boolean;
     renewalYears?: string;
     renewalOptionsCount?: string;
 
-    // ✅ make optional
     percentageLeasePercent?: string;
   };
 
   propertyDetails: {
     propertySize: string;
     intendedUse: string;
-    exclusiveUse: string;     // FIX: boolean, not string
+    exclusiveUse: string;    
     propertyType: string;
     hasExtraSpace: boolean;
     patio?: string;
-    amenities: string;         // e.g. "8–10"
-    utilities: string[];       // ["Electricity", "HVAC", ...]
-    // NEW
-    deliveryCondition?: string; // "as_is" | "shell" | "vanilla_shell" | "turnkey" | "white_box"
+    patioSize? : string,
+    amenities: string;        
+    utilities: string[];      
+    
+    deliveryCondition?: string; 
     maintenance?: {
       structural?: { landlord?: boolean; tenant?: boolean };
       nonStructural?: { landlord?: boolean; tenant?: boolean };
@@ -323,7 +321,7 @@ rentStartMode?: string;
 
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
 export interface Letter {
-  id: string;  // ← instead of number
+  id: string;  
   title: string;
   propertyAddress?: string;
   updated_at?: string;

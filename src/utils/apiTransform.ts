@@ -79,17 +79,15 @@ export const transformToApiPayload = (
       ? values.improvementAllowanceAmount
       : values.improvementAllowance || "";
 
-  // Address fragments
   const propertyAddress = propertyAddressFrom(values);
   const landlordAddress = landlordAddressFrom(values);
   const tenantAddress = tenantAddressFrom(values);
 
-  // Escalation
   const escalationPieces = buildEscalationPieces(values);
 
   const payload: LOIApiPayload = {
     title: values.title || "",
-    ...propertyAddress, // structured property address
+    ...propertyAddress,
     addFileNumber: !!values.addFileNumber,
     ...(effectiveDocId ? { doc_id: effectiveDocId } : {}),
 
@@ -99,11 +97,9 @@ export const transformToApiPayload = (
       tenant_name: values.tenantName,
       tenant_email: values.tenantEmail || "",
 
-      // legacy single-line (only include when not empty)
       ...addIf("landlord_home_town_address", values.landlord_home_town_address),
       ...addIf("tenant_home_town_address", values.tenant_home_town_address),
 
-      // structured
       ...landlordAddress,
       ...tenantAddress,
     },
@@ -119,9 +115,7 @@ export const transformToApiPayload = (
       includeRenewalOption: !!values.includeRenewalOption,
       renewalYears: values.renewalYears || "",
       renewalOptionsCount: values.renewalOptionsCount || "",
-      rentStartMode : values.rentStartMode || "",
-
-      // if your form adds this when “Percentage Lease” is selected
+      rentStartMode: values.rentStartMode || "",
       ...(nonEmpty(values.percentageLeasePercent)
         ? { percentageLeasePercent: String(values.percentageLeasePercent) }
         : {}),
@@ -142,6 +136,8 @@ export const transformToApiPayload = (
         ? { deliveryCondition: String(values.deliveryCondition).trim() }
         : {}),
       maintenance: mapMaintenanceToDTO(values.maintenance),
+      patioSize: values.patioSize || "",
+
     },
 
     additionalDetails: {

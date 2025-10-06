@@ -197,7 +197,33 @@ export const PropertyDetailsStep: React.FC = () => {
               />
               <ErrorMessage name="patio" component="div" className="mt-1 text-sm text-red-500" />
             </div>
+            
           )}
+
+          
+          {/* Patio */}
+          {values?.hasExtraSpace && (
+            <div>
+            <label className="mb-2 block text-sm font-medium">Patio Size (sq ft) *</label>
+            <div className="flex gap-2">
+              <Field
+                name="patioSize"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                placeholder="e.g., 2500"
+                className="flex-1 rounded-lg border-0 ring-1 ring-inset ring-gray-300 p-3
+                           focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              />
+              <span className="rounded-lg border-0 ring-1 ring-inset ring-gray-200 bg-gray-50 p-3 text-gray-500">
+                sq ft
+              </span>
+            </div>
+            <ErrorMessage name="patioSize" component="div" className="mt-1 text-sm text-red-500" />
+          </div>
+            
+          )}
+
 
           {/* Intended Use */}
           <div>
