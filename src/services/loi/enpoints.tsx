@@ -20,11 +20,8 @@ class LoiBaseService extends HttpService {
   deleteLOI = (id: string): Promise<any> =>
     this.delete(`${this.prefix}/delete_loi/${id}`, {});
 
-  submitLOIByFile = (file: File): Promise<any> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    return this.post(this.prefix + `/submit_loi_by_file`, formData, {
+  submitLOIByFile = (form: FormData): Promise<any> => {
+    return this.post(this.prefix + `/submit_loi_by_file`, form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   };

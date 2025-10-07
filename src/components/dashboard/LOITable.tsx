@@ -76,16 +76,15 @@ const sanitizeLoiPayload = <T extends object>(row: T): Omit<T, SanitizableKeys> 
 
 const deriveStatusFromClauses = (row: LoiItem) => {
   const blocks = row?.clauses ? Object.values(row.clauses) : [];
-  if (!blocks.length) return norm(row.status) || "In Process";
   const statuses = blocks.map((b) => norm(b.status)).filter(Boolean);
-  if (!statuses.length) return norm(row.status) || "in review";
+  if (!statuses.length) return norm(row.status) || "pending";
   const allApproved = statuses.every((s) => s === "approved");
   const anyInProgress = statuses.some((s) => s === "in progress");
   const allPending = statuses.every((s) => s === "pending");
   if (allApproved) return "approved";
   if (anyInProgress) return "in progress";
   if (allPending) return "pending";
-  return "in review";
+  return "pending";
 };
 
 const getStatusPill = (status?: string) => {

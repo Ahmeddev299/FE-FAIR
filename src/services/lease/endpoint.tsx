@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpService } from "../index";
 
-type ClauseAction = "manual_edit" | "accept_ai_suggestion";
+type ClauseAction = "manual_edit" | "accept_ai_suggestion" | "approved";
 
 /** Match backend exactly */
 export interface UpdateClausePayload {
@@ -51,6 +51,16 @@ class LeaseBaseService extends HttpService {
   ): Promise<any> {
     return this.put(
       `clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/${encodeURIComponent(clauseId)}`,
+      body
+    );
+  };
+
+    approveLOIclause(
+    clauseId: string,
+    body: UpdateClausePayload
+  ): Promise<any> {
+    return this.put(
+      `clause/reject_or_approve_single_clauses_of_single_LOI/${encodeURIComponent(clauseId)}`,
       body
     );
   }

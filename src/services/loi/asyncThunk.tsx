@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { loiBaseService } from "./enpoints";
-import type { Letter, LOIApiPayload } from "@/types/loi"; // adjust path accordingly
+import type {  LOIApiPayload } from "@/types/loi";
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
+
+type SubmitByFilePayload = { file: File; leaseId?: string };
+type SubmitByFileReturn = { id: string };
+
 
 export const submitLOIAsync = createAsyncThunk(
   "/loi/submit",
@@ -13,14 +17,12 @@ export const submitLOIAsync = createAsyncThunk(
       const token: string = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
 
-      // res is the API payload (e.g. { success, status, message, data })
       const res = await loiBaseService.submitLOI(data);
 
       if (res?.success === false && res?.status === 400) {
         return rejectWithValue(res?.message ?? "Bad Request");
       }
 
-      // return the payload AS-IS
       return res;
     } catch (error: any) {
       if (error.response?.data?.message) return rejectWithValue(error.response.data.message);
@@ -31,8 +33,6 @@ export const submitLOIAsync = createAsyncThunk(
   }
 );
 
-
-// in asyncThunk.ts or wherever you define thunks
 export const getDraftLOIsAsync = createAsyncThunk(
   "loi/fetchDrafts",
   async (_, { rejectWithValue }) => {
@@ -52,7 +52,6 @@ export const getDraftLOIsAsync = createAsyncThunk(
   }
 );
 
-// services/loi/asyncThunk.ts (add thunk)
 export const runAiAssistantAsync = createAsyncThunk(
   "loi/aiAssistant",
   async (data: any, { rejectWithValue }) => {
@@ -74,7 +73,6 @@ export const runAiAssistantAsync = createAsyncThunk(
   }
 );
 
-// in asyncThunk.ts or wherever you define thunks
 export const getLOIDetailsById = createAsyncThunk(
   "loi/fetchSingleDraft",
   async (loiId: string, { rejectWithValue }) => {
@@ -100,34 +98,47 @@ export const getLOIDetailsById = createAsyncThunk(
 );
 
 export const submitLOIByFileAsync = createAsyncThunk<
-  { data: Letter },   
-  File,               
+  SubmitByFileReturn,          // <-- normalized return type
+  SubmitByFilePayload,
   { rejectValue: string }
->("loi/submitByFile", async (file, { rejectWithValue }) => {
+>("loi/submitByFile", async ({ file, leaseId }, { rejectWithValue }) => {
   try {
     const token: string = `${ls.get("access_token", { decrypt: true })}`;
     HttpService.setToken(token);
 
-    const response = await loiBaseService.submitLOIByFile(file);
+    const form = new FormData();
+    form.append("file", file);
+    if (leaseId) form.append("doc_id", leaseId);
+
+    const response = await loiBaseService.submitLOIByFile(form);
 
     if (response.success === false && response.status === 400) {
       return rejectWithValue(response.message);
     }
 
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.data?.message) return rejectWithValue(error.response.data.message);
-    if (error.response?.message) return rejectWithValue(error.response.message);
-    if (error.message) return rejectWithValue(error.message);
+    // Possible server shapes → normalize here
+    const raw = response.data;
+    let id: string | undefined;
+    if (typeof raw === "string") id = raw;
+    else if (raw?.id) id = raw.id;
+    else if (raw?.data?.id) id = raw.data.id;
+    else if (typeof raw?.data === "string") id = raw.data;
+
+    if (!id) throw new Error("Missing id in submit LOI response");
+    return { id };
+  } catch (error: unknown) {
+    const e = error as { response?: { data?: { message?: string }; message?: string }; message?: string };
+    if (e.response?.data?.message) return rejectWithValue(e.response.data.message);
+    if (e.response?.message) return rejectWithValue(e.response.message);
+    if (e.message) return rejectWithValue(e.message);
     return rejectWithValue("An unexpected error occurred while submitting LOI by file");
   }
-}
-);
+});
 
 export const deleteLOIAsync = createAsyncThunk<
-  { id: string },         // return payload
-  string,                 // arg: loiId
-  { rejectValue: string } // rejection payload
+  { id: string },        
+  string,            
+  { rejectValue: string } 
 >("loi/delete", async (loiId, { rejectWithValue }) => {
   try {
     const token: string = `${ls.get("access_token", { decrypt: true })}`;

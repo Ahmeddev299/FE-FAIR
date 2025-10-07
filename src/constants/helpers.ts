@@ -25,7 +25,6 @@ export const extractAmount = (s?: string): string => {
 };
 
 export const parseSingleLineAddress = (s?: string) => {
-  // naive split: "S1, S2, City, ST, ZIP"
   const parts = String(s ?? "").split(",").map(p => p.trim()).filter(Boolean);
   const [S1 = "", S2 = "", City = "", State = "", Zip = ""] = parts;
   return {
@@ -50,9 +49,7 @@ export const mapUtilitiesToBoolean = (list?: readonly string[]) => ({
   other: !!list?.includes("Other"),
 });
 
-
 export const mustBeOff = (msg: string) =>
   Yup.boolean().oneOf([false], msg).default(false);
-
-// export const STATE_2 = /^[A-Za-z]{3}$/;                
+              
 export const ZIP_5_9 = /^\d{5}(?:-\d{4})?$/;        

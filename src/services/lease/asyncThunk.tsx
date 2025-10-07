@@ -185,18 +185,18 @@ export const updateClauseCurrentVersionAsync = createAsyncThunk(
     try {
       const token = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
-console.log("clauseid", clauseId)
+      console.log("clauseid", clauseId)
       const res = await leaseBaseService.updateClauseDetailOrCurrentVersion(clauseId, {
-        clause_id: clauseId,   
-        clause_key,            
-        details,               
+        clause_id: clauseId,
+        clause_key,
+        details,
         action: "manual_edit",
       });
 
       if (!res?.success || res?.status === 400) {
         return rejectWithValue(res?.message ?? "Failed to save clause");
       }
-      // return minimal data needed by reducers/UI
+      
       return { clause_key, details };
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
@@ -205,9 +205,33 @@ console.log("clauseid", clauseId)
 );
 
 
+export const approveLoiClauseApi = createAsyncThunk(
+  "loi/update",
+  async ({ clauseId, clause_key, details }: UpdateClauseArgs, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+      console.log("clauseid", clauseId)
+      const res = await leaseBaseService.approveLOIclause(clauseId, {
+        clause_id: clauseId,
+        clause_key,
+        details,
+        action: "approved",
+      });
+
+      if (!res?.success || res?.status === 400) {
+        return rejectWithValue(res?.message ?? "Failed to save clause");
+      }
+      return { clause_key, details };
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
+    }
+  }
+);
+
 export const acceptClauseSuggestionAsync = createAsyncThunk<
-  { clauseId: string; clause_key: string; details: string },   // ✅ return type includes details
-  AcceptSuggestionArgs                                         // ✅ arg type
+  { clauseId: string; clause_key: string; details: string },  
+  AcceptSuggestionArgs                                        
 >(
   "lease/acceptClauseSuggestion",
   async ({ clauseId, clause_key, details }, { rejectWithValue }) => {

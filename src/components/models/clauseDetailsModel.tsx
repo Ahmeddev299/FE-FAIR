@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, History, Check, AlertTriangle, Pencil } from 'lucide-react';
+import { X, History, Check, Pencil } from 'lucide-react';
 import type { ExtendedClause } from '@/types/loi';
 
 export type ClauseHistoryComment = {
@@ -75,12 +75,10 @@ export default function ClauseDetailsModel({
   const aiSuggested = history?.ai_suggested_clause_details ?? clause.aiSuggestion ?? '—';
   const initialCurrent = history?.current_version ?? clause.currentVersion ?? '';
 
-  // ===== Editable current version state =====
   const [isEditing, setIsEditing] = useState(false);
   const [currentText, setCurrentText] = useState<string>(initialCurrent);
   const [isSaving, setIsSaving] = useState(false);
 
-  // keep currentText in sync when clause/history changes (e.g. after save/refresh)
   useEffect(() => {
     setCurrentText(initialCurrent);
     setIsEditing(false);

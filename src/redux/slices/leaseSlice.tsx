@@ -8,6 +8,7 @@ import {
   updateClauseCurrentVersionAsync,
   acceptClauseSuggestionAsync,
   getLeaseDetailsById,
+  approveLoiClauseApi,
 } from "@/services/lease/asyncThunk";
 import Toast from "@/components/Toast";
 
@@ -208,6 +209,22 @@ export const leaseSlice = createSlice({
       })
       .addCase(acceptClauseSuggestionAsync.rejected, (state, action) => {
         Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to accept suggestion" });
+      })
+
+      .addCase(approveLoiClauseApi.fulfilled, (state, action) => {
+        const { clause_key, details } = action.payload; 
+        const history = (state.currentLease as any)?.data?.history;
+        if (history && history[clause_key]) {
+          history[clause_key] = {
+            ...history[clause_key],
+            current_version: details,
+            status: "approved",
+          };
+        }
+        Toast.fire({ icon: "success", title: "Clause Approve" });
+      })
+      .addCase(approveLoiClauseApi.rejected, (state, action) => {
+        Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to clause approval" });
       });
   },
 });

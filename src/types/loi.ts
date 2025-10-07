@@ -416,7 +416,7 @@ export type ExtendedClause = Clause & {
   originalText?: string;
   aiSuggestion?: string;
   currentVersion?: string;
-
+   
   // Add these so we don't need "as any"
   status?: string;
   risk?: string;
