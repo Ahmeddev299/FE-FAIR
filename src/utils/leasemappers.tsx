@@ -1,9 +1,6 @@
-// 
-
 // src/utils/leaseMappers.ts
 import type { UIClause, UILeaseFull } from '@/types/loi';
 
-/** ---- API shapes (minimal) ---- */
 
 type ApiComment = {
   text?: string;
@@ -35,12 +32,10 @@ export type ApiLeaseDetail = {
   };
 };
 
-/** ---- returned UI shape w/ doc id carried through ---- */
 export type UILeaseFullWithDoc = UILeaseFull & {
   clauseDocId?: string;
 };
 
-/** ---- helpers ---- */
 export const riskFromApi = (risk?: string): 'Low' | 'Medium' | 'High' => {
   if (!risk) return 'Low';
   const n = parseInt(risk.match(/\((\d+)\/10\)/)?.[1] ?? '0', 10);
@@ -54,7 +49,7 @@ export const statusFromApi = (s?: string, risk?: string): UIClause['status'] => 
   if (low === 'approved') return 'Approved';
   if (low === 'pending') return 'Pending';
   if (low === 'accept_ai_suggestion') return 'Approved';
-  // Fallbacks
+ 
   return riskFromApi(risk) === 'High' ? 'Needs Review' : 'Edited';
 };
 
@@ -67,7 +62,6 @@ export const categoryFromName = (name: string): UIClause['category'] => {
   return 'Terms & Conditions';
 };
 
-/** ---- type guards (no `any`) ---- */
 function isObject(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null;
 }
@@ -94,10 +88,9 @@ function isEnvelopeWithNestedData(x: unknown): x is EnvelopeWithNestedData {
 }
 
 function isApiClause(x: unknown): x is ApiClause {
-  return isObject(x); // minimal guard; fields are optional
+  return isObject(x);
 }
 
-/** Accepts {data:{data:obj}}, {data:obj}, or obj */
 export const extractOne = (payload: unknown): ApiLeaseDetail | null => {
   if (isApiLeaseDetail(payload)) return payload;
 
@@ -121,7 +114,6 @@ export type ClauseComment = {
   created_at?: string;
 };
 
-/** ---- main mapper for the clause page ---- */
 export const mapToUILease = (raw: ApiLeaseDetail | null): UILeaseFullWithDoc | null => {
   if (!raw) return null;
 
@@ -158,7 +150,7 @@ export const mapToUILease = (raw: ApiLeaseDetail | null): UILeaseFullWithDoc | n
     unresolvedCount: clauses.filter(
       (c) => c.status === 'Needs Review' || (c.commentsUnresolved ?? 0) > 0
     ).length,
-    clauseDocId: raw.clauses?._clause_log_id, // ✅ typed; no `any`
+    clauseDocId: raw.clauses?._clause_log_id, 
   };
 };
 

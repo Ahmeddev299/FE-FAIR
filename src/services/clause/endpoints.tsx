@@ -13,20 +13,16 @@ export type AddCommentResponse = {
   data?: { comment?: { text: string; author?: string; created_at?: string } } | unknown;
 };
 
-
-
 class ClauseBaseService extends HttpService {
-  // Fetch all clauses for a lease
+ 
   getClausesByLease(leaseId: string): Promise<any> {
     return this.get(`clause/get_clauses/${leaseId}`);
   }
 
-  // Fetch single clause
   getClauseById(leaseId: string, clauseId: string): Promise<any> {
     return this.get(`clause/read_single_clause/${leaseId}/${clauseId}`);
   }
 
-  // Approve / reject / edit
   updateClauseStatus = (
     leaseId: string,
     payload: { clause_key: string; tag: "approved" | "reject" }

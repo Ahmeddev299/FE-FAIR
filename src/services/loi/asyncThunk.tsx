@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { loiBaseService } from "./enpoints";
-import type {  LOIApiPayload } from "@/types/loi";
+import type { LOIApiPayload } from "@/types/loi";
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
 
 type SubmitByFilePayload = { file: File; leaseId?: string };
 type SubmitByFileReturn = { id: string };
-
 
 export const submitLOIAsync = createAsyncThunk(
   "/loi/submit",
@@ -136,9 +135,9 @@ export const submitLOIByFileAsync = createAsyncThunk<
 });
 
 export const deleteLOIAsync = createAsyncThunk<
-  { id: string },        
-  string,            
-  { rejectValue: string } 
+  { id: string },
+  string,
+  { rejectValue: string }
 >("loi/delete", async (loiId, { rejectWithValue }) => {
   try {
     const token: string = `${ls.get("access_token", { decrypt: true })}`;

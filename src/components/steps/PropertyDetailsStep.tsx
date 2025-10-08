@@ -199,8 +199,7 @@ export const PropertyDetailsStep: React.FC = () => {
             </div>
             
           )}
-
-          
+   
           {/* Patio */}
           {values?.hasExtraSpace && (
             <div>
@@ -221,7 +220,6 @@ export const PropertyDetailsStep: React.FC = () => {
             </div>
             <ErrorMessage name="patioSize" component="div" className="mt-1 text-sm text-red-500" />
           </div>
-            
           )}
 
 

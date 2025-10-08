@@ -16,7 +16,7 @@ class LoiBaseService extends HttpService {
   singledraftLOI = (id: string): Promise<any> =>
     this.get(this.prefix + `/get_single_loi/${id}`, {});
   aiAssistant = (data: any): Promise<any> =>
-    this.post(this.prefix + `/ai_assistent`, data); // NOTE: 'assistent' spelling from your screenshot
+    this.post(this.prefix + `/ai_assistent`, data); 
   deleteLOI = (id: string): Promise<any> =>
     this.delete(`${this.prefix}/delete_loi/${id}`, {});
 

@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpService } from "../index";
 
-type ClauseAction = "manual_edit" | "accept_ai_suggestion" | "approved";
+type ClauseAction = "manual_edit" | "accept_ai_suggestion" | "approved" | "rejected";
 
-/** Match backend exactly */
 export interface UpdateClausePayload {
-  clause_id: string;   // ← backend expects this
-  clause_key: string;  // ← backend expects this
-  details: string;     // ← backend expects this (current text to persist)
+  clause_id: string;  
+  clause_key: string; 
+  details: string;     
   action: ClauseAction;
 }
 
@@ -41,10 +40,6 @@ class LeaseBaseService extends HttpService {
     return this.get(`clause/get_user_leases?page=${page}&limit=${limit}`);
   }
 
-  /**
-   * PUT /clause/clause_detail_or_current_version_update_single_clauses_of_single_lease/:clauseId
-   * Body MUST be { clause_id, clause_key, details, action }
-   */
   updateClauseDetailOrCurrentVersion(
     clauseId: string,
     body: UpdateClausePayload
@@ -65,7 +60,16 @@ class LeaseBaseService extends HttpService {
     );
   }
 
-  /** Convenience helpers (optional) using the CORRECT payload keys */
+    rejectLOIclause(
+    clauseId: string,
+    body: UpdateClausePayload
+  ): Promise<any> {
+    return this.put(
+      `clause/reject_or_approve_single_clauses_of_single_LOI/${encodeURIComponent(clauseId)}`,
+      body
+    );
+  }
+
   acceptClauseSuggestion(
     clauseId: string,
     clause_key: string,

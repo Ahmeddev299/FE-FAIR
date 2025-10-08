@@ -9,10 +9,10 @@ import {
   acceptClauseSuggestionAsync,
   getLeaseDetailsById,
   approveLoiClauseApi,
+  rejectLoiClauseApi,
 } from "@/services/lease/asyncThunk";
 import Toast from "@/components/Toast";
 
-// ---- Types (adjust fields to match your API) ----
 type LeaseItem = {
   lease_id: string | number;
   lease_title: string;
@@ -23,7 +23,7 @@ type LeaseList = {
   meta?: Record<string, any>;
 };
 
-type CurrentLease = Record<string, any>; // replace with your real type
+type CurrentLease = Record<string, any>; 
 
 type LeaseState = {
   isLoading: boolean;
@@ -33,13 +33,12 @@ type LeaseState = {
   deleteSuccess: boolean;
   leaseError: string;
   currentLease: CurrentLease;
-  leaseList: LeaseList | null;         // << stable shape with .data
+  leaseList: LeaseList | null;        
   metaData: Record<string, any>;
   filters: Record<string, any>;
   loadMore: boolean;
 };
 
-// ---- Initial State ----
 const initialState: LeaseState = {
   isLoading: false,
   submitSuccess: false,
@@ -64,7 +63,7 @@ const initialState: LeaseState = {
     comments: "",
     clauses: {},
   },
-  leaseList: null,      // << important: not []
+  leaseList: null,      
   metaData: {},
   filters: {},
   loadMore: false,
@@ -82,7 +81,6 @@ export const leaseSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Upload lease
     builder
       .addCase(uploadLeaseAsync.pending, (state) => {
         state.isLoading = true;
@@ -99,7 +97,6 @@ export const leaseSlice = createSlice({
         Toast.fire({ icon: "error", title: state.leaseError });
       });
 
-    // Get paginated user leases
     builder
       .addCase(getUserLeasesAsync.pending, (state) => {
         state.isLoading = true;
@@ -108,9 +105,7 @@ export const leaseSlice = createSlice({
       .addCase(getUserLeasesAsync.fulfilled, (state, action) => {
         state.isLoading = false;
 
-        // Normalize payload so leaseList always has { data: LeaseItem[] }
         const payload = action.payload as any;
-        // Supports either { leases: [...] } | { data: [...] } | [...]
         const data: LeaseItem[] = Array.isArray(payload)
           ? payload
           : payload?.leases ?? payload?.data ?? [];
@@ -124,7 +119,6 @@ export const leaseSlice = createSlice({
         state.leaseError = (action.payload as string) ?? "Failed to fetch leases";
       });
 
-    // Get all user leases
     builder
       .addCase(getallUserLeasesAsync.pending, (state) => {
         state.isLoading = true;
@@ -132,7 +126,7 @@ export const leaseSlice = createSlice({
       })
       .addCase(getallUserLeasesAsync.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.hasFetched = true; // NEW
+        state.hasFetched = true; 
         const payload = action.payload as any;
         const data: LeaseItem[] = Array.isArray(payload) ? payload : (payload?.leases ?? payload?.data ?? []);
         const meta = payload?.meta ?? {};
@@ -142,11 +136,10 @@ export const leaseSlice = createSlice({
       })
       .addCase(getallUserLeasesAsync.rejected, (state, action) => {
         state.isLoading = false;
-        state.hasFetched = true; // NEW (we attempted)
+        state.hasFetched = true; 
         state.leaseError = (action.payload as string) ?? "Failed to fetch leases";
       });
 
-    // Clause details
     builder
       .addCase(getClauseDetailsAsync.pending, (state) => {
         state.isLoading = true;
@@ -161,7 +154,6 @@ export const leaseSlice = createSlice({
         state.leaseError = (action.payload as string) ?? "Failed to fetch clause details";
       });
 
-    // Lease details by ID
     builder
       .addCase(getLeaseDetailsById.pending, (state) => {
         state.isLoading = true;
@@ -194,9 +186,8 @@ export const leaseSlice = createSlice({
         Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to save clause" });
       })
 
-      // Accept AI suggestion
       .addCase(acceptClauseSuggestionAsync.fulfilled, (state, action) => {
-        const { clause_key, details } = action.payload; // <- clause_key, details
+        const { clause_key, details } = action.payload;
         const history = (state.currentLease as any)?.data?.history;
         if (history && history[clause_key]) {
           history[clause_key] = {
@@ -218,12 +209,27 @@ export const leaseSlice = createSlice({
           history[clause_key] = {
             ...history[clause_key],
             current_version: details,
-            status: "approved",
+            status: "rejected",
           };
         }
         Toast.fire({ icon: "success", title: "Clause Approve" });
       })
       .addCase(approveLoiClauseApi.rejected, (state, action) => {
+        Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to clause approval" });
+      })
+      .addCase(rejectLoiClauseApi.fulfilled, (state, action) => {
+        const { clause_key, details } = action.payload; 
+        const history = (state.currentLease as any)?.data?.history;
+        if (history && history[clause_key]) {
+          history[clause_key] = {
+            ...history[clause_key],
+            current_version: details,
+            status: "rejected",
+          };
+        }
+        Toast.fire({ icon: "success", title: "Clause Approve" });
+      })
+      .addCase(rejectLoiClauseApi.rejected, (state, action) => {
         Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to clause approval" });
       });
   },

@@ -324,10 +324,7 @@ export const LeaseTermsStep: React.FC = () => {
                 <span>Only Base Rent starts on this date</span>
               </label>
             </div>
-
           </div>
-
-
         </div>
       </div>
 

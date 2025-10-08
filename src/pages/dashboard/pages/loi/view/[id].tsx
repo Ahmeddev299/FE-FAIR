@@ -10,6 +10,7 @@ import { RootState } from "@/redux/store";
 import { getLOIDetailsById } from "@/services/loi/asyncThunk";
 import {
   approveLoiClauseApi,
+  rejectLoiClauseApi,
   updateClauseCurrentVersionAsync,
 } from "@/services/lease/asyncThunk";
 import { commentOnClauseAsync } from "@/services/clause/asyncThunk";
@@ -183,25 +184,50 @@ const toRisk = (raw?: string): RiskLevel => {
   if (s === "high") return "High";
   return "Medium";
 };
-
-type ClauseStatus =
+type ExtendedClause = {
+  // ...
+  status:
   | "AI Suggested"
   | "Edited"
   | "Approved"
   | "Needs Review"
   | "Pending"
-  | "Suggested";
-
-const toStatus = (raw?: string): ClauseStatus => {
-  const s = (raw || "").trim().toLowerCase();
-  if (s === "ai suggested" || s === "ai_suggested" || s === "ai-suggested") return "AI Suggested";
-  if (s === "edited" || s === "manual" || s === "manual edit" || s === "manual_edit") return "Edited";
-  if (s === "approved" || s === "accepted") return "Approved";
-  if (s === "needs review" || s === "needs_review" || s === "in review" || s === "in_review") return "Needs Review";
-  if (s === "suggested" || s === "suggestion") return "Suggested";
-  return "Pending";
+  | "Suggested"
+  | "Rejected"; // add this
 };
 
+type UiStatus = Exclude<ExtendedClause["status"], "Rejected">;
+// or write it out explicitly:
+// type UiStatus = "AI Suggested" | "Edited" | "Approved" | "Needs Review" | "Pending" | "Suggested";
+
+export const toUiStatus = (raw?: string): UiStatus => {
+  const s = (raw ?? "")
+    .toLowerCase()
+    .replace(/[_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  switch (s) {
+    case "ai suggested":
+      return "AI Suggested";
+    case "edited":
+    case "manual":
+    case "manual edit":
+      return "Edited";
+    case "approved":
+    case "accepted":
+      return "Approved";
+    case "needs review":
+    case "in review":
+    case "rejected":          // <- normalized to a UI-allowed status
+      return "Needs Review";
+    case "suggested":
+    case "suggestion":
+      return "Suggested";
+    default:
+      return "Pending";
+  }
+};
 // ---------- helpers ----------
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
@@ -214,6 +240,8 @@ const pill = (v?: string) => {
     "in progress": `${base} bg-indigo-100 text-indigo-800`,
     approved: `${base} bg-emerald-100 text-emerald-700`,
     "in review": `${base} bg-amber-100 text-amber-800`,
+    "rejected": `${base} bg-red-100 text-amber-800`,
+
     draft: `${base} bg-gray-100 text-gray-700`,
     terminated: `${base} bg-rose-100 text-rose-700`,
   };
@@ -319,11 +347,13 @@ export default function SingleLoiPage() {
 
   const { currentLOI, isLoading, loiError } = useAppSelector((s: RootState) => s.loi);
   const loi = useMemo(() => shapeLOI(currentLOI), [currentLOI]);
+  const [docid, setdocid] = useState()
   const clauseDocId = loi?.clauseDocId;
 
   useEffect(() => {
     const id = Array.isArray(queryId) ? queryId[0] : queryId;
     if (id) void dispatch(getLOIDetailsById(String(id)));
+    setdocid(id)
   }, [dispatch, queryId]);
 
   const [isDownloading, setIsDownloading] = useState(false);
@@ -345,7 +375,12 @@ export default function SingleLoiPage() {
 
       const resp = await axios.post(
         `${Config.API_ENDPOINT}/dashboard/download_template_data`,
-        currentLOI,
+
+        {
+          ...currentLOI,
+          doc_id: docid
+
+        },
         { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
       );
 
@@ -356,7 +391,9 @@ export default function SingleLoiPage() {
       if (msg) Toast.fire({ icon: "success", title: msg });
 
       const data = normalizeLoiResponse(resp);
-      await exportLoiToDocx(data);
+      const isTemp = resp.data?.data?.temp === true;
+      console.log("isTem", isTemp)
+      await exportLoiToDocx(data, undefined, isTemp);
       if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
     } catch (err: unknown) {
       Toast.fire({ icon: "warning", title: errorMessage(err) });
@@ -396,7 +433,19 @@ export default function SingleLoiPage() {
       approveLoiClauseApi({ clauseId: clauseDocId, clause_key: clauseName, details: aiText ?? "" })
     ).unwrap();
     await refreshLoi();
-    Toast.fire({ icon: "success", title: "AI suggestion accepted" });
+    Toast.fire({ icon: "success", title: "Approve LOI" });
+  };
+
+  const rejectAI = async (clauseName: string, aiText?: string) => {
+    if (!clauseDocId) {
+      Toast.fire({ icon: "warning", title: "Missing clauseDocId" });
+      return;
+    }
+    await dispatch(
+      rejectLoiClauseApi({ clauseId: clauseDocId, clause_key: clauseName, details: aiText ?? "" })
+    ).unwrap();
+    await refreshLoi();
+    Toast.fire({ icon: "success", title: "Reject LOI" });
   };
 
   const saveCurrentVersion = async (clauseName: string, newText: string) => {
@@ -450,32 +499,29 @@ export default function SingleLoiPage() {
                 <div className="mt-1 text-sm text-gray-500">{loi.address || "—"}</div>
                 <div className="mt-1 text-xs text-gray-500">File #: {loi.addFileNumber ?? "—"}</div>
               </div>
-              {!hasClauses ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  {pill(loi.status)}
-                  <button
-                    onClick={() => router.push(`/dashboard/pages/loi/edit/${loi.id}`)}
-                    title="Edit LOI"
-                    className="inline-flex h-10 items-center w-[130px] gap-5 rounded-xl px-3 border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Edit LOI</span>
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    disabled={isDownloading}
-                    title="Download LOI"
-                    className="inline-flex h-10 items-center gap-2 w-[130px] rounded-xl px-3 bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 disabled:bg-emerald-600/60 disabled:cursor-not-allowed"
-                  >
-                    <DownloadIcon className="h-4 w-4" />
-                    <span className={`hidden sm:inline ${hasClauses ? "" : ""}`}>
-                      {isDownloading ? "Downloading…" : "Download"}
-                    </span>
-                  </button>
-                </div>
-              ) : ""
 
-              }
+              <div className="flex flex-wrap items-center gap-3">
+                {pill(loi.status)}
+                <button
+                  onClick={() => router.push(`/dashboard/pages/loi/edit/${loi.id}`)}
+                  title="Edit LOI"
+                  className="inline-flex h-10 items-center w-[130px] gap-5 rounded-xl px-3 border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  <Edit3 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Edit LOI</span>
+                </button>
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  title="Download LOI"
+                  className="inline-flex h-10 items-center gap-2 w-[130px] rounded-xl px-3 bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 disabled:bg-emerald-600/60 disabled:cursor-not-allowed"
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  <span className={`hidden sm:inline ${hasClauses ? "" : ""}`}>
+                    {isDownloading ? "Downloading…" : "Download"}
+                  </span>
+                </button>
+              </div>
 
             </div>
 
@@ -904,7 +950,7 @@ export default function SingleLoiPage() {
             id: detailsClause.id,
             name: detailsClause.name,
             title: detailsClause.title,
-            status: toStatus(detailsClause.status),
+            status: toUiStatus(detailsClause.status),  // <- returns UiStatus (no "Rejected")
             risk: toRisk(detailsClause.risk),
             originalText: detailsClause.originalText,
             aiSuggestion: detailsClause.aiSuggestion,
@@ -917,9 +963,9 @@ export default function SingleLoiPage() {
             await acceptAI(detailsClause.name, detailsClause.aiSuggestion || detailsClause.currentVersion);
             setDetailsOpen(false);
           }}
-          onReject={() => {
+          onReject={async () => {
             setDetailsOpen(false);
-            Toast.fire({ icon: "info", title: "Marked for further review" });
+            await rejectAI(detailsClause.name, detailsClause.aiSuggestion || detailsClause.currentVersion)
           }}
           onAddComment={async (text: string) => {
             await addComment(detailsClause.name, text);

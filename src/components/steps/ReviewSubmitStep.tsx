@@ -92,7 +92,9 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode
       const realData: LoiServerData = normalizeLoiResponse(response);
       console.log("[LOI] API ok, exporting docx…", realData);
 
-      await (exportLoiToDocx(realData));
+let isTemp
+
+      await (exportLoiToDocx(realData, undefined,  isTemp === false));
       Toast.fire({ icon: "success", title: "LOI exported successfully" });
       console.log("[LOI] export done");
     } catch (err) {

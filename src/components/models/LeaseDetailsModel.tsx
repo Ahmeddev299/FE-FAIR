@@ -1,6 +1,6 @@
 // LeaseDetailsModal.tsx
 import { X, Pencil, MessageSquare } from "lucide-react";
-import type { Clause, Lease } from "@/types/loi"; // 👈 reuse your shared types
+import type { Clause, Lease } from "@/types/loi";
 
 interface LeaseDetailsModalProps {
   lease: Lease;
@@ -19,10 +19,9 @@ export default function LeaseDetailsModal({
 
   const { clauses } = lease;
 
-  // filter out metadata keys like "_clause_log_id"
   const clauseEntries = Object.entries(clauses).filter(
     ([key]) => !key.startsWith("_")
-  ) as [string, Clause][]; // 👈 tell TS that entries are [name, Clause]
+  ) as [string, Clause][]
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
@@ -46,28 +45,20 @@ export default function LeaseDetailsModal({
                 <h3 className="font-medium">{name}</h3>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => onEdit(clause)} // 👈 now clause: Clause
+                    onClick={() => onEdit(clause)} 
                     className="px-2 py-1 text-xs flex items-center gap-1 rounded border hover:bg-gray-100"
                   >
                     <Pencil className="h-3 w-3" /> Edit
                   </button>
                   <button
-                    onClick={() => onComment(clause)} // 👈 clause is typed
+                    onClick={() => onComment(clause)} 
                     className="px-2 py-1 text-xs flex items-center gap-1 rounded border hover:bg-gray-100"
                   >
                     <MessageSquare className="h-3 w-3" /> Comment
                   </button>
                 </div>
               </div>
-              {/* <p className="text-sm text-gray-700 mb-1">
-                <strong>Clause:</strong> {clause.clause_details}
-              </p>
-              <p className="text-sm text-gray-700 mb-1">
-                <strong>AI Suggestion:</strong> {clause.ai_suggested_clause_details}
-              </p>
-              <p className="text-sm text-gray-700 mb-1">
-                <strong>Current:</strong> {clause.current_version}
-              </p> */}
+            
               <p className="text-sm text-gray-500">
                 <strong>Status:</strong> {clause.status} |{" "}
                 <strong>Risk:</strong> {clause.risk}

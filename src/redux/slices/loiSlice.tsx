@@ -187,7 +187,6 @@ export const loiSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Submit LOI
       .addCase(submitLOIAsync.pending, (state: any) => {
         state.isLoading = true;
         state.loiError = "";
@@ -196,21 +195,18 @@ export const loiSlice = createSlice({
         state.isLoading = false;
         state.submitSuccess = true;
 
-        const payload = action.payload; // { status, message, success, data }
+        const payload = action.payload; 
 
         if (payload?.data) {
-          // Case A: loiList is an array
           if (Array.isArray(state.loiList)) {
             state.loiList.unshift(payload.data);
 
-            // Case B: loiList is a paginated object like { data: [], total: ... }
           } else if (state.loiList && Array.isArray(state.loiList.data)) {
             state.loiList.data.unshift(payload.data);
             if (typeof state.loiList.total === "number") {
               state.loiList.total += 1;
             }
 
-            // Case C: loiList was missing – initialize as array
           } else {
             state.loiList = [payload.data];
           }
@@ -243,22 +239,19 @@ export const loiSlice = createSlice({
       })
       .addCase(getLOIDetailsById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentLOI = action.payload; // ✅ Prefill redux state with fetched LOI
+        state.currentLOI = action.payload; 
         console.log("action.payload", action.payload)
       })
       .addCase(getLOIDetailsById.rejected, (state) => {
         state.isLoading = false;
       })
 
-      // store/loiSlice.ts (extraReducers additions)
       .addCase(runAiAssistantAsync.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(runAiAssistantAsync.fulfilled, (state) => {
         state.isLoading = false;
         Toast.fire({ icon: "success", title: "Assistant suggestions applied" });
-        // If backend returns updated LOI, you could merge it here:
-        // state.currentLOI = { ...state.currentLOI, ...action.payload };
       })
       .addCase(runAiAssistantAsync.rejected, (state, action) => {
         state.isLoading = false;
@@ -269,13 +262,12 @@ export const loiSlice = createSlice({
       .addCase(submitLOIByFileAsync.pending, (state) => {
         state.isLoading = true;
         state.loiError = "";
-        state.submitByFileResult = null; // optional: clear previous
+        state.submitByFileResult = null;
       })
       .addCase(submitLOIByFileAsync.fulfilled, (state, action) => {
         state.isLoading = false;
         state.submitSuccess = true;
 
-        // Safely normalize the payload without accessing .doc_id on a mismatched type
         const data = (action as any)?.payload?.data as unknown;
 
         let id: string | undefined;
@@ -287,7 +279,7 @@ export const loiSlice = createSlice({
         }
 
         if (id) {
-          state.submitByFileResult = { doc_id: id }; // store separately
+          state.submitByFileResult = { doc_id: id }; 
         }
 
         Toast.fire({ icon: "success", title: "LOI File Submitted Successfully" });
@@ -307,7 +299,6 @@ export const loiSlice = createSlice({
 
         const id = action.payload?.id;
         console.log("id", id)
-        // Remove from list if it's in the dashboard summary shape
         if (id && state.loiList?.my_loi) {
           state.loiList.my_loi = state.loiList.my_loi.filter((r: any) => r.id !== id);
         }

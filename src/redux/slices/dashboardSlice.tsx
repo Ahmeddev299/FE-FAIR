@@ -2,7 +2,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { fetchRealLoiDataAsync, getDashboardStatsAsync, getLoggedInUserAsync, getloiDataAsync, updateLoggedInUserAsync } from "@/services/dashboard/asyncThunk";
 
-/** Replace with your real shapes as they evolve */
 export type LeaseSummary = {
   id?: string;
   _id?: string;
@@ -22,18 +21,15 @@ export type LeaseSummary = {
 };
 
 export type LoggedInUser = {
-  // The API sometimes sends {} for id, so allow an object too
   id?: string | Record<string, unknown>;
   _id?: string;
 
-  // Names
-  name?: string;        // legacy/optional
+
+  name?: string;        
   fullName?: string;
 
-  // Contact
   email?: string;
 
-  // Auth / status
   role?: "tenant" | "admin" | "manager" | string;
   verified_email?: boolean;
   social?: boolean;
@@ -41,7 +37,6 @@ export type LoggedInUser = {
   session_token?: string;
   otp?: number;
 
-  // Timestamps (ISO strings)
   created_at?: string;
   updated_at?: string;
 };
@@ -79,16 +74,15 @@ export type DashboardData = {
 };
 
 type DashboardState = {
-  // Data
+
   totalLease: number;
   totalLOI: number;
   myLeases: LeaseSummary[] | null;
   myLOIs: LoiSummary[] | null;
 
-  isUpdatingUser: boolean;        // <-- add
-  updateUserError: DashboardError; // <-- add
+  isUpdatingUser: boolean;        
+  updateUserError: DashboardError; 
 
-  // Pagination
   leasePage: number;
   loiPage: number;
   leaseLimit: number;
@@ -98,25 +92,21 @@ type DashboardState = {
   isLoadingUser: boolean;
   userError: DashboardError;
 
-  // Loading states
   isLoading: boolean;
   isLoadingLeases: boolean;
   isLoadingLOIs: boolean;
 
-  // Error states
   error: DashboardError;
   leaseError: DashboardError;
   loiError: DashboardError;
 
-  // Success states
   isSuccess: boolean;
 
-  // Last updated
   lastUpdated: string | null;
 
   isDownloadingLoi: boolean;
   downloadLoiError: string | null;
-  lastFetchedLoiData: unknown | null; // what the API returned most recently
+  lastFetchedLoiData: unknown | null; 
 };
 
 const initialState: DashboardState = {
@@ -154,7 +144,7 @@ const dashboardSlice = createSlice({
       state.error = null;
       state.leaseError = null;
       state.loiError = null;
-      state.downloadLoiError = null; // also clear download errors
+      state.downloadLoiError = null; 
     },
     clearSuccess(state) {
       state.isSuccess = false;
@@ -162,7 +152,6 @@ const dashboardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Dashboard stats
       .addCase(getDashboardStatsAsync.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -196,7 +185,6 @@ const dashboardSlice = createSlice({
         }
       )
 
-      // LOIs
       .addCase(getloiDataAsync.pending, (state) => {
         state.isLoading = true;
         state.loiError = null;
@@ -210,7 +198,6 @@ const dashboardSlice = createSlice({
           state.isLoading = false;
           state.loiError = null;
 
-          // support both shapes: { my_loi: [...] } OR just [...]
           const payload = action.payload;
           state.myLOIs = Array.isArray(payload) ? payload : payload?.my_loi ?? [];
         }
@@ -236,7 +223,6 @@ const dashboardSlice = createSlice({
         state.userError = action.payload ?? "Failed to fetch logged-in user";
       })
 
-      // Update logged-in user
       .addCase(updateLoggedInUserAsync.pending, (state) => {
         state.isUpdatingUser = true;
         state.updateUserError = null;
@@ -245,7 +231,7 @@ const dashboardSlice = createSlice({
         state.isUpdatingUser = false;
         state.loggedInUser = {
           ...state.loggedInUser,
-          ...action.payload, // merge to reflect updates
+          ...action.payload, 
         };
       })
       .addCase(updateLoggedInUserAsync.rejected, (state, action: PayloadAction<string | undefined>) => {
@@ -253,7 +239,6 @@ const dashboardSlice = createSlice({
         state.updateUserError = action.payload ?? "Failed to update profile";
       })
 
-      // NEW: fetchRealLoiDataAsync
       .addCase(fetchRealLoiDataAsync.pending, (state) => {
         state.isDownloadingLoi = true;
         state.downloadLoiError = null;

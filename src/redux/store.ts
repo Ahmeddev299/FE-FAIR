@@ -4,7 +4,7 @@ import loiReducer from './slices/loiSlice';
 import leaseReducer from './slices/leaseSlice';
 import dashbordReducer from './slices/dashboardSlice';
 import clauseReducer from './slices/clauseSlice' 
-import partyReducer from "@/redux/slices/partySlice";      // NEW
+import partyReducer from "@/redux/slices/partySlice";     
 
 export const store = configureStore({
   reducer: {

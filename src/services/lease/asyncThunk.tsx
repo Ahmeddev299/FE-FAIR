@@ -229,6 +229,30 @@ export const approveLoiClauseApi = createAsyncThunk(
   }
 );
 
+export const rejectLoiClauseApi = createAsyncThunk(
+  "loi/reject",
+  async ({ clauseId, clause_key, details }: UpdateClauseArgs, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+      console.log("clauseid", clauseId)
+      const res = await leaseBaseService.rejectLOIclause(clauseId, {
+        clause_id: clauseId,
+        clause_key,
+        details,
+        action: "rejected",
+      });
+
+      if (!res?.success || res?.status === 400) {
+        return rejectWithValue(res?.message ?? "Failed to save clause");
+      }
+      return { clause_key, details };
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
+    }
+  }
+);
+
 export const acceptClauseSuggestionAsync = createAsyncThunk<
   { clauseId: string; clause_key: string; details: string },  
   AcceptSuggestionArgs                                        

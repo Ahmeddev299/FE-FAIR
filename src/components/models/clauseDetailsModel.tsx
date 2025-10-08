@@ -40,8 +40,8 @@ type Props = {
   onSaveCurrentVersion?: (text: string) => Promise<boolean | void>;
 
   onAddComment?:
-    | ((text: string) => Promise<ClauseHistoryComment | undefined>)
-    | ((text: string) => ClauseHistoryComment | undefined);
+  | ((text: string) => Promise<ClauseHistoryComment | undefined>)
+  | ((text: string) => ClauseHistoryComment | undefined);
 };
 
 export default function ClauseDetailsModel({
@@ -61,6 +61,7 @@ export default function ClauseDetailsModel({
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
+  const [isAccepting, setIsAccepting] = useState(false);
 
   const initialComments = useMemo<ClauseHistoryComment[]>(
     () => (Array.isArray(history?.comment) ? history!.comment : []),
@@ -113,7 +114,7 @@ export default function ClauseDetailsModel({
     setIsSaving(true);
     try {
       await onSaveCurrentVersion(currentText);
- 
+
       initialCurrentRef.current = currentText;
       setIsEditing(false);
     } finally {
@@ -135,18 +136,41 @@ export default function ClauseDetailsModel({
     onApprove?.();
   };
 
+  const canAcceptAi =
+    typeof aiSuggested === 'string' &&
+    aiSuggested.trim() !== '' &&
+    aiSuggested !== '—' &&
+    aiSuggested.trim() !== (currentText ?? '').trim();
+
+  const handleAcceptAISuggestion = async () => {
+    if (!canAcceptAi) return;
+
+    if (onSaveCurrentVersion) {
+      setIsAccepting(true);
+      try {
+        setCurrentText(aiSuggested as string);
+        await onSaveCurrentVersion(aiSuggested as string);
+
+        initialCurrentRef.current = aiSuggested as string;
+        setIsEditing(false);
+      } finally {
+        setIsAccepting(false);
+      }
+    } else {
+      setCurrentText(aiSuggested as string);
+      setIsEditing(true);
+    }
+  };
+
   return (
     <>
-      {/* Overlay */}
       <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />
 
-      {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4">
         <div
           className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <div>
               <h2 className="text-lg font-semibold">{clause.name ?? clause.title ?? 'Clause'}</h2>
@@ -182,9 +206,7 @@ export default function ClauseDetailsModel({
             </div>
           </div>
 
-          {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] space-y-6">
-            {/* Text panels */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium text-gray-900 mb-2">Original Clause</h3>
@@ -239,7 +261,6 @@ export default function ClauseDetailsModel({
               </div>
             </div>
 
-            {/* Comments */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-medium text-gray-900">Comments ({localComments.length})</h3>
@@ -259,7 +280,7 @@ export default function ClauseDetailsModel({
               </div>
 
               {onAddComment && (
-                <div className="mt-4">
+                <div className="mt-4 ">
                   <textarea
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
@@ -276,12 +297,27 @@ export default function ClauseDetailsModel({
                     >
                       {submitting ? 'Adding…' : 'Add Comment'}
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={handleAcceptAISuggestion}
+                      disabled={!canAcceptAi || isSaving || isAccepting}
+                      className="inline-flex items-center gap-1 text-xs px-2  ml-3  py-1 rounded border border-emerald-600 text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"
+                      title={
+                        !canAcceptAi
+                          ? 'No AI suggestion to accept (or already applied)'
+                          : 'Replace Current Version with AI suggestion'
+                      }
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      {isAccepting ? 'Applying…' : 'Accept AI Suggestion'}
+                    </button>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Footer actions */}
+
             <div className="flex justify-end mt-2 space-x-3">
               <button
                 className="flex items-center px-4 py-2 border border-red-500 text-red-600 rounded-md hover:bg-red-50 text-sm"
@@ -291,7 +327,7 @@ export default function ClauseDetailsModel({
                 <X className="w-4 h-4 mr-2" />
                 Reject
               </button>
-      
+
               <button
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-60"
                 onClick={handleApprove}

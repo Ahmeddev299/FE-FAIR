@@ -275,7 +275,8 @@ export const LOITable: React.FC<LOITableProps> = ({
       if (maybe?.message) Toast.fire({ icon: "success", title: maybe.message });
 
       const data: LoiServerData = normalizeLoiResponse(resp.data);
-      await exportLoiToDocx(data);
+      const isTemp = false
+      await exportLoiToDocx(data, undefined, isTemp === false);
 
       if (isMountedRef.current) {
         Toast.fire({ icon: "success", title: "LOI exported successfully" });

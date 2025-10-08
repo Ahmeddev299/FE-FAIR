@@ -1,7 +1,6 @@
 // src/utils/mappers/leases.ts
 import type { UILeaseBrief } from "@/types/loi";
 
-/** ---- API types (based on your sample) ---- */
 export type ApiClause = {
   status?: string;
   clause_details?: string;
@@ -9,7 +8,7 @@ export type ApiClause = {
   ai_confidence_score?: number;
   ai_suggested_clause_details?: string;
   comment?: unknown[];
-  risk?: string; // e.g. "High (8/10)"
+  risk?: string; 
   created_at?: string;
   updated_at?: string;
 };
@@ -19,13 +18,13 @@ export type ApiLeaseItem = {
   title: string;
   url?: string;
   property_address?: string;
-  startDate?: string;   // ISO
-  endDate?: string;     // ISO
+  startDate?: string;  
+  endDate?: string;    
   status?: string;
   risk?: string;
   action?: string;
   comments?: string;
-  log_updated_at?: string; // ISO
+  log_updated_at?: string; 
   clauses?: {
     _clause_log_id?: string;
     [clauseName: string]: ApiClause | string | undefined;
@@ -44,14 +43,12 @@ export type ApiLeaseListResponse = {
   };
 };
 
-/** ---- output row (UI + extras you carry around) ---- */
 export type UILeaseBriefRow = UILeaseBrief & {
   _clauseDocId?: string;
   _address?: string;
   _updatedAt?: string;
 };
 
-/** ---- helpers ---- */
 const getRiskScore = (risk?: string): number => {
   const m = (risk || "").match(/\((\d+)\/10\)/);
   return m ? parseInt(m[1], 10) : 0;
@@ -119,7 +116,6 @@ const extractTags = (item: ApiLeaseItem): string[] => {
 export const getClauseDocId = (item: ApiLeaseItem): string | undefined =>
   item.clauses?._clause_log_id || undefined;
 
-/** ---- flexible item extraction (no `any`) ---- */
 type EnvelopeWithArray = { data: ApiLeaseItem[] };
 type EnvelopeWithPagination = { data: { data: ApiLeaseItem[] } };
 type MaybeItems =
@@ -142,7 +138,6 @@ const extractItems = (src: MaybeItems): ApiLeaseItem[] => {
   return [];
 };
 
-/** ---- main mapper for the table ---- */
 export const mapLeaseListToUI = (
   res: ApiLeaseListResponse | ApiLeaseItem[] | EnvelopeWithArray | undefined
 ): UILeaseBriefRow[] => {

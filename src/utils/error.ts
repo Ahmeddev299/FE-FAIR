@@ -25,7 +25,6 @@ export const extractErrorMessage = (
   e: unknown,
   fallback = "Failed to update profile"
 ): string => {
-  // plain string or Error
   if (typeof e === "string") return e;
   if (e instanceof Error && typeof e.message === "string") return e.message;
 
@@ -35,7 +34,6 @@ export const extractErrorMessage = (
 
     const data = maybeAxios.response?.data;
 
-    // data can be object, string, or string[]
     if (isRecord(data)) {
       const ax = data as AxiosLikeData;
 

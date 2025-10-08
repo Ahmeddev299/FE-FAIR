@@ -26,6 +26,5 @@ class DashboardBaseService extends HttpService {
 
 }
 
-
 export const dashboardStatusService = new DashboardBaseService();
 

@@ -122,7 +122,6 @@ export const userSlice = createSlice({
         state.authError = action.payload;
         Toast.fire({ icon: "error", title: action.payload });
       })
-      // 1) REQUEST OTP
       .addCase(userForgetRequestAsync.pending, (state: any) => { state.isLoading = true; })
       .addCase(userForgetRequestAsync.fulfilled, (state: any, a: any) => {
         state.isLoading = false; state.emailSent = true;
@@ -133,14 +132,13 @@ export const userSlice = createSlice({
         state.isLoading = false; state.authError = a.payload; Toast.fire({ icon: "error", title: a.payload });
       })
 
-      // 2) VERIFY OTP
       .addCase(userVerifyOTPAsync.pending, (state: any) => { state.isLoading = true; })
       .addCase(userVerifyOTPAsync.fulfilled, (state: any, action: any) => {
         state.isLoading = false;
         Toast.fire({ icon: "success", title: action.payload.message });
         const obj: any = ls.get("request", { decrypt: true }) || {};
-        obj["otp"] = action.payload.otp;        // ✅ from payload
-        obj["verifiedAt"] = Date.now();         // ✅ track time
+        obj["otp"] = action.payload.otp;       
+        obj["verifiedAt"] = Date.now();         
         ls.set("request", obj, { encrypt: true });
         state.otp = action.payload.otp;
         Router.push("/auth/reset-password");
@@ -148,7 +146,7 @@ export const userSlice = createSlice({
       .addCase(userVerifyOTPAsync.rejected, (state: any, a: any) => {
         state.isLoading = false; state.authError = a.payload; Toast.fire({ icon: "error", title: a.payload });
       })
-      // 3) SET NEW PASSWORD
+
       .addCase(userResetPasswordAsync.pending, (s: any) => { s.isLoading = true; })
       .addCase(userResetPasswordAsync.fulfilled, (s: any, a: any) => {
         s.isLoading = false; s.otp = ""; s.resetSuccess = true;
@@ -168,7 +166,6 @@ export const userSlice = createSlice({
       state.isLoading = false;
       state.authError = action.payload;
     })
-
 },
 });
 

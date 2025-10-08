@@ -8,21 +8,16 @@ import {
   nonEmpty,
 } from "./mappers/loi";
 
-/** Only the keys we actually add into leaseTerms from this block */
 type EscalationPieces =
   Partial<NonNullable<LOIApiPayload["leaseTerms"]>> & {
-    /** present when FMV is chosen (not part of LOIApiPayload but harmless to send) */
     escalationBasis?: "FMV";
-    /** explicitly allow these optional keys even if LOIApiPayload doesn’t list them */
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
   };
 
-/** Small helper to conditionally add a trimmed string prop */
 const addIf = <K extends string>(key: K, val?: string) =>
   nonEmpty(val) ? ({ [key]: String(val).trim() } as Record<K, string>) : {};
 
-/** Address fragments */
 const propertyAddressFrom = (v: FormValues) => ({
   ...addIf("property_address_S1", v.property_address_S1),
   ...addIf("property_address_S2", v.property_address_S2),
@@ -47,7 +42,6 @@ const tenantAddressFrom = (v: FormValues) => ({
   ...addIf("tenant_zip", v.tenant_zip),
 });
 
-/** Build the escalation subset with proper typing and without `any` */
 const buildEscalationPieces = (v: FormValues): EscalationPieces => {
   const out: EscalationPieces = {
     RentEscalation: v.RentEscalation || "",
@@ -57,7 +51,6 @@ const buildEscalationPieces = (v: FormValues): EscalationPieces => {
   if (v.rentEscalationType === "percent" && nonEmpty(v.rentEscalationPercent)) {
     out.rentEscalationPercent = String(v.rentEscalationPercent).trim();
   } else {
-    // helpful extra flag for backends that look for FMV explicitly
     out.escalationBasis = "FMV";
   }
 
