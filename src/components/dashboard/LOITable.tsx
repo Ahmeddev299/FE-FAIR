@@ -261,7 +261,11 @@ export const LOITable: React.FC<LOITableProps> = ({
 
       const resp = await axios.post(
         `${Config.API_ENDPOINT}/dashboard/download_template_data`,
-        payload,
+        {
+          ...payload,
+          doc_id: rowId
+
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -275,7 +279,7 @@ export const LOITable: React.FC<LOITableProps> = ({
       if (maybe?.message) Toast.fire({ icon: "success", title: maybe.message });
 
       const data: LoiServerData = normalizeLoiResponse(resp.data);
-      const isTemp = false
+      let isTemp
       await exportLoiToDocx(data, undefined, isTemp === false);
 
       if (isMountedRef.current) {

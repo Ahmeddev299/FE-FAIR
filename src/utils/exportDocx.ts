@@ -52,6 +52,15 @@ export interface LOIHeader {
   tenant_home_town_address?: string
 }
 
+type ClauseEntry = {
+  status?: string;
+  current_version?: unknown;
+  clause_details?: unknown;
+};
+
+type ClauseMap = Record<string, ClauseEntry>;
+
+
 export interface LOIFooter {
   tenant_name?: string;
   tenant_email?: string;
@@ -166,7 +175,7 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
 
 /* ---------------- main export ---------------- */
 
-export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) => {
+export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, isTemp?: boolean) => {
   // ---- helpers ----
   const base64ToUint8Array = (b64: string): Uint8Array => {
     const clean = b64.includes(",") ? b64.split(",").pop()! : b64;
@@ -218,6 +227,20 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
       return v === "N/A" ? null : v;
     };
 
+    let clauseMap: ClauseMap | undefined;
+
+    if (isRecord(data) && hasProp(data, "data")) {
+      const d = data.data;
+      if (isRecord(d) && hasProp(d, "data")) {
+        const inner = d.data; // unknown
+        if (isRecord(inner)) {
+          clauseMap = Object.fromEntries(
+            Object.entries(inner).map(([k, v]) => [k, (v as ClauseEntry)])
+          );
+        }
+      }
+    }
+
     const fileName = (): string => {
 
       const sanitizedTitle = headerData.re;
@@ -242,8 +265,6 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
       const safeParagraphs = Array.isArray(valueParagraphs)
         ? valueParagraphs
         : [bodyParagraph("N/A")];
-
-
 
       return new TableRow({
         children: [
@@ -420,6 +441,78 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
       ],
     });
 
+    const clauseParagraphsFor = (_name: string, entry: ClauseEntry): Paragraph[] => {
+      const status = String(entry?.status ?? "").toLowerCase();
+      const current = safe(entry?.current_version ?? "");
+      const details = safe(entry?.clause_details ?? "");
+
+      if (status === "rejected") {
+        return [
+          // clause_details in red
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: details || "—",
+                font: "Times New Roman",
+                size: 22,
+                color: "FF0000",
+              }),
+            ],
+            spacing: { after: 0 },
+            alignment: AlignmentType.JUSTIFIED,
+          }),
+          // blank line (skip one line)
+          new Paragraph({ children: [new TextRun({ text: "" })], spacing: { after: 120 } }),
+          // current_version in black
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: current || "—",
+                font: "Times New Roman",
+                size: 22,
+                color: "000000",
+              }),
+            ],
+            spacing: { after: 0 },
+            alignment: AlignmentType.JUSTIFIED,
+          }),
+        ];
+      }
+
+      if (status === "approved") {
+        return [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: current || "—",
+                font: "Times New Roman",
+                size: 22,
+                color: "000000",
+              }),
+            ],
+            spacing: { after: 0 },
+            alignment: AlignmentType.JUSTIFIED,
+          }),
+        ];
+      }
+
+      // default (pending/unknown)
+      return [
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: current || "—",
+              font: "Times New Roman",
+              size: 22,
+              color: "000000",
+            }),
+          ],
+          spacing: { after: 0 },
+          alignment: AlignmentType.JUSTIFIED,
+        }),
+      ];
+    };
+
     // Details table
     const createDetailsTable = () => {
       try {
@@ -516,6 +609,94 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
         });
       }
     };
+
+    const createClauseReviewTable = () => {
+      if (!isTemp || !clauseMap || Object.keys(clauseMap).length === 0) {
+        console.log("isTemp", isTemp)
+
+        // return a harmless empty table (docx doesn't allow null children)
+        return new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          layout: TableLayoutType.FIXED,
+          borders: {
+            top: { style: BorderStyle.NONE, size: 0 },
+            bottom: { style: BorderStyle.NONE, size: 0 },
+            left: { style: BorderStyle.NONE, size: 0 },
+            right: { style: BorderStyle.NONE, size: 0 },
+            insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+            insideVertical: { style: BorderStyle.NONE, size: 0 },
+          },
+          rows: [new TableRow({ children: [new TableCell({ children: [] })] })],
+        });
+      }
+
+      const rows: TableRow[] = [];
+
+      // Data rows
+      for (const [name, entry] of Object.entries(clauseMap)) {
+          rows.push(
+            new TableRow({
+              children: [
+                new TableCell({
+                  margins: { top: 150, bottom: 150, left: 0, right: 250 },
+                  width: { size: 30, type: WidthType.PERCENTAGE },
+                  verticalAlign: VerticalAlign.TOP,
+                  children: [
+                    new Paragraph({
+                      children: [
+                        new TextRun({
+                          text: `${toStringSafe(name)}:`,
+                          bold: true,
+                          italics: true,
+                          font: "Times New Roman",
+                          size: 22,
+                        }),
+                      ],
+                      spacing: { after: 0 },
+                    }),
+                    ...(entry?.status
+                      ? [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `Status: ${String(entry.status)}`,
+                              font: "Times New Roman",
+                              size: 18,
+                              color: "666666",
+                            }),
+                          ],
+                          spacing: { after: 0 },
+                        }),
+                      ]
+                      : []),
+                  ],
+                }),
+                new TableCell({
+                  margins: { top: 150, bottom: 150, left: 0, right: 0 },
+                  width: { size: 70, type: WidthType.PERCENTAGE },
+                  verticalAlign: VerticalAlign.TOP,
+                  children: clauseParagraphsFor(name, entry),
+                }),
+              ],
+            })
+          );
+      }
+
+      return new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        layout: TableLayoutType.FIXED,
+        borders: {
+          top: { style: BorderStyle.NONE, size: 0 },
+          bottom: { style: BorderStyle.NONE, size: 0 },
+          left: { style: BorderStyle.NONE, size: 0 },
+          right: { style: BorderStyle.NONE, size: 0 },
+          insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+          insideVertical: { style: BorderStyle.NONE, size: 0 },
+        },
+        rows,
+      });
+    };
+
 
     const zip = safe(footerData?.tenant_zip);
     const state = safe(footerData?.tenant_state);
@@ -660,8 +841,11 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
               { spacing: { after: 400 } }
             ),
 
-            // Details table
-            createDetailsTable(),
+            ...(isTemp
+              ? [
+                createClauseReviewTable(),
+              ]
+              : [createDetailsTable()]),
 
             new Paragraph({ pageBreakBefore: true }),
             bodyParagraph(
@@ -674,7 +858,6 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string) =>
               { spacing: { after: 400 } }
             ),
 
-            // AGREED AND ACCEPTED line
             new Paragraph({
               children: [
                 new TextRun({

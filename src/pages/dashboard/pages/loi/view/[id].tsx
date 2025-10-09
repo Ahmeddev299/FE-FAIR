@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
-import { ArrowLeft, Edit3, Download as DownloadIcon, MessageSquareMore } from "lucide-react";
+import { ArrowLeft, Edit3, Download as MessageSquareMore, Download } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { RootState } from "@/redux/store";
 
@@ -339,7 +339,6 @@ const errorMessage = (e: unknown): string => {
   return "Something went wrong";
 };
 
-// ---------- component ----------
 export default function SingleLoiPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -347,7 +346,8 @@ export default function SingleLoiPage() {
 
   const { currentLOI, isLoading, loiError } = useAppSelector((s: RootState) => s.loi);
   const loi = useMemo(() => shapeLOI(currentLOI), [currentLOI]);
-  const [docid, setdocid] = useState()
+  const [docid, setdocid] = useState<string | undefined>(undefined);
+
   const clauseDocId = loi?.clauseDocId;
 
   useEffect(() => {
@@ -364,6 +364,43 @@ export default function SingleLoiPage() {
       isMountedRef.current = false;
     };
   }, []);
+
+  const handleSubmitLOI = async () => {
+    if (downloadingRef.current) return;
+    downloadingRef.current = true;
+    setIsDownloading(true);
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
+
+      const resp = await axios.post(
+        `${Config.API_ENDPOINT}/dashboard/submit_clauses`,
+
+        {
+          doc_id: docid
+
+        },
+        { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
+      );
+
+      const maybe = resp as { data?: { success?: boolean; message?: string } };
+      if (maybe?.data?.success === false) throw new Error(maybe.data.message || "Failed to fetch LOI");
+
+      const msg = maybe?.data?.message;
+      if (msg) Toast.fire({ icon: "success", title: msg });
+
+      // const data = normalizeLoiResponse(resp);
+      // const isTemp = resp.data?.data?.temp === true;
+      // console.log("isTem", isTemp)
+      // await exportLoiToDocx(data, undefined, isTemp);
+      if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
+    } catch (err: unknown) {
+      Toast.fire({ icon: "warning", title: errorMessage(err) });
+    } finally {
+      downloadingRef.current = false;
+      setIsDownloading(false);
+    }
+  };
 
   const handleDownload = async () => {
     if (downloadingRef.current) return;
@@ -397,14 +434,12 @@ export default function SingleLoiPage() {
       if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
     } catch (err: unknown) {
       Toast.fire({ icon: "warning", title: errorMessage(err) });
-      router.push("/auth/verify-otp");
     } finally {
       downloadingRef.current = false;
       setIsDownloading(false);
     }
   };
 
-  // ====== Clause details modal state ======
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsClause, setDetailsClause] = useState<{
     id: string | number;
@@ -418,7 +453,6 @@ export default function SingleLoiPage() {
   } | null>(null);
   const [detailsHistory, setDetailsHistory] = useState<ClauseHistoryEntry | undefined>(undefined);
 
-  // ====== Action handlers ======
   const refreshLoi = async () => {
     const id = Array.isArray(queryId) ? queryId[0] : queryId;
     if (id) await dispatch(getLOIDetailsById(String(id)));
@@ -472,7 +506,6 @@ export default function SingleLoiPage() {
 
   const hasClauses = !!(loi?.shapedClauses && loi.shapedClauses.length > 0);
 
-  // Helpers for overview formatting
   const formatMoney = (n?: number) =>
     typeof n === "number" ? n.toLocaleString(undefined, { style: "currency", currency: "USD" }) : "—";
 
@@ -493,38 +526,60 @@ export default function SingleLoiPage() {
         {!isLoading && !loiError && loi && (
           <div className={`bg-white rounded-xl p-6 space-y-6 ${isDownloading ? "opacity-90 pointer-events-none" : ""}`}>
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{loi.title}</h1>
-                <div className="mt-1 text-sm text-gray-500">{loi.address || "—"}</div>
-                <div className="mt-1 text-xs text-gray-500">File #: {loi.addFileNumber ?? "—"}</div>
+
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+              {/* Left section - LOI Details */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                  {loi.title}
+                </h1>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-600">
+                    {loi.address || "—"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    File #: <span className="font-medium">{loi.addFileNumber ?? "—"}</span>
+                  </p>
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                {pill(loi.status)}
-                <button
-                  onClick={() => router.push(`/dashboard/pages/loi/edit/${loi.id}`)}
-                  title="Edit LOI"
-                  className="inline-flex h-10 items-center w-[130px] gap-5 rounded-xl px-3 border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Edit LOI</span>
-                </button>
-                <button
-                  onClick={handleDownload}
-                  disabled={isDownloading}
-                  title="Download LOI"
-                  className="inline-flex h-10 items-center gap-2 w-[130px] rounded-xl px-3 bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 disabled:bg-emerald-600/60 disabled:cursor-not-allowed"
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  <span className={`hidden sm:inline ${hasClauses ? "" : ""}`}>
-                    {isDownloading ? "Downloading…" : "Download"}
-                  </span>
-                </button>
-              </div>
+              {/* Right section - Actions */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                {hasClauses && (
+                  <div className="order-first sm:order-none">
+                    {pill(loi.status)}
+                  </div>
+                )}
 
+                {!hasClauses ? (
+                  <button
+                     onClick={() => router.push(`/dashboard/pages/loi/edit/${loi.id}`)}
+                    className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    <span>Edit LOI</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleSubmitLOI}
+                      className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors"
+                    >
+                      Submit LOI Clauses
+                    </button>
+
+                    <button
+                      onClick={handleDownload}
+                      disabled={isDownloading}
+                      className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-emerald-600 text-white text-sm font-semibold shadow-sm hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>{isDownloading ? 'Downloading...' : 'Download'}</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-
             {/* Clauses vs. Overview */}
             {hasClauses ? (
               /* ===== Clauses list ===== */
