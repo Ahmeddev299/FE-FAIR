@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, History, Check, Pencil } from 'lucide-react';
+import { X, Check, Pencil } from 'lucide-react';
 import type { ExtendedClause } from '@/types/loi';
 
 export type ClauseHistoryComment = {
@@ -60,7 +60,6 @@ export default function ClauseDetailsModel({
 
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [showHistory, setShowHistory] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
 
   const initialComments = useMemo<ClauseHistoryComment[]>(
@@ -192,14 +191,14 @@ export default function ClauseDetailsModel({
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              {/* <button
                 onClick={() => setShowHistory((v) => !v)}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                 type="button"
               >
                 <History className="h-4 w-4" />
                 {showHistory ? 'Hide History' : 'History'}
-              </button>
+              </button> */}
               <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600" type="button">
                 <X className="h-5 w-5" />
               </button>

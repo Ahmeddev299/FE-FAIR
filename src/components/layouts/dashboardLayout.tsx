@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -14,16 +14,22 @@ import StorageIcon from '@/icons/storage.svg'
 import SettingIcon from '@/icons/setting.svg'
 import LIcon from '@/icons/logout-icon.svg'
 
-import { selectUser, userLogout } from "../../redux/slices/userSlice";
+import { userLogout } from "../../redux/slices/userSlice";
 import { ProtectedRoute } from "../layouts/protectedRoutes";
 import { LogoutModal } from "../models/logoutModel";
 import { LayoutGrid, User } from "lucide-react";
+import { getLoggedInUserAsync, LoggedInUser } from "@/services/dashboard/asyncThunk";
+import { RootState } from "@/redux/store";
+
+type Role = "tenant" | "landlord";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const NAV = [
+type NavItem = { name: string; href: string };
+
+const NAV_TENANT: NavItem[] = [
   { name: "Dashboard", href: "/dashboard/pages/mainpage" },
   { name: "Start LOI", href: "/dashboard/pages/start" },
   { name: "Upload Lease", href: "/dashboard/pages/uploadLeaseform" },
@@ -34,23 +40,43 @@ const NAV = [
   { name: "Storage", href: "/dashboard/pages/tenantStorage" },
 ];
 
+// Tweak these to your landlord URLs
+const NAV_LANDLORD: NavItem[] = [
+  { name: "Dashboard", href: "/dashboard/pages/mainpage" },
+  { name: "Letter of Intents", href: "/landlordDashboard/pages/letterofIntent" },
+  { name: "Leases", href: "/dashboard/landlord/tenants" },
+  { name: "Upload Lease", href: "/dashboard/landlord/requests" },
+  { name: "Legal Notices", href: "/dashboard/pages/billings" },
+  { name: "Billing & Plan", href: "/dashboard/pages/tenantStorage" },
+  { name: "Storage", href: "/dashboard/pages/tenantStorage" },
+
+];
+
 const USER_MENU = [{ name: "Settings", href: "/dashboard/pages/setting" }];
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { profile } = useSelector(selectUser);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const loggedInUser = useSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
+
+  useEffect(() => {
+    dispatch(getLoggedInUserAsync());
+  }, [dispatch, loggedInUser?.role]);
 
   const asPath = router.asPath;
   const isActive = (href: string) => asPath === href || asPath.startsWith(href + "/");
 
+  const nav = useMemo<NavItem[]>(() => {
+    return loggedInUser?.role === "landlord" ? NAV_LANDLORD : NAV_TENANT;
+  }, [loggedInUser?.role]);
+
   const pageTitle = useMemo(() => {
-    const m = NAV.find((n) => isActive(n.href));
+    const m = nav.find((n) => isActive(n.href));
     return m?.name ?? "Dashboard";
-  }, [asPath]);
+  }, [asPath, nav]);
 
   const handleLogout = () => setShowLogoutModal(true);
   const confirmLogout = () => {
@@ -63,7 +89,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     switch (label) {
       case "Dashboard":
         return dashboardIcon;
-      case "Start LOI":
+      case "Start LOI ":
         return docIcon;
       case "Upload Lease":
         return uploadLeaseIcon;
@@ -83,7 +109,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   };
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute /* if your ProtectedRoute supports roles: allowedRoles={[role]} */>
       <div className="min-h-screen bg-gray-50 flex">
         <LogoutModal
           isOpen={showLogoutModal}
@@ -94,15 +120,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         {/* SIDEBAR (desktop) */}
         <aside
           className="
-    hidden md:flex
-    fixed md:inset-y-0 md:left-0        /* <-- fix it on screen */
-    md:w-64 md:flex-col
-    bg-[#FAFAFA] border-r border-gray-200
-  "
+            hidden md:flex
+            fixed md:inset-y-0 md:left-0
+            md:w-64 md:flex-col
+            bg-[#FAFAFA] border-r border-gray-200
+          "
         >
           {/* Logo block */}
           <div className="flex items-center justify-center pt-4">
-            {/* Logo block (desktop) */}
             <Link href="/dashboard/pages/mainpage" className="flex items-center gap-2">
               <div className="px-5 flex justify-center">
                 <Image
@@ -115,15 +140,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 />
               </div>
             </Link>
-
           </div>
+
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-4 py-2 border-b ">
             <div className="space-y-3">
-              {NAV.map((item) => {
+              {nav.map((item) => {
                 const active = isActive(item.href);
                 const Icon = getIcon(item.name);
-
                 return (
                   <Link
                     key={item.name}
@@ -132,8 +156,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       ${active ? "bg-[#2D8EEF] text-white font-medium" : "text-gray-600 hover:bg-gray-50"}`}
                   >
                     <Icon
-                      className={`h-9 w-9 mb-2 text-[#555555] ${active ? "text-white" : "text-gray-500"}`}
-                      strokeWidth={2}   // thicker stroke
+                      className={`h-9 w-9 mb-2 ${active ? "text-white" : "text-gray-500"}`}
+                      strokeWidth={2}
                     />
                     <span className="mt-1 text-[14px]">{item.name}</span>
                   </Link>
@@ -160,7 +184,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   className="flex w-full items-center gap-3 px-3 font-semibold text-[14px] text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   <LIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
-
                   <span className="mt-3 text-[14px]">Logout</span>
                 </button>
               </div>
@@ -187,6 +210,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               <h1 className="text-xl font-semibold text-gray-800">{pageTitle}</h1>
 
               <div className="flex items-center gap-4">
+                <span className="rounded-full text-xs px-2 py-1 bg-gray-100 text-gray-700 capitalize">
+                  {loggedInUser?.role}
+                </span>
+
                 <button
                   className="relative rounded p-2 text-gray-600 hover:bg-gray-100"
                   aria-label="Notifications"
@@ -197,17 +224,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
                 <div className="flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5A2B] text-white text-sm font-medium">
-                    M
+                    {String(loggedInUser?.role?.fullName || "U").slice(0, 1).toUpperCase()}
                   </div>
                   <span className="text-sm font-medium text-gray-700">
-                    {profile?.name || profile?.email || "User"}
+                    {loggedInUser?.role?.fullName}
                   </span>
                   <SettingIcon className="h-4 w-4 text-gray-400" />
                 </div>
               </div>
             </div>
           </header>
-
 
           <main className="flex-1 overflow-y-auto bg-[#FAFAFA] p-6">{children}</main>
         </div>
@@ -227,7 +253,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               </div>
               <nav className="p-4 h-full overflow-y-auto">
                 <div className="space-y-1">
-                  {NAV.map((item) => {
+                  {nav.map((item) => {
                     const active = isActive(item.href);
                     const Icon = getIcon(item.name);
                     return (
@@ -245,7 +271,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                   })}
                 </div>
 
-                <div className=" border-gray-200 mt-6 pt-6">
+                <div className=" mt-6 pt-6">
                   <div className="space-y-1">
                     {USER_MENU.map((item) => (
                       <Link
@@ -266,11 +292,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                       className="w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <LIcon className="h-9 w-9 text-gray-500" strokeWidth={2} />
-
                       <span>Logout</span>
                     </button>
                   </div>
-
                 </div>
               </nav>
             </aside>

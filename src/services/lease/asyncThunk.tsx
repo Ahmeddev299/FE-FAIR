@@ -133,7 +133,6 @@ export const terminateLeaseAsync = createAsyncThunk(
   }
 )
 
-// in asyncThunk.ts or wherever you define thunks
 export const getLeaseDetailsById = createAsyncThunk(
   "lease/fetchSingleDraft",
   async (leaseId: string, { rejectWithValue }) => {
@@ -204,7 +203,6 @@ export const updateClauseCurrentVersionAsync = createAsyncThunk(
   }
 );
 
-
 export const approveLoiClauseApi = createAsyncThunk(
   "loi/update",
   async ({ clauseId, clause_key, details }: UpdateClauseArgs, { rejectWithValue }) => {
@@ -273,7 +271,7 @@ export const acceptClauseSuggestionAsync = createAsyncThunk<
       if (!res?.success || res?.status === 400) {
         return rejectWithValue(res?.message ?? "Failed to accept AI suggestion");
       }
-      return { clauseId, clause_key, details };     // ✅ includes details
+      return { clauseId, clause_key, details };    
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || "Failed to accept AI suggestion");
     }

@@ -7,12 +7,10 @@ import type { DashboardData, LoiSummary } from "@/redux/slices/dashboardSlice";
 import { extractErrorMessage } from "@/utils/error";
 import { LOIApiPayload } from "@/types/loi";
 
-/** Small helpers */
 type RejectString = { rejectValue: string };
 export type UnknownRecord = Record<string, unknown>;
 
-export type LoiServerData = UnknownRecord; // <-- the server's normalized "real" LOI data (what exportLoiToDocx expects)
-
+export type LoiServerData = UnknownRecord; 
 export type LoggedInUser = {
   id?: string;
   _id?: string;
@@ -20,12 +18,11 @@ export type LoggedInUser = {
   fullName?: string;
   email?: string;
   role?:string;
-  // add more fields from your API response if needed
 };
 
 export type UpdateLoggedInUserInput = {
   fullName: string;
-  role: string; // API expects e.g. "tenant"
+  role: string; 
 };
 
 export const isObject = (v: unknown): v is UnknownRecord =>
@@ -47,7 +44,7 @@ export const getErrorMessage = (err: unknown): string => {
       if (typeof msg === "string") return msg;
     }
   } catch {
-    /* noop */
+   
   }
   return "An error occurred";
 };
