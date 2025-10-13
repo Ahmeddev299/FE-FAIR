@@ -356,8 +356,8 @@ export default function SingleLoiPage() {
     setdocid(id)
   }, [dispatch, queryId]);
 
-  const [isDownloading, setIsDownloading] = useState(false);
-  const downloadingRef = useRef(false);
+const [isDownloading, setIsDownloading] = useState(false);
+const downloadingRef = useRef(false);
   const isMountedRef = useRef(true);
   useEffect(() => {
     return () => {

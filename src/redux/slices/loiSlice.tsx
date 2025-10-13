@@ -7,6 +7,15 @@ import {
   runAiAssistantAsync,
   submitLOIByFileAsync,
   deleteLOIAsync,
+
+  llReadClauseAsync,
+  llApproveAllAsync,
+  llRejectAllAsync,
+  llCommentClauseAsync,
+  llDecideClauseAsync,
+  getAllLandlordLOIsAsync,
+  rejectLoillApi,
+  approveLoillApi,
 } from "@/services/loi/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
@@ -53,6 +62,12 @@ export const loiSlice = createSlice({
     loiList: {
       my_loi: [],
     },
+    landlord: {
+      readingClause: false,
+      activeClauseKey: null as string | null,
+      clauseMap: {} as Record<string, { text?: string; risk?: string; status?: string; warning?: string; comments?: Array<{ text: string; by?: string; at?: string }> }>,
+    },
+
     submitByFileResult: null as { doc_id: string } | null,
 
     metaData: {},
@@ -195,7 +210,7 @@ export const loiSlice = createSlice({
         state.isLoading = false;
         state.submitSuccess = true;
 
-        const payload = action.payload; 
+        const payload = action.payload;
 
         if (payload?.data) {
           if (Array.isArray(state.loiList)) {
@@ -222,7 +237,7 @@ export const loiSlice = createSlice({
         state.loiError = action.payload || action.error?.message || "Submission failed";
         Toast.fire({ icon: "error", title: state.loiError });
       })
-      
+
       .addCase(getDraftLOIsAsync.pending, (state) => {
         state.isLoading = true;
       })
@@ -239,7 +254,7 @@ export const loiSlice = createSlice({
       })
       .addCase(getLOIDetailsById.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentLOI = action.payload; 
+        state.currentLOI = action.payload;
         console.log("action.payload", action.payload)
       })
       .addCase(getLOIDetailsById.rejected, (state) => {
@@ -279,7 +294,7 @@ export const loiSlice = createSlice({
         }
 
         if (id) {
-          state.submitByFileResult = { doc_id: id }; 
+          state.submitByFileResult = { doc_id: id };
         }
 
         Toast.fire({ icon: "success", title: "LOI File Submitted Successfully" });
@@ -308,7 +323,117 @@ export const loiSlice = createSlice({
         state.isLoading = false;
         state.loiError = action.payload as string;
         Toast.fire({ icon: "error", title: action.payload as string });
+      })
+      // landlord read clause
+
+      .addCase(getAllLandlordLOIsAsync.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getAllLandlordLOIsAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loiList = action.payload;
+      })
+      .addCase(getAllLandlordLOIsAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loiError = action.payload as string;
+      })
+
+      .addCase(llReadClauseAsync.pending, (state, action) => {
+        state.landlord.readingClause = true;
+        state.landlord.activeClauseKey = (action.meta.arg as any).clause_key;
+      })
+      .addCase(llReadClauseAsync.fulfilled, (state, action) => {
+        state.landlord.readingClause = false;
+        const key = (action.payload as any)?.clause_key;
+        if (key) state.landlord.clauseMap[key] = (action.payload as any).data;
+      })
+      .addCase(llReadClauseAsync.rejected, (state, action) => {
+        state.landlord.readingClause = false;
+        state.loiError = (action.payload as string) || "Failed to read clause";
+      })
+
+      .addCase(llApproveAllAsync.fulfilled, (state) => {
+        const clauses = (state.currentLOI as any)?.clauses;
+        if (Array.isArray(clauses)) {
+          clauses.forEach((c: any) => {
+            const entry = state.landlord.clauseMap[c.key] || {};
+            entry.status = "approved";
+            state.landlord.clauseMap[c.key] = entry;
+          });
+        }
+      })
+      .addCase(llApproveAllAsync.rejected, (state, action) => {
+        state.loiError = (action.payload as string) || "Approve all failed";
+      })
+      .addCase(llRejectAllAsync.fulfilled, (state) => {
+        const clauses = (state.currentLOI as any)?.clauses;
+        if (Array.isArray(clauses)) {
+          clauses.forEach((c: any) => {
+            const entry = state.landlord.clauseMap[c.key] || {};
+            entry.status = "need-review";
+            state.landlord.clauseMap[c.key] = entry;
+          });
+        }
+      })
+      .addCase(llRejectAllAsync.rejected, (state, action) => {
+        state.loiError = (action.payload as string) || "Reject all failed";
+      })
+
+      .addCase(llCommentClauseAsync.fulfilled, (state, action) => {
+        const key = (action.payload as any)?.clause_key;
+        if (key) {
+          const entry = state.landlord.clauseMap[key] || {};
+          const comments = (entry.comments as any[]) || [];
+          comments.push({ text: (action.payload as any).text, at: new Date().toISOString() });
+          state.landlord.clauseMap[key] = { ...entry, comments };
+        }
+      })
+      .addCase(llCommentClauseAsync.rejected, (state, action) => {
+        state.loiError = (action.payload as string) || "Comment failed";
+      })
+
+      // approve/reject single
+      .addCase(llDecideClauseAsync.fulfilled, (state, action) => {
+        const { clause_key, action: act } = action.payload as any;
+        const entry = state.landlord.clauseMap[clause_key] || {};
+        entry.status = act === "approve" ? "approved" : "need-review";
+        state.landlord.clauseMap[clause_key] = entry;
+      })
+      .addCase(llDecideClauseAsync.rejected, (state, action) => {
+        state.loiError = (action.payload as string) || "Clause action failed";
+      })
+
+      .addCase(approveLoillApi.fulfilled, (state, action) => {
+        const { clause_key, details } = action.payload;
+        const history = (state.currentLOI as any)?.data?.history;
+        if (history && history[clause_key]) {
+          history[clause_key] = {
+            ...history[clause_key],
+            current_version: details,
+            status: "rejected",
+          };
+        }
+        Toast.fire({ icon: "success", title: "Clause Approve" });
+      })
+      .addCase(approveLoillApi.rejected, (state, action) => {
+        Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to clause approval" });
+      })
+      .addCase(rejectLoillApi.fulfilled, (state, action) => {
+        const { clause_key, details } = action.payload;
+        const history = (state.currentLOI as any)?.data?.history;
+        if (history && history[clause_key]) {
+          history[clause_key] = {
+            ...history[clause_key],
+            current_version: details,
+            status: "rejected",
+          };
+        }
+        Toast.fire({ icon: "success", title: "Clause Approve" });
+      })
+      .addCase(rejectLoillApi.rejected, (state, action) => {
+        Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to clause approval" });
       });
+
   },
 });
 
