@@ -26,6 +26,12 @@ class LoiBaseService extends HttpService {
     });
   };
 
+   submitLOIByFilenoId = (form: FormData): Promise<any> => {
+    return this.post(this.prefix + `/submit_loi_by_file_2`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  };
+
   readClause = (loiId: string, clause_key: string): Promise<any> => {
     return this.get(`landlord_loi/read_single_clause_of_LOI/${loiId}`, { clause_key },);
   };

@@ -16,6 +16,7 @@ import {
   getAllLandlordLOIsAsync,
   rejectLoillApi,
   approveLoillApi,
+  submitLOIByFileAsyncNoId,
 } from "@/services/loi/asyncThunk";
 import { createSlice } from "@reduxjs/toolkit";
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
@@ -304,6 +305,38 @@ export const loiSlice = createSlice({
         state.loiError = action.payload as string;
         Toast.fire({ icon: "error", title: action.payload as string });
       })
+
+       .addCase(submitLOIByFileAsyncNoId.pending, (state) => {
+        state.isLoading = true;
+        state.loiError = "";
+        state.submitByFileResult = null;
+      })
+      .addCase(submitLOIByFileAsyncNoId.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.submitSuccess = true;
+
+        const data = (action as any)?.payload?.data as unknown;
+
+        let id: string | undefined;
+        if (typeof data === "string") {
+          id = data;
+        } else if (data && typeof data === "object" && "doc_id" in (data as Record<string, unknown>)) {
+          const maybe = (data as { doc_id?: unknown }).doc_id;
+          if (typeof maybe === "string") id = maybe;
+        }
+
+        if (id) {
+          state.submitByFileResult = { doc_id: id };
+        }
+
+        Toast.fire({ icon: "success", title: "LOI File Submitted Successfully" });
+      })
+      .addCase(submitLOIByFileAsyncNoId.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loiError = action.payload as string;
+        Toast.fire({ icon: "error", title: action.payload as string });
+      })
+
       .addCase(deleteLOIAsync.pending, (state) => {
         state.isLoading = true;
         state.loiError = "";

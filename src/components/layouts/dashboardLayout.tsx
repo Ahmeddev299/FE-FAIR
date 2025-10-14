@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { ComponentType, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAppDispatch  , useAppSelector} from "@/hooks/hooks";
-import docIcon from '@/icons/doc-icon.svg'
+import LoiIcon from '@/icons/doc-icon.svg'
 import leaseIcon from '@/icons/leases.svg'
 import uploadLeaseIcon from '@/icons/upload-lease-icon.svg'
 import eSignIcon from '@/icons/e-sign.svg'
@@ -12,41 +12,42 @@ import BillingIcon from '@/icons/billing.svg'
 import StorageIcon from '@/icons/storage.svg'
 import SettingIcon from '@/icons/setting.svg'
 import LIcon from '@/icons/logout-icon.svg'
+import DashboardIcon from '@/icons/dashboard-icon.svg'
 
 import { userLogout } from "../../redux/slices/userSlice";
 import { ProtectedRoute } from "../layouts/protectedRoutes";
 import { LogoutModal } from "../models/logoutModel";
-import { LayoutDashboardIcon, LayoutGrid, User } from "lucide-react";
+import {  User } from "lucide-react";
 import { getLoggedInUserAsync, LoggedInUser } from "@/services/dashboard/asyncThunk";
 import { RootState } from "@/redux/store";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
-
-type NavItem = { name: string; href: string };
+type IconType = ComponentType<{ className?: string; strokeWidth?: number }>;
+type NavItem = { name: string; href: string; icon: IconType };
 
 const NAV_TENANT: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard/pages/mainpage" },
-  { name: "Start LOI", href: "/dashboard/pages/start" },
-  { name: "Upload Lease", href: "/dashboard/pages/uploadLeaseform" },
-  { name: "Leases", href: "/dashboard/pages/clauseManagement" },
-  { name: "E-Signature", href: "/dashboard/pages/tenanteSignature" },
-  { name: "Terminate Lease", href: "/dashboard/pages/terminateLease" },
-  { name: "Billing & Plan", href: "/dashboard/pages/billings" },
-  { name: "Storage", href: "/dashboard/pages/tenantStorage" },
+  { name: "Dashboard", href: "/dashboard/pages/mainpage", icon: DashboardIcon },
+  { name: "LOI", href: "/dashboard/pages/start", icon:  LoiIcon},
+  { name: "Upload Lease", href: "/dashboard/pages/uploadLeaseform", icon: uploadLeaseIcon as unknown as IconType },
+  { name: "Leases", href: "/dashboard/pages/clauseManagement", icon: leaseIcon as unknown as IconType },
+  { name: "E-Signature", href: "/dashboard/pages/tenanteSignature", icon: eSignIcon as unknown as IconType },
+  { name: "Terminate Lease", href: "/dashboard/pages/terminateLease", icon: terminateLeaseIcon as unknown as IconType },
+  { name: "Billing & Plan", href: "/dashboard/pages/billings", icon: BillingIcon as unknown as IconType },
+  { name: "Storage", href: "/dashboard/pages/tenantStorage", icon: StorageIcon as unknown as IconType },
 ];
 
 // Tweak these to your landlord URLs
 const NAV_LANDLORD: NavItem[] = [
-  { name: "Dashboard", href: "/dashboard/pages/mainpage" },
-  { name: "Letter of Intents", href: "/landlordDashboard/pages/letterofIntent" },
-  { name: "Leases", href: "/dashboard/landlord/tenants" },
-  { name: "Upload Lease", href: "/dashboard/landlord/requests" },
-  { name: "Legal Notices", href: "/dashboard/pages/billings" },
-  { name: "Billing & Plan", href: "/dashboard/pages/tenantStorage" },
-  { name: "Storage", href: "/dashboard/pages/tenantStorage" },
-
+  { name: "Dashboard", href: "/dashboard/pages/mainpage", icon: DashboardIcon },
+  { name: "Letter of Intents", href: "/landlordDashboard/pages/letterofIntent", icon: LoiIcon as unknown as IconType },
+    { name: "LOI", href: "/dashboard/pages/start", icon:  LoiIcon},
+  { name: "Leases", href: "/dashboard/landlord/tenants", icon: leaseIcon as unknown as IconType },
+  { name: "Upload Lease", href: "/dashboard/landlord/requests", icon: uploadLeaseIcon as unknown as IconType },
+  { name: "Legal Notices", href: "/dashboard/pages/billings", icon: eSignIcon as unknown as IconType }, 
+  { name: "Billing & Plan", href: "/dashboard/pages/tenantStorage", icon: BillingIcon as unknown as IconType },
+  { name: "Storage", href: "/dashboard/pages/tenantStorage", icon: StorageIcon as unknown as IconType },
 ];
 
 const USER_MENU = [{ name: "Settings", href: "/dashboard/pages/setting" }];
@@ -85,9 +86,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const getIcon = (label: string) => {
     switch (label) {
       case "Dashboard":
-        return LayoutDashboardIcon;
-      case "Start LOI ":
-        return docIcon;
+        return DashboardIcon;
+      case "LOI":
+        return LoiIcon;
       case "Upload Lease":
         return uploadLeaseIcon;
       case "Leases":
@@ -101,7 +102,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
       case "Storage":
         return StorageIcon;
       default:
-        return LayoutGrid;
+        return BillingIcon;
     }
   };
 

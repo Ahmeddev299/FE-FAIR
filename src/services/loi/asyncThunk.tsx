@@ -65,7 +65,7 @@ export const getAllLandlordLOIsAsync = createAsyncThunk(
     try {
       const token = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
-      const response = await loiBaseService.landlordLOI(); 
+      const response = await loiBaseService.landlordLOI();
 
       if (!response.success || response.status === 400) {
         return rejectWithValue(response.message);
@@ -124,7 +124,7 @@ export const getLOIDetailsById = createAsyncThunk(
 );
 
 export const submitLOIByFileAsync = createAsyncThunk<
-  SubmitByFileReturn,  
+  SubmitByFileReturn,
   SubmitByFilePayload,
   { rejectValue: string }
 >("loi/submitByFile", async ({ file, leaseId }, { rejectWithValue }) => {
@@ -159,6 +159,43 @@ export const submitLOIByFileAsync = createAsyncThunk<
     return rejectWithValue("An unexpected error occurred while submitting LOI by file");
   }
 });
+
+export const submitLOIByFileAsyncNoId = createAsyncThunk<
+  SubmitByFileReturn,
+  SubmitByFilePayload,
+  { rejectValue: string }
+>("loi/submitByFileNoId", async ({ file }, { rejectWithValue }) => {
+  try {
+    const token: string = `${ls.get("access_token", { decrypt: true })}`;
+    HttpService.setToken(token);
+
+    const form = new FormData();
+    form.append("file", file);
+
+    const response = await loiBaseService.submitLOIByFilenoId(form);
+
+    if (response.success === false && response.status === 400) {
+      return rejectWithValue(response.message);
+    }
+
+    const raw = response.data;
+    let id: string | undefined;
+    if (typeof raw === "string") id = raw;
+    else if (raw?.id) id = raw.id;
+    else if (raw?.data?.id) id = raw.data.id;
+    else if (typeof raw?.data === "string") id = raw.data;
+
+    if (!id) throw new Error("Missing id in submit LOI response");
+    return { id };
+  } catch (error: unknown) {
+    const e = error as { response?: { data?: { message?: string }; message?: string }; message?: string };
+    if (e.response?.data?.message) return rejectWithValue(e.response.data.message);
+    if (e.response?.message) return rejectWithValue(e.response.message);
+    if (e.message) return rejectWithValue(e.message);
+    return rejectWithValue("An unexpected error occurred while submitting LOI by file");
+  }
+});
+
 
 export const deleteLOIAsync = createAsyncThunk<
   { id: string },

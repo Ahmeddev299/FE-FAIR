@@ -103,7 +103,6 @@ export const getDashboardStatsAsync = createAsyncThunk<
     } catch (error: unknown) {
       const status = getStatus(error);
       if (status === 401) return rejectWithValue("Session expired. Please log in again.");
-      if (status === 403) return rejectWithValue("You don't have permission to access this resource.");
       if (status === 404) return rejectWithValue("Dashboard statistics not found.");
       if (typeof status === "number" && status >= 500) {
         return rejectWithValue("Server error. Please try again later.");
@@ -150,7 +149,6 @@ export const getloiDataAsync = createAsyncThunk<
     } catch (error: unknown) {
       const status = getStatus(error);
       if (status === 401) return rejectWithValue("Session expired. Please log in again.");
-      if (status === 403) return rejectWithValue("You don't have permission to access this resource.");
       if (status === 404) return rejectWithValue("LOI data not found.");
       if (typeof status === "number" && status >= 500) {
         return rejectWithValue("Server error. Please try again later.");
@@ -192,7 +190,6 @@ export const getLoggedInUserAsync = createAsyncThunk<
     } catch (error: unknown) {
       const status = getStatus(error);
       if (status === 401) return rejectWithValue("Session expired. Please log in again.");
-      if (status === 403) return rejectWithValue("You don't have permission to access this resource.");
       if (typeof status === "number" && status >= 500) {
         return rejectWithValue("Server error. Please try again later.");
       }
