@@ -257,7 +257,7 @@ export const llDecideClauseAsync = createAsyncThunk(
       setBearer();
       const res = await loiBaseService.decideSingleClause(payload.loiId, payload);
       if (res?.success === false) return rejectWithValue(res?.message || "Failed");
-      const msg = payload.action === "approve" ? "Clause approved" : "Clause rejected";
+      const msg = payload.action === "approved" ? "Clause approved" : "Clause rejected";
       Toast.fire({ icon: "success", title: msg });
       return payload;
     } catch (e: any) {

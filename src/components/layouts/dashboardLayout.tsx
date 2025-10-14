@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useDispatch, useSelector } from "react-redux";
-import dashboardIcon from '@/icons/dashboard-icon.svg'
+import { useAppDispatch  , useAppSelector} from "@/hooks/hooks";
 import docIcon from '@/icons/doc-icon.svg'
 import leaseIcon from '@/icons/leases.svg'
 import uploadLeaseIcon from '@/icons/upload-lease-icon.svg'
@@ -17,11 +16,9 @@ import LIcon from '@/icons/logout-icon.svg'
 import { userLogout } from "../../redux/slices/userSlice";
 import { ProtectedRoute } from "../layouts/protectedRoutes";
 import { LogoutModal } from "../models/logoutModel";
-import { LayoutGrid, User } from "lucide-react";
+import { LayoutDashboardIcon, LayoutGrid, User } from "lucide-react";
 import { getLoggedInUserAsync, LoggedInUser } from "@/services/dashboard/asyncThunk";
 import { RootState } from "@/redux/store";
-
-type Role = "tenant" | "landlord";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -56,11 +53,11 @@ const USER_MENU = [{ name: "Settings", href: "/dashboard/pages/setting" }];
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const loggedInUser = useSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
+  const loggedInUser = useAppSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
 
   useEffect(() => {
     dispatch(getLoggedInUserAsync());
@@ -88,7 +85,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const getIcon = (label: string) => {
     switch (label) {
       case "Dashboard":
-        return dashboardIcon;
+        return LayoutDashboardIcon;
       case "Start LOI ":
         return docIcon;
       case "Upload Lease":
@@ -223,12 +220,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 </button>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5A2B] text-white text-sm font-medium">
-                    {String(loggedInUser?.role?.fullName || "U").slice(0, 1).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
+                  {/* <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5A2B] text-white text-sm font-medium">
+                    {loggedInUser?.role?.fullName || "U")
+                  </div> */}
+                  {/* <span className="text-sm font-medium text-gray-700">
                     {loggedInUser?.role?.fullName}
-                  </span>
+                  </span> */}
                   <SettingIcon className="h-4 w-4 text-gray-400" />
                 </div>
               </div>

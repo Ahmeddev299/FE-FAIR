@@ -18,5 +18,6 @@ export function RiskBadge({ risk }: { risk: Risk }) {
 
 export const RiskDot = ({ risk }: { risk: Risk }) => {
   const c = risk === "Low" ? "text-emerald-500" : risk === "Medium" ? "text-amber-500" : "text-rose-500";
+  console.log(c)
   return <Circle className="h-3 w-3" fill="currentColor" />;
 };
