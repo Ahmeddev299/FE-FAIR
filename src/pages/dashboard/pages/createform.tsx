@@ -19,6 +19,7 @@ import { unwrapResult } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
 import AiAssistantModal from '@/components/models/aIAssistant';
 import { FormValues } from '@/types/loi';
+import { clearLoiIdInSession } from '@/utils/loisesion';
 
 interface Props {
   mode?: "edit" | "create";
@@ -36,6 +37,15 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   const [showAiModal, setShowAiModal] = useState(false);
   const [applyingAI, setApplyingAI] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (mode === "create") {
+      clearLoiIdInSession();
+      // (optional) if you also saved to localstorage-slim earlier, clear that too:
+      // ls.remove("loi_id");
+      console.log("[LOI] reset loi_id for new Create session");
+    }
+  }, [mode]);
 
   useEffect(() => {
     if (mode === "edit" && loiId) {

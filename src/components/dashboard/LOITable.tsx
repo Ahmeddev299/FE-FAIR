@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { formatDate } from "@/utils/dateFormatter";
 import { LoadingOverlay } from "../loaders/overlayloader";
 import Toast from "../Toast";
-import { getDashboardStatsAsync, LoiServerData } from "@/services/dashboard/asyncThunk";
+import { getDashboardStatsAsync, LoggedInUser, LoiServerData } from "@/services/dashboard/asyncThunk";
 import { exportLoiToDocx } from "@/utils/exportDocx";
 import { normalizeLoiResponse } from "@/pages/dashboard/pages/loi/view/[id]";
 import ls from "localstorage-slim";
@@ -12,18 +12,21 @@ import { Letter } from "@/types/loi";
 import axios from "axios";
 import Config from "@/config/index";
 import { DeleteLoiModal } from "../models/loiDeleteModel";
-import { useAppDispatch } from "@/hooks/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { deleteLOIAsync } from "@/services/loi/asyncThunk";
 import DeleteIcon from '@/icons/delete.svg';
 import SignIcon from '@/icons/sign.svg';
 import DownloadIcon from '@/icons/download.svg'
 import ViewIcon from '@/icons/view.svg'
+import { RootState } from "@/redux/store";
 
 type ClauseBlock = { status?: string };
+
 type LoiItem = {
   updated_at?: string;
   id?: string;
   _id?: string;
+  isClauses?: true;
   title?: string;
   property_address_S1?: string;
   status?: string;
@@ -42,8 +45,6 @@ interface LOITableProps {
 
 const norm = (s?: string) => (s || "").trim().toLowerCase();
 
-
-/** Keys we want to strip before sending to the API */
 type SanitizableKeys =
   | "file_url"
   | "file_size"
@@ -52,7 +53,6 @@ type SanitizableKeys =
   | "updated_at"
   | "clauses";
 
-/** Remove only those top-level keys; keep strong typing (no any) */
 const sanitizeLoiPayload = <T extends object>(row: T): Omit<T, SanitizableKeys> => {
   if (!row) return row as Omit<T, SanitizableKeys>;
   const safe = { ...(row as Record<string, unknown>) };
@@ -220,7 +220,8 @@ export const LOITable: React.FC<LOITableProps> = ({
   onClearError,
 }) => {
   const router = useRouter();
-
+  const loggedInUser = useAppSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
+  const dispatch = useAppDispatch()
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
     id: null, x: 0, y: 0
@@ -231,7 +232,7 @@ export const LOITable: React.FC<LOITableProps> = ({
   });
   const downloadingRef = useRef(false);
   const isMountedRef = useRef(true);
-  const dispatch = useAppDispatch();
+
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -241,10 +242,29 @@ export const LOITable: React.FC<LOITableProps> = ({
     };
   }, []);
 
+  const hasClauses = (id?: boolean) => {
+    // 1) Prefer the ID if present
+    console.log("id", id)
+    if (id === true) return true;
+    return false;
+  };
+
+  type Role = "tenant" | "landlord" | string;
+
+  const loiPathFor = (role: Role | undefined, id: string, clauseid: boolean) => {
+    const isLandlord = role?.trim().toLowerCase() === "landlord";
+    console.log("hasClauses269", hasClauses)
+    if (isLandlord && hasClauses(clauseid)) return `/dashboard/pages/loi/view/${id}`;
+    return `/landlordDashboard/view/${id}`;
+  };
+
   const view = (row: LoiItem) => {
-    const id = row._id || row.id;
+    console.log(" 276 row", row)
+  const clauseid: boolean = Boolean(row.isClauses); // or: !!row.isClauses
+    const id = row._id || row.id
+    console.log("id", id)
     if (!id) return;
-    router.push(`/dashboard/pages/loi/view/${id}`);
+    router.push(loiPathFor(loggedInUser?.role, id, clauseid));
   };
 
   const handleDownload = async (row: Letter) => {

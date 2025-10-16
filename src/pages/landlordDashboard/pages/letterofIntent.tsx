@@ -1,142 +1,3 @@
-// "use client";
-
-// import React, { useEffect, useState } from "react";
-// import { Search, FileText, ArrowRight } from "lucide-react";
-// import { useRouter } from "next/navigation";
-// import { DashboardLayout } from "@/components/layouts";
-// import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-// import { getAllLandlordLOIsAsync } from "@/services/loi/asyncThunk";
-// import { selectLOI } from "@/redux/slices/loiSlice";
-// import { getStatusColor } from "@/components/dashboard/loi/loi-iu";
-
-// export default function ModernLOIReview() {
-//   const router = useRouter();
-//   const dispatch = useAppDispatch();
-//   const { loiList } = useAppSelector(selectLOI);
-
-//   const [searchQuery, setSearchQuery] = useState("");
-//   const [statusFilter, setStatusFilter] = useState("All Status");
-//   const [tenantFilter, setTenantFilter] = useState("All Tenants");
-
-//   // Load all LOIs
-//   useEffect(() => {
-//     dispatch(getAllLandlordLOIsAsync());
-//   }, [dispatch]);
-
-//   const openLOI = (loi: any) => {
-//     router.push(`/landlordDashboard/view/${loi.id}`);
-//   };
-
-//   return (
-//     <DashboardLayout>
-//       <div className="min-h-screen bg-gray-50">
-//         {/* Header */}
-//         <div className="bg-white border-b border-gray-200">
-//           <div className="px-6 py-3.5">
-//             <div className="flex items-center gap-2 text-sm">
-//               <span className="font-semibold text-gray-800">Review LOIs</span>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* LOI List */}
-//         <div className="max-w-7xl mx-auto p-6">
-//           <div className="bg-white rounded-lg border border-gray-200">
-//             <div className="p-5 border-b border-gray-200">
-//               <div className="flex items-center justify-between mb-4">
-//                 <div className="flex items-center gap-2">
-//                   <FileText className="w-5 h-5 text-blue-600" />
-//                   <h2 className="text-sm font-semibold text-gray-900">LOIs</h2>
-//                   <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
-//                     {(loiList?.my_loi || []).length}
-//                   </span>
-//                 </div>
-//                 <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-//                   Upload LOI
-//                   <ArrowRight className="w-4 h-4" />
-//                 </button>
-//               </div>
-
-//               {/* Filters */}
-//               <div className="grid grid-cols-3 gap-3">
-//                 <div className="relative">
-//                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-//                   <input
-//                     type="text"
-//                     placeholder="Search LOIs..."
-//                     value={searchQuery}
-//                     onChange={(e) => setSearchQuery(e.target.value)}
-//                     className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                   />
-//                 </div>
-//                 <select
-//                   value={statusFilter}
-//                   onChange={(e) => setStatusFilter(e.target.value)}
-//                   className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 >
-//                   <option>All Status</option>
-//                   <option>New</option>
-//                   <option>In Review</option>
-//                   <option>Submitted</option>
-//                   <option>Finalized</option>
-//                   <option>Rejected</option>
-//                 </select>
-//                 <select
-//                   value={tenantFilter}
-//                   onChange={(e) => setTenantFilter(e.target.value)}
-//                   className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 >
-//                   <option>All Tenants</option>
-//                 </select>
-//               </div>
-//             </div>
-
-//             {/* LOI Cards */}
-//             <div className="p-5">
-//               <div className="grid grid-cols-2 gap-4">
-//                 {(loiList?.my_loi || [])
-//                   .filter((x: any) => x?.title?.toLowerCase().includes(searchQuery.toLowerCase()))
-//                   .map((loi: any) => (
-//                     <button
-//                       key={loi.id}
-//                       onClick={() => openLOI(loi)}
-//                       className="text-left p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
-//                     >
-//                       <div className="flex items-start justify-between mb-2">
-//                         <div className="flex-1">
-//                           <h3 className="font-semibold text-sm text-gray-900 mb-0.5">{loi.title}</h3>
-//                           <p className="text-xs text-gray-600">{loi?.partyInfo?.tenant_name || loi?.company}</p>
-//                         </div>
-//                         <span
-//                           className={`text-xs px-2.5 py-1 rounded-md font-medium whitespace-nowrap ml-2 ${getStatusColor(
-//                             loi.submit_status || "In Review"
-//                           )}`}
-//                         >
-//                           {loi.submit_status || "In Review"}
-//                         </span>
-//                       </div>
-//                       <p className="text-xs text-gray-500 mb-2.5">
-//                         {loi.property_address_S1 && loi.property_city
-//                           ? `${loi.property_address_S1}, ${loi.property_city}`
-//                           : loi.propertyAddress || "—"}
-//                       </p>
-//                       <div className="flex items-center justify-between text-xs">
-//                         <span className="font-semibold text-blue-600">${loi?.leaseTerms?.monthlyRent || "-"}/mo</span>
-//                         <span className="text-gray-500">
-//                           {loi?.created_at ? new Date(loi.created_at).toLocaleDateString() : "-"}
-//                         </span>
-//                       </div>
-//                     </button>
-//                   ))}
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </DashboardLayout>
-//   );
-// }
-
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -146,7 +7,6 @@ import { DashboardLayout } from "@/components/layouts";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { getAllLandlordLOIsAsync } from "@/services/loi/asyncThunk";
 import { selectLOI } from "@/redux/slices/loiSlice";
-import { getStatusColor } from "@/components/dashboard/loi/loi-iu";
 
 /** -------------------------------- Types -------------------------------- */
 export interface PartyInfo {
@@ -305,14 +165,14 @@ export default function ModernLOIReview() {
                         <h3 className="font-semibold text-sm text-gray-900 mb-0.5">{loi.title}</h3>
                         <p className="text-xs text-gray-600">{loi.partyInfo?.tenant_name || loi.company || "—"}</p>
                       </div>
-                      <span
+                      {/* <span
                         className={`text-xs px-2.5 py-1 rounded-md font-medium whitespace-nowrap ml-2 ${getStatusColor(
                           loi.submit_status || "In Review"
                         )}`}
                       >
                         {loi.submit_status || "In Review"}
-                      </span>
-                    </div>
+                      </span> */}
+                    </div>-
 
                     <p className="text-xs text-gray-500 mb-2.5">
                       {loi.property_address_S1 && loi.property_city

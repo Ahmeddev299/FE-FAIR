@@ -48,8 +48,9 @@ export const INITIAL_VALUES: FormValues = {
   rentstartDate: "",
    rentStartMode: "all" as RentStartMode, // All Rent (default)
   percentageLeasePercent: "", // % of gross sales revenue for Percentage Lease
-
+ tenantImprovement_check :false,
   PrepaidRent: undefined,
+  escalationBasis:"",
   LeaseType: undefined,
 
   propertySize: "",
@@ -185,6 +186,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     includeRenewalOption: !!lt.includeRenewalOption,
     renewalOptionsCount: lt.renewalOptionsCount ?? "",
     renewalYears: lt.renewalYears ?? "",
+    escalationBasis: lt.escalationBasis ?? "",
     startDate: (lt.startDate ?? "").split("T")[0] || "",
     rentstartDate: (lt.rentstartDate ?? "").split("T")[0] || "",
     rentStartMode: (lt.rentStartMode ?? "").split("T")[0] || "",
@@ -220,6 +222,7 @@ export const EDIT_INITIAL_VALUES = (loi: LoiDTO): FormValues => {
     permitsLicenses: !!ad.contingencies?.includes("Permits & Licenses"),
     propertyInspection: !!ad.contingencies?.includes("Property Inspection"),
     insuranceApproval: !!ad.contingencies?.includes("Insurance Approval"),
+    tenantImprovement_check:  ad.tenantImprovement_check ? true : false,
 
     terms: false,
   };

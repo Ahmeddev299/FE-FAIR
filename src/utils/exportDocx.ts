@@ -144,6 +144,8 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
     nestedData = raw;
   }
 
+  console.log("nestedData", nestedData)
+
   // Resolve header, checking in order: raw.data.header -> nestedData.header -> raw.header
   let header: LOIHeader = {};
   if (hasProp(raw, "data") && hasProp(raw.data, "header") && isLOIHeader(raw.data.header)) {
@@ -153,6 +155,7 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
   } else if (hasProp(raw, "header") && isLOIHeader(raw.header)) {
     header = raw.header;
   }
+
 
   // Resolve footer, checking in order: raw.data.Footer -> nestedData.Footer -> raw.Footer
   let footer: LOIFooter = {};
@@ -172,6 +175,7 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
 
   return { body, header, footer };
 };
+
 
 /* ---------------- main export ---------------- */
 
@@ -220,12 +224,24 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
     }
     const { body, header: headerData, footer: footerData } = normalizeResponse(data);
 
+
     // Helper to safely get value from normalized body
     const getValue = (fieldName: string): string | null => {
       const v = body[fieldName];
       if (!v) return null;
       return v === "N/A" ? null : v;
     };
+
+    let disclaimerText = "";
+
+    if (isRecord(data) && hasProp(data, 'data')) {
+      const d = data;
+      console.log("d",d)
+      if (isRecord(d) && hasProp(d, 'text')) {
+        disclaimerText = String(d.text); // Convert to string
+        console.log("✅ Found text from API:", disclaimerText.substring(0, 100) + "...");
+      }
+    }
 
     let clauseMap: ClauseMap | undefined;
 
@@ -634,52 +650,52 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
 
       // Data rows
       for (const [name, entry] of Object.entries(clauseMap)) {
-          rows.push(
-            new TableRow({
-              children: [
-                new TableCell({
-                  margins: { top: 150, bottom: 150, left: 0, right: 250 },
-                  width: { size: 30, type: WidthType.PERCENTAGE },
-                  verticalAlign: VerticalAlign.TOP,
-                  children: [
-                    new Paragraph({
-                      children: [
-                        new TextRun({
-                          text: `${toStringSafe(name)}:`,
-                          bold: true,
-                          italics: true,
-                          font: "Times New Roman",
-                          size: 22,
-                        }),
-                      ],
-                      spacing: { after: 0 },
-                    }),
-                    ...(entry?.status
-                      ? [
-                        new Paragraph({
-                          children: [
-                            new TextRun({
-                              text: `Status: ${String(entry.status)}`,
-                              font: "Times New Roman",
-                              size: 18,
-                              color: "666666",
-                            }),
-                          ],
-                          spacing: { after: 0 },
-                        }),
-                      ]
-                      : []),
-                  ],
-                }),
-                new TableCell({
-                  margins: { top: 150, bottom: 150, left: 0, right: 0 },
-                  width: { size: 70, type: WidthType.PERCENTAGE },
-                  verticalAlign: VerticalAlign.TOP,
-                  children: clauseParagraphsFor(name, entry),
-                }),
-              ],
-            })
-          );
+        rows.push(
+          new TableRow({
+            children: [
+              new TableCell({
+                margins: { top: 150, bottom: 150, left: 0, right: 250 },
+                width: { size: 30, type: WidthType.PERCENTAGE },
+                verticalAlign: VerticalAlign.TOP,
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: `${toStringSafe(name)}:`,
+                        bold: true,
+                        italics: true,
+                        font: "Times New Roman",
+                        size: 22,
+                      }),
+                    ],
+                    spacing: { after: 0 },
+                  }),
+                  ...(entry?.status
+                    ? [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: `Status: ${String(entry.status)}`,
+                            font: "Times New Roman",
+                            size: 18,
+                            color: "666666",
+                          }),
+                        ],
+                        spacing: { after: 0 },
+                      }),
+                    ]
+                    : []),
+                ],
+              }),
+              new TableCell({
+                margins: { top: 150, bottom: 150, left: 0, right: 0 },
+                width: { size: 70, type: WidthType.PERCENTAGE },
+                verticalAlign: VerticalAlign.TOP,
+                children: clauseParagraphsFor(name, entry),
+              }),
+            ],
+          })
+        );
       }
 
       return new Table({
@@ -696,7 +712,6 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
         rows,
       });
     };
-
 
     const zip = safe(footerData?.tenant_zip);
     const state = safe(footerData?.tenant_state);
@@ -848,15 +863,8 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
               : [createDetailsTable()]),
 
             new Paragraph({ pageBreakBefore: true }),
-            bodyParagraph(
 
-              "This letter is not binding and does not constitute an agreement between the parties, but merely sets forth the general terms under which the Tenant agrees to enter further negotiations and is contingent upon the Tenant's review of a draft lease and a definitive written agreement signed by the parties. Tenant Broker makes no warranty or representation to Landlord or Tenant that the acceptance of the proposal will guarantee the execution of a lease for the Premises.",
-            ),
-            bodyParagraph(
-
-              "Please review the above lease proposal and provide your comments within seven (7) business days upon receipt. If the above proposal is accepted, we will forward the Lease to you for your review. Please note that the above lease proposal does not bind either party to the terms until the Lease is drawn and executed by both parties.",
-              { spacing: { after: 400 } }
-            ),
+            bodyParagraph(disclaimerText, { spacing: { after: 400 } }),
 
             new Paragraph({
               children: [

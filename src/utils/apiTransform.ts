@@ -61,6 +61,7 @@ export const transformToApiPayload = (
   values: FormValues,
   loiId?: string
 ): LOIApiPayload => {
+  console.log("values", values)
   const effectiveDocId = (loiId ?? values.doc_id)?.trim();
 
   const selectedUtilities = mapUtilitiesToLabels(values.utilities);
@@ -103,16 +104,17 @@ export const transformToApiPayload = (
       leaseType: values.leaseType || "",
       leaseDuration: values.leaseDuration || "",
       startDate: values.startDate || "",
+      escalationBasis: values.escalationBasis || "",
       rentstartDate: values.rentstartDate || "",
       prepaidRent: values.prepaidRent || "",
       includeRenewalOption: !!values.includeRenewalOption,
       renewalYears: values.renewalYears || "",
       renewalOptionsCount: values.renewalOptionsCount || "",
       rentStartMode: values.rentStartMode || "",
-      ...(nonEmpty(values.percentageLeasePercent)
-        ? { percentageLeasePercent: String(values.percentageLeasePercent) }
-        : {}),
-
+      percentageLeasePercent: values.percentageLeasePercent
+        ? values.percentageLeasePercent
+        : "",
+      rentEscalationPercent: values.rentEscalationPercent || "",
       ...escalationPieces,
     },
 
@@ -122,12 +124,12 @@ export const transformToApiPayload = (
       exclusiveUse: values.exclusiveUse,
       propertyType: values.propertyType || "",
       hasExtraSpace: !!values.hasExtraSpace,
-      ...(nonEmpty(values.patio) ? { patio: values.patio } : {}),
+      patio: values.patio ? values.patio : "",
       amenities: values.parkingSpaces || "",
       utilities: selectedUtilities,
-      ...(nonEmpty(values.deliveryCondition)
-        ? { deliveryCondition: String(values.deliveryCondition).trim() }
-        : {}),
+      deliveryCondition: values.deliveryCondition
+        ? values.deliveryCondition.trim()
+        : "",
       maintenance: mapMaintenanceToDTO(values.maintenance),
       patioSize: values.patioSize || "",
 
@@ -136,13 +138,14 @@ export const transformToApiPayload = (
     additionalDetails: {
       Miscellaneous_items: miscItems,
       tenantImprovement,
+      tenantImprovement_check: values.tenantImprovement_check ? true :false,
       leaseToPurchaseDuration: values.leaseToPurchaseDuration || "",
       improvementAllowanceEnabled: !!values.improvementAllowanceEnabled,
       improvementAllowanceAmount: values.improvementAllowanceAmount || "",
       specialConditions: values.specialConditions || "",
       contingencies,
       ...(values.rightOfFirstRefusal ? { rightOfFirstRefusal: true } : {}),
-      ...(values.leaseToPurchase ? { leaseToPurchase: true } : {}),
+      leaseToPurchase: values.leaseToPurchase ?  true : false,
     },
 
     submit_status: "Submitted",

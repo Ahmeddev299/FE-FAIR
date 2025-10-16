@@ -68,6 +68,7 @@ export type LoiDTO = {
     LeaseType?: string;
     rentEsclation?: string;
     rentStartMode?: string;
+    escalationBasis?:string;
   
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
@@ -111,6 +112,7 @@ export type LoiDTO = {
     rightOfFirstRefusal?: boolean;
     leaseToPurchase?: boolean;
     leaseToPurchaseDuration?: string;
+    tenantImprovement_check?:boolean;
 
     Miscellaneous_items?: string[];
     Miscellaneous_details?: {
@@ -143,13 +145,14 @@ export interface FormValues {
   landlord_city: string;
   landlord_state: string;
   landlord_zip: string;
+  escalationBasis: string;
 
   tenant_address_S1: string;
   tenant_address_S2: string;
   tenant_city: string;
   tenant_state: string;
   tenant_zip: string;
-
+ tenantImprovement_check : boolean,
   rentAmount: string;
   prepaidRent: string;
   securityDeposit: string;
@@ -310,6 +313,7 @@ export type LOIApiPayload = {
     specialConditions: string;
     contingencies: string[];
     rightOfFirstRefusal?: boolean;
+    tenantImprovement_check?:boolean;
 
     leaseToPurchase?: boolean;
     leaseToPurchaseDuration?: string
