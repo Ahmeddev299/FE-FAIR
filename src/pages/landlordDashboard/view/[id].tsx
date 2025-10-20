@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,7 +39,7 @@ export interface ClauseView {
   status?: LocalClauseStatus;
   risk?: "Low" | "Medium" | "High" | undefined;
   warning?: string;
-  comments?: Array<{ text: string; created_at?: string }> | undefined;
+  comments?: Array<{ text: string; author?: string; created_at?: string }>;
   text?: string;
   analysis?: string;
   recommendation?: string;
@@ -103,7 +105,9 @@ export default function ClauseDetailPanel() {
 
   // Optimistic UI states
   const [localStatus, setLocalStatus] = useState<Record<string, LocalClauseStatus>>({});
-  const [localComments, setLocalComments] = useState<Record<string, Array<{ text: string; created_at: string }>>>({});
+  const [localComments, setLocalComments] = useState<
+    Record<string, Array<{ text: string; author?: string; created_at: string }>>
+  >({});
 
   // Extract route params
   const routeLoiId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -144,14 +148,19 @@ export default function ClauseDetailPanel() {
     if (!history) return [];
 
     return Object.entries(history).map(([key, data]) => {
-      const baseStatus: LocalClauseStatus = data.status_landlord ?? data.status;
+      const baseStatus: LocalClauseStatus = data.status;
       const overridden = localStatus[key] ?? undefined;
+
+      const serverComments = Array.isArray(data.comment) ? data.comment : [];
+      const optimistic = localComments[key] ?? [];
+      const mergedComments = [...serverComments, ...optimistic]; // ✅ merge
+
       return {
         key,
         status: overridden || baseStatus,
         risk: data.risk_landlord,
         warning: data.risk_line_landlord,
-        comments: localComments[key] || data.comment || [],
+        comments: mergedComments,                       // ✅ use merged
         text: data.current_version || data.clause_details,
         analysis: data.Analysis_landlord,
         recommendation: data.Recommendation_landlord,
@@ -161,14 +170,12 @@ export default function ClauseDetailPanel() {
     });
   }, [currentLOI, localStatus, localComments]);
 
-  // 3) Slug map for converting slug to clause key
   const slugMap = useMemo(() => {
     const m = new Map<string, string>();
     clauses.forEach((c) => m.set(slugify(c.key), c.key));
     return m;
   }, [clauses]);
 
-  // 4) Auto-select first clause if URL has slug
   useEffect(() => {
     if (!routeLoiId || !currentLOI?.Clauses?.history) return;
 
@@ -218,14 +225,18 @@ export default function ClauseDetailPanel() {
   const onCommentClause = useCallback(
     (clauseKey: string, text: string) => {
       if (!routeLoiId) return;
-      setLocalComments((prev) => {
+      setLocalComments(prev => {
         const arr = prev[clauseKey] ? [...prev[clauseKey]] : [];
-        arr.unshift({ text, created_at: new Date().toISOString() });
+        arr.unshift({
+          text,
+          author: (currentLOI as any)?.partyInfo?.landlord_email || undefined,
+          created_at: new Date().toISOString(),
+        });
         return { ...prev, [clauseKey]: arr };
       });
       dispatch(llCommentClauseAsync({ loiId: routeLoiId, clause_key: clauseKey, text }));
     },
-    [dispatch, routeLoiId]
+    [dispatch, routeLoiId, currentLOI]
   );
 
   const selectedClauseData = useMemo<ClauseView | null>(() => {
@@ -233,7 +244,6 @@ export default function ClauseDetailPanel() {
     return clauses.find((c) => c.key === selectedClauseKey) ?? null;
   }, [selectedClauseKey, clauses]);
 
-  /* -------------------------------- UI Helpers -------------------------------- */
   const getStatusPillColor = (status: string) => {
     const colors: Record<string, string> = {
       New: "bg-blue-50 text-blue-700",
@@ -264,9 +274,7 @@ export default function ClauseDetailPanel() {
     return <span className={`text-xs px-2 py-0.5 rounded font-medium ${cls}`}>{label}</span>;
   };
 
-  /* ----------------------------------- UI ----------------------------------- */
 
-  // Show loading while fetching
   if (!currentLOI?.Clauses?.history && routeLoiId) {
     return (
       <DashboardLayout>
@@ -338,7 +346,7 @@ export default function ClauseDetailPanel() {
       if (msg) Toast.fire({ icon: "success", title: msg });
 
       const data = normalizeLoiResponse(resp);
-      const isTemp = resp.data?.data?.temp === true;
+      const isTemp = true
       await exportLoiToDocx(data, undefined, isTemp);
       if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
     } catch (err: unknown) {
@@ -457,7 +465,7 @@ export default function ClauseDetailPanel() {
                 className="inline-flex items-center justify-center h-9 px-4 rounded-md bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700"
               >
                 Finalize LOI
-                {isSubmittingLoi && (<LoadingOverlay visible fullscreen/>)}
+                {isSubmittingLoi && (<LoadingOverlay visible fullscreen />)}
 
               </button>
             </div>
@@ -566,8 +574,29 @@ export default function ClauseDetailPanel() {
                   </p>
                 </div>
 
+                {/* Comments */}
+                <div className="mt-5">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Comments</h4>
+
+                  {(!selectedClauseData.comments || selectedClauseData.comments.length === 0) ? (
+                    <p className="text-sm text-gray-500">No comments yet.</p>
+                  ) : (
+                    <ul className="space-y-3">
+                      {selectedClauseData.comments.map((c, i) => (
+                        <li key={i} className="p-3 bg-white border border-gray-200 rounded-md">
+                          <div className="text-sm text-gray-900">{c.text}</div>
+                          <div className="mt-1 text-[12px] text-gray-500">
+                            {c.author ? <span className="mr-2">{c.author}</span> : null}
+                            {c.created_at ? new Date(c.created_at).toLocaleString() : ""}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
                 {/* AI Analysis */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-blue-50 mt-3 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white text-sm font-bold">AI</span>

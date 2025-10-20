@@ -197,7 +197,6 @@ type ExtendedClause = {
 };
 
 type UiStatus = Exclude<ExtendedClause["status"], "Rejected">;
-// or write it out explicitly:
 // type UiStatus = "AI Suggested" | "Edited" | "Approved" | "Needs Review" | "Pending" | "Suggested";
 
 export const toUiStatus = (raw?: string): UiStatus => {
@@ -219,7 +218,7 @@ export const toUiStatus = (raw?: string): UiStatus => {
       return "Approved";
     case "needs review":
     case "in review":
-    case "rejected":          // <- normalized to a UI-allowed status
+    case "rejected":        
       return "Needs Review";
     case "suggested":
     case "suggestion":
@@ -275,7 +274,6 @@ const shapeClauses = (block?: ClausesBlock) => {
 const shapeLOI = (raw: unknown): ShapedLoi | null => {
   if (!raw) return null;
 
-  // support { data: ... } or the object itself
   const container = isRecord(raw) && "data" in raw ? (raw as { data: unknown }).data : raw;
   if (!isRecord(container)) return null;
 
@@ -310,7 +308,6 @@ const shapeLOI = (raw: unknown): ShapedLoi | null => {
     rawClausesMap: shaped?.map,
     clauseDocId,
 
-    // copy raw fields used by overview
     property_address_S1: data.property_address_S1,
     property_address_S2: data.property_address_S2,
     property_city: data.property_city,
@@ -428,8 +425,7 @@ const downloadingRef = useRef(false);
       if (msg) Toast.fire({ icon: "success", title: msg });
 
       const data = normalizeLoiResponse(resp);
-      const isTemp = resp.data?.data?.temp === true;
-      console.log("isTem", isTemp)
+      const isTemp = true
       await exportLoiToDocx(data, undefined, isTemp);
       if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
     } catch (err: unknown) {

@@ -64,6 +64,7 @@ export const transformToApiPayload = (
   console.log("values", values)
   const effectiveDocId = (loiId ?? values.doc_id)?.trim();
 
+  console.log("effectiveDocId", effectiveDocId)
   const selectedUtilities = mapUtilitiesToLabels(values.utilities);
   const contingencies = buildContingencies(values);
   const miscItems = buildMiscList(values);

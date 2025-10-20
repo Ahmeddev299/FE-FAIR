@@ -19,7 +19,7 @@ import { unwrapResult } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
 import AiAssistantModal from '@/components/models/aIAssistant';
 import { FormValues } from '@/types/loi';
-import { clearLoiIdInSession } from '@/utils/loisesion';
+import { clearLoiIdInSession, getLoiIdFromSession } from '@/utils/loisesion';
 
 interface Props {
   mode?: "edit" | "create";
@@ -41,7 +41,7 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   useEffect(() => {
     if (mode === "create") {
       clearLoiIdInSession();
-      // (optional) if you also saved to localstorage-slim earlier, clear that too:
+      // (optional) if you also saved to localstorage-slim earlier, cleaaar that too:
       // ls.remove("loi_id");
       console.log("[LOI] reset loi_id for new Create session");
     }
@@ -61,39 +61,55 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
     }
   }, [mode, loiId]);
 
-  const handleSubmit = async (formValues: FormValues) => {
-    console.log("values", formValues)
-    try {
-      if (currentStep === steps.length) {
-        setSubmitting(true);
-        const apiPayload = transformToApiPayload(formValues, loiId);
-        console.log("apiPayload", apiPayload)
-        await dispatch(submitLOIAsync(apiPayload)).unwrap();
-        setLastSaved(new Date().toLocaleTimeString());
-        router.push({ pathname: "/dashboard/pages/mainpage", query: { success: "loi_submitted" } });
-      } else {
-        nextStep();
-      }
-    } catch (error) {
-      console.error("Failed to submit LOI:", error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+// inside component
+const handleSubmit = async (formValues: FormValues) => {
+  console.log("values", formValues)
+  try {
+    if (currentStep === steps.length) {
+      setSubmitting(true);
 
-  const saveAsDraft = async (formValues: FormValues) => {
-    try {
-      setSaving(true);
-      const draftPayload = transformToApiPayload(formValues , loiId);
-      await dispatch(submitLOIAsync({ ...draftPayload, submit_status: "Draft" })).unwrap();
-      router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });
+      // 👇 Prefer the ID from storage if present
+      const storedLoiId = getLoiIdFromSession();
+      const effectiveLoiId = storedLoiId || loiId || undefined;
+
+      const apiPayload = transformToApiPayload(formValues, effectiveLoiId);
+      console.log("apiPayload", apiPayload)
+
+      // If your thunk handles create vs. update based on presence of id, just call it:
+      await dispatch(submitLOIAsync(apiPayload)).unwrap();
+
       setLastSaved(new Date().toLocaleTimeString());
-    } catch (error) {
-      console.error("Failed to save draft:", error);
-    } finally {
-      setSaving(false);
+      router.push({ pathname: "/dashboard/pages/mainpage", query: { success: "loi_submitted" } });
+    } else {
+      nextStep();
     }
-  };
+  } catch (error) {
+    console.error("Failed to submit LOI:", error);
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
+ const saveAsDraft = async (formValues: FormValues) => {
+  try {
+    setSaving(true);
+
+    const storedLoiId = getLoiIdFromSession();
+    const effectiveLoiId = storedLoiId || loiId || undefined;
+
+    const draftPayload = transformToApiPayload(formValues, effectiveLoiId);
+    await dispatch(submitLOIAsync({ ...draftPayload, submit_status: "Draft" })).unwrap();
+
+    router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });
+    setLastSaved(new Date().toLocaleTimeString());
+  } catch (error) {
+    console.error("Failed to save draft:", error);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   const renderStepContent = (formValues: FormValues) => {
     switch (currentStep) {

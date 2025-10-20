@@ -126,14 +126,11 @@ const toStringSafe = (v: unknown): string => {
 };
 
 const normalizeResponse = (raw: LOIResponse): NormalizedData => {
-  // Resolve the "body" part which may be:
-  // 1) raw.data.data (preferred)
-  // 2) raw.data
-  // 3) raw (already LOIResponseBody)
+
   let nestedData: LOIResponseBody = {};
 
   if (hasProp(raw, "data")) {
-    const d = raw.data; // unknown | LOIResponseBody | { data?: LOIResponseBody; header?: ...; Footer?: ... }
+    const d = raw.data; 
 
     if (hasProp(d, "data") && isLOIResponseBody(d.data)) {
       nestedData = d.data;
@@ -146,7 +143,6 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
 
   console.log("nestedData", nestedData)
 
-  // Resolve header, checking in order: raw.data.header -> nestedData.header -> raw.header
   let header: LOIHeader = {};
   if (hasProp(raw, "data") && hasProp(raw.data, "header") && isLOIHeader(raw.data.header)) {
     header = raw.data.header;
@@ -156,8 +152,6 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
     header = raw.header;
   }
 
-
-  // Resolve footer, checking in order: raw.data.Footer -> nestedData.Footer -> raw.Footer
   let footer: LOIFooter = {};
   if (hasProp(raw, "data") && hasProp(raw.data, "Footer") && isLOIFooter(raw.data.Footer)) {
     footer = raw.data.Footer;
@@ -167,7 +161,6 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
     footer = raw.Footer;
   }
 
-  // Build normalized body as string map
   const body: Record<string, string> = {};
   Object.entries(nestedData as Record<string, unknown>).forEach(([k, v]) => {
     body[k] = toStringSafe(v);
@@ -176,11 +169,9 @@ const normalizeResponse = (raw: LOIResponse): NormalizedData => {
   return { body, header, footer };
 };
 
-
-/* ---------------- main export ---------------- */
-
 export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, isTemp?: boolean) => {
-  // ---- helpers ----
+
+  console.log(isTemp, "174")
   const base64ToUint8Array = (b64: string): Uint8Array => {
     const clean = b64.includes(",") ? b64.split(",").pop()! : b64;
     const binary =
@@ -192,7 +183,6 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
     return bytes;
   };
 
-  // returns one of "png" | "jpg" | "gif" | "bmp" | null
   const getRasterTypeFromDataUri = (
     maybeDataUri: string
   ): "png" | "jpg" | "gif" | "bmp" | null => {
@@ -202,7 +192,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
     if (mime.endsWith("jpeg") || mime.endsWith("jpg")) return "jpg";
     if (mime.endsWith("gif")) return "gif";
     if (mime.endsWith("bmp")) return "bmp";
-    if (mime.includes("svg")) return null; // skip svg without a fallback
+  if (mime.includes("svg")) return null; 
     return null;
   };
 
@@ -210,22 +200,18 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
     s.trim().startsWith("<svg") || s.toLowerCase().includes("image/svg+xml");
 
   try {
-    // Load logo if not provided
     if (!logoBase64) {
       logoBase64 = await loadLogo();
     }
 
     const safe = (value: unknown): string => toStringSafe(value);
 
-
-    // Validate and normalize API response
     if (!data) {
       throw new Error("No data provided for document generation");
     }
     const { body, header: headerData, footer: footerData } = normalizeResponse(data);
 
 
-    // Helper to safely get value from normalized body
     const getValue = (fieldName: string): string | null => {
       const v = body[fieldName];
       if (!v) return null;
@@ -238,8 +224,8 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
       const d = data;
       console.log("d",d)
       if (isRecord(d) && hasProp(d, 'text')) {
-        disclaimerText = String(d.text); // Convert to string
-        console.log("✅ Found text from API:", disclaimerText.substring(0, 100) + "...");
+        disclaimerText = String(d.text); 
+        console.log("Found text from API:", disclaimerText.substring(0, 100) + "...");
       }
     }
 
@@ -247,8 +233,9 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
 
     if (isRecord(data) && hasProp(data, "data")) {
       const d = data.data;
+
       if (isRecord(d) && hasProp(d, "data")) {
-        const inner = d.data; // unknown
+        const inner = d.data;
         if (isRecord(inner)) {
           clauseMap = Object.fromEntries(
             Object.entries(inner).map(([k, v]) => [k, (v as ClauseEntry)])
@@ -627,10 +614,8 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
     };
 
     const createClauseReviewTable = () => {
-      if (!isTemp || !clauseMap || Object.keys(clauseMap).length === 0) {
-        console.log("isTemp", isTemp)
-
-        // return a harmless empty table (docx doesn't allow null children)
+      if ( !clauseMap || Object.keys(clauseMap).length === 0) {
+      console.log("thins is running")
         return new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
           layout: TableLayoutType.FIXED,
@@ -650,6 +635,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
 
       // Data rows
       for (const [name, entry] of Object.entries(clauseMap)) {
+        console.log("this is runnig")
         rows.push(
           new TableRow({
             children: [
@@ -715,7 +701,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
 
     const zip = safe(footerData?.tenant_zip);
     const state = safe(footerData?.tenant_state);
-    // Create document
+
     const doc = new Document({
       sections: [
         {
@@ -797,7 +783,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
             new Paragraph({
               children: [
                 new TextRun({
-                  text: [zip, state].filter(Boolean).join(", "), // "12345, CA" / "12345" / "CA"
+                  text: [zip, state].filter(Boolean).join(", "), 
                   font: "Times New Roman",
                   size: 22,
                 }),
@@ -805,20 +791,6 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
               spacing: { after: 80 },
             }),
 
-
-            // new Paragraph({
-            //   children: [
-            //     new TextRun({
-            //       text: safe(footerData?.tenant_zip),
-            //       font: "Times New Roman",
-            //       size: 22,
-            //     }),
-            //   ],
-            //   spacing: { after: 80 },
-            // }),
-
-
-            // Re: line
             new Paragraph({
               children: [
                 new TextRun({ text: "Re:", bold: true, size: 22, font: "Times New Roman" }),

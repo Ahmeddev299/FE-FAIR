@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useEffect, useRef, useState } from "react";
 import { Eye, FileDown, MoreVertical } from "lucide-react";
 import { useRouter } from "next/router";
@@ -20,18 +22,26 @@ import DownloadIcon from '@/icons/download.svg'
 import ViewIcon from '@/icons/view.svg'
 import { RootState } from "@/redux/store";
 
+type UserRole = "tenant" | "landlord";
+
 type ClauseBlock = { status?: string };
 
-type LoiItem = {
-  updated_at?: string;
+export type LoiItem = {
   id?: string;
   _id?: string;
-  isClauses?: true;
+
   title?: string;
   property_address_S1?: string;
   status?: string;
-  lastUpdate?: string;
-  clauses?: Record<string, ClauseBlock>;
+  updated_at?: string;
+
+  relatedUser?: UserRole;
+
+  Clauses?: unknown;
+  clauses?: Record<string, ClauseBlock> | string | null | undefined;
+
+  Clauses_id?: string;
+  clauses_id?: string;
 };
 
 interface LOITableProps {
@@ -65,7 +75,6 @@ const sanitizeLoiPayload = <T extends object>(row: T): Omit<T, SanitizableKeys> 
     "clauses",
   ];
 
-  // delete on an index signature
   const working = safe as { [key: string]: unknown };
   keys.forEach((k) => {
     if (k in working) delete working[k];
@@ -75,9 +84,16 @@ const sanitizeLoiPayload = <T extends object>(row: T): Omit<T, SanitizableKeys> 
 };
 
 const deriveStatusFromClauses = (row: LoiItem) => {
-  const blocks = row?.clauses ? Object.values(row.clauses) : [];
-  const statuses = blocks.map((b) => norm(b.status)).filter(Boolean);
-  if (!statuses.length) return norm(row.status) || "pending";
+  let blocks: ClauseBlock[] = [];
+
+  if (row?.clauses && typeof row.clauses === "object" && !Array.isArray(row.clauses)) {
+    blocks = Object.values(row.clauses as Record<string, ClauseBlock>);
+  } else if (row?.Clauses && typeof row.Clauses === "object" && !Array.isArray(row.Clauses)) {
+    blocks = Object.values(row.Clauses as Record<string, ClauseBlock>);
+  }
+
+  const statuses = blocks.map((b) => norm(b?.status)).filter(Boolean);
+  if (!statuses.length) return norm(row?.status) || "pending";
   const allApproved = statuses.every((s) => s === "approved");
   const anyInProgress = statuses.some((s) => s === "in progress");
   const allPending = statuses.every((s) => s === "pending");
@@ -86,6 +102,7 @@ const deriveStatusFromClauses = (row: LoiItem) => {
   if (allPending) return "pending";
   return "pending";
 };
+
 
 const getStatusPill = (status?: string) => {
   const s = norm(status);
@@ -214,15 +231,14 @@ const RowActionMenu: React.FC<{
 export const LOITable: React.FC<LOITableProps> = ({
   lois,
   isLoading,
-  error,
   onViewAll,
   onAddNew,
-  onClearError,
 }) => {
+
   const router = useRouter();
-  const loggedInUser = useAppSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
   const dispatch = useAppDispatch()
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const loggedInUser = useAppSelector((s: RootState) => s.dashboard.loggedInUser) as LoggedInUser | null;
   const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
     id: null, x: 0, y: 0
   });
@@ -242,30 +258,84 @@ export const LOITable: React.FC<LOITableProps> = ({
     };
   }, []);
 
-  const hasClauses = (id?: boolean) => {
-    // 1) Prefer the ID if present
-    console.log("id", id)
-    if (id === true) return true;
-    return false;
+  const normalizeClauses = (row: LoiItem) => {
+    const id = row._id ?? row.id ?? "";
+
+    const clausesId = String(row.Clauses_id ?? row.clauses_id ?? "").trim();
+
+    let raw = (row.Clauses ?? row.clauses) as unknown;
+    if (typeof raw === "string") {
+      try { raw = JSON.parse(raw); } catch { /* leave as string */ }
+    }
+
+    const isObj = raw && typeof raw === "object" && !Array.isArray(raw);
+    const obj = isObj ? (raw as Record<string, any>) : null;
+
+    const hasObjContent =
+      !!obj && Object.keys(obj).length > 0 &&
+      Object.values(obj).some(v => {
+        if (v == null) return false;
+        if (typeof v === "string") return v.trim().length > 0;
+        if (Array.isArray(v)) return v.length > 0;
+        if (typeof v === "object") return Object.keys(v).length > 0;
+        return true;
+      });
+
+    const hasClauses = clausesId.length > 0 || hasObjContent;
+
+    return {
+      id,
+      hasClauses,
+      clausesId,
+      objKeys: obj ? Object.keys(obj) : [],
+      rawType: typeof (row.Clauses ?? row.clauses)
+    };
   };
 
-  type Role = "tenant" | "landlord" | string;
 
-  const loiPathFor = (role: Role | undefined, id: string, clauseid: boolean) => {
-    const isLandlord = role?.trim().toLowerCase() === "landlord";
-    console.log("hasClauses269", hasClauses)
-    if (isLandlord && hasClauses(clauseid)) return `/dashboard/pages/loi/view/${id}`;
-    return `/landlordDashboard/view/${id}`;
+  const routeFor = (id: string, userRole: string | undefined, relatedUser?: UserRole) => {
+    console.log("311", userRole)
+    const me = userRole ?? "tenant";
+    const other = (relatedUser ?? "tenant") as UserRole;
+
+    console.log("314", me)
+    console.log("315", other)
+
+    if (me === "tenant" && other === "tenant") {
+      return `/dashboard/pages/loi/view/${id}`;
+    }
+
+    if (me === "landlord" && other === "tenant") {
+      console.log("running")
+      console.log("322", me)
+      console.log("323", other)
+      return `/landlordDashboard/view/${id}`;
+    }
+
+    if (me === "landlord" && other === "landlord") {
+      return `/dashboard/pages/loi/view/${id}`;
+    }
+
+    return `/dashboard/pages/loi/view/${id}`;
   };
 
   const view = (row: LoiItem) => {
-    console.log(" 276 row", row)
-  const clauseid: boolean = Boolean(row.isClauses); // or: !!row.isClauses
-    const id = row._id || row.id
-    console.log("id", id)
-    if (!id) return;
-    router.push(loiPathFor(loggedInUser?.role, id, clauseid));
+    const n = normalizeClauses(row);
+    if (!n.id) return;
+
+    const related = (row.relatedUser ?? "").toLowerCase() as UserRole | undefined;
+    const url = routeFor(n.id, loggedInUser?.role, related);
+
+    console.log("[LOI route debug]", {
+      id: n.id,
+      userRole: loggedInUser?.role,
+      relatedUser: related,
+      resolved: url,
+    });
+
+    router.push(url);
   };
+
 
   const handleDownload = async (row: Letter) => {
     if (downloadingRef.current) return;
@@ -353,16 +423,6 @@ export const LOITable: React.FC<LOITableProps> = ({
         </div>
       </div>
 
-      {error && (
-        <div className="px-6 py-3 text-sm text-red-700 bg-red-50 border-b border-red-100 flex items-start justify-between">
-          <span>{error}</span>
-          {onClearError && (
-            <button onClick={onClearError} className="text-red-600 hover:underline">
-              Dismiss
-            </button>
-          )}
-        </div>
-      )}
       {(isLoading || downloadingId) && <LoadingOverlay visible />}
 
       <div className="p-6">
@@ -379,6 +439,9 @@ export const LOITable: React.FC<LOITableProps> = ({
                 </th>
                 <th className="px-2 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                   Status
+                </th>
+                <th className="py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
+                  upload By
                 </th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Last Updated
@@ -405,6 +468,10 @@ export const LOITable: React.FC<LOITableProps> = ({
                     <td className="px-2 py-4">
                       <div className="h-4 bg-gray-100 rounded animate-pulse" />
                     </td>
+                    <td className="px-0 py-2">
+                      <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                    </td>
+
                     <td className="px-4 py-4">
                       <div className="h-8 w-24 bg-gray-100 rounded animate-pulse" />
                     </td>
@@ -437,9 +504,14 @@ export const LOITable: React.FC<LOITableProps> = ({
                       <td className="px-2 py-4">
                         <span className={getStatusPill(derived)}>{capitalize(derived)}</span>
                       </td>
+                      <td className="py-2 text-sm text-gray-700 w-1/2">
+                        {truncateWords(row.relatedUser, 3)}
+                      </td>
                       <td className="py-4 text-sm text-gray-700 w-1/2">
                         {row?.updated_at ? formatDate(row.updated_at) : "—"}
+
                       </td>
+
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
                           <button
@@ -497,7 +569,6 @@ export const LOITable: React.FC<LOITableProps> = ({
           message="This will permanently remove the LOI and cannot be undone."
         />
 
-        {/* Mobile */}
         <div className="lg:hidden space-y-3">
           {showLoading &&
             Array.from({ length: 3 }).map((_, i) => (
@@ -512,7 +583,7 @@ export const LOITable: React.FC<LOITableProps> = ({
             lois.length > 0 &&
             lois.map((row) => {
               const rowId = row._id || row.id;
-              const isRowDownloading = downloadingId === rowId; // ✅ same fix
+              const isRowDownloading = downloadingId === rowId;
 
               return (
                 <div key={rowId} className="p-4 border border-gray-100 rounded-lg">
@@ -535,7 +606,6 @@ export const LOITable: React.FC<LOITableProps> = ({
                       View
                     </button>
 
-                    {/* ✅ Mobile Download */}
                     <button
                       onClick={() => handleDownload(row as Letter)}
                       className="flex items-center gap-1 px-3 py-1 border rounded-md text-sm disabled:opacity-60"
