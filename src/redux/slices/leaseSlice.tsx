@@ -10,6 +10,7 @@ import {
   getLeaseDetailsById,
   approveLoiClauseApi,
   rejectLoiClauseApi,
+  updateLandlordClauseCurrentVersionAsync,
 } from "@/services/lease/asyncThunk";
 import Toast from "@/components/Toast";
 
@@ -183,6 +184,22 @@ export const leaseSlice = createSlice({
         }
       })
       .addCase(updateClauseCurrentVersionAsync.rejected, (state, action) => {
+        Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to save clause" });
+      })
+
+       builder
+      .addCase(updateLandlordClauseCurrentVersionAsync.fulfilled, (state, action) => {
+        const { clause_key, details } = action.payload as { clause_key: string; details: string };
+        const history = state.currentLease?.data?.history;
+        if (history?.[clause_key]) {
+          history[clause_key] = {
+            ...history[clause_key],
+            current_version: details,
+            status: "pending",
+          };
+        }
+      })
+      .addCase(updateLandlordClauseCurrentVersionAsync.rejected, (state, action) => {
         Toast.fire({ icon: "error", title: (action.payload as string) ?? "Failed to save clause" });
       })
 

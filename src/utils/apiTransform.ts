@@ -59,12 +59,14 @@ const buildEscalationPieces = (v: FormValues): EscalationPieces => {
 
 export const transformToApiPayload = (
   values: FormValues,
-  loiId?: string
+  loiId?: string,
+  isDownload?: boolean
 ): LOIApiPayload => {
-  console.log("values", values)
-  const effectiveDocId = (loiId ?? values.doc_id)?.trim();
+  console.log("isDownload 65", isDownload)
+  console.log("values", values);
+  const effectiveDocId = loiId ?? values?.doc_id;
+  console.log("effectiveDocId", effectiveDocId);
 
-  console.log("effectiveDocId", effectiveDocId)
   const selectedUtilities = mapUtilitiesToLabels(values.utilities);
   const contingencies = buildContingencies(values);
   const miscItems = buildMiscList(values);
@@ -91,10 +93,8 @@ export const transformToApiPayload = (
       landlord_email: values.landlordEmail || "",
       tenant_name: values.tenantName,
       tenant_email: values.tenantEmail || "",
-
       ...addIf("landlord_home_town_address", values.landlord_home_town_address),
       ...addIf("tenant_home_town_address", values.tenant_home_town_address),
-
       ...landlordAddress,
       ...tenantAddress,
     },
@@ -112,10 +112,9 @@ export const transformToApiPayload = (
       renewalYears: values.renewalYears || "",
       renewalOptionsCount: values.renewalOptionsCount || "",
       rentStartMode: values.rentStartMode || "",
-      percentageLeasePercent: values.percentageLeasePercent
-        ? values.percentageLeasePercent
-        : "",
+      percentageLeasePercent: values.percentageLeasePercent || "",
       rentEscalationPercent: values.rentEscalationPercent || "",
+      // Let the computed pieces override the above if needed:
       ...escalationPieces,
     },
 
@@ -128,28 +127,25 @@ export const transformToApiPayload = (
       patio: values.patio ? values.patio : "",
       amenities: values.parkingSpaces || "",
       utilities: selectedUtilities,
-      deliveryCondition: values.deliveryCondition
-        ? values.deliveryCondition.trim()
-        : "",
+      deliveryCondition: values.deliveryCondition ? values.deliveryCondition.trim() : "",
       maintenance: mapMaintenanceToDTO(values.maintenance),
       patioSize: values.patioSize || "",
-
     },
 
     additionalDetails: {
       Miscellaneous_items: miscItems,
       tenantImprovement,
-      tenantImprovement_check: values.tenantImprovement_check ? true :false,
+      tenantImprovement_check: !!values.tenantImprovement_check,
       leaseToPurchaseDuration: values.leaseToPurchaseDuration || "",
       improvementAllowanceEnabled: !!values.improvementAllowanceEnabled,
       improvementAllowanceAmount: values.improvementAllowanceAmount || "",
       specialConditions: values.specialConditions || "",
       contingencies,
       ...(values.rightOfFirstRefusal ? { rightOfFirstRefusal: true } : {}),
-      leaseToPurchase: values.leaseToPurchase ?  true : false,
+      leaseToPurchase: !!values.leaseToPurchase,
     },
 
-    submit_status: "Submitted",
+    submit_status: isDownload ? "Incomplete" : "Submitted",
   };
 
   return payload;

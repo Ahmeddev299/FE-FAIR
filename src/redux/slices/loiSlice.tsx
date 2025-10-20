@@ -421,9 +421,6 @@ export const loiSlice = createSlice({
           state.landlord.clauseMap[key] = { ...entry, comments };
         }
       })
-      .addCase(llCommentClauseAsync.rejected, (state, action) => {
-        state.loiError = (action.payload as string) || "Comment failed";
-      })
 
       // approve/reject single
       .addCase(llDecideClauseAsync.fulfilled, (state, action) => {

@@ -203,6 +203,34 @@ export const updateClauseCurrentVersionAsync = createAsyncThunk(
   }
 );
 
+/** ---------- Manual Edit (Save current version) ---------- */
+export const updateLandlordClauseCurrentVersionAsync = createAsyncThunk(
+  "lease/updateLandlordClauseCurrentVersion",
+  async ({ clauseId, clause_key, details }: UpdateClauseArgs, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+      console.log("clauseid", clauseId)
+      const res = await leaseBaseService.updateLandlordClauseDetailOrCurrentVersion(clauseId, {
+        clause_id: clauseId,
+        clause_key,
+        details,
+        action: "manual_edit",
+      });
+
+      if (!res?.success || res?.status === 400) {
+        return rejectWithValue(res?.message ?? "Failed to save clause");
+      }
+      
+      return { clause_key, details };
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
+    }
+  }
+);
+
+
+
 export const approveLoiClauseApi = createAsyncThunk(
   "loi/update",
   async ({ clauseId, clause_key, details }: UpdateClauseArgs, { rejectWithValue }) => {

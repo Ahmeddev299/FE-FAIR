@@ -48,8 +48,6 @@ export default function ClauseDetailsModel({
   onClose,
   clause,
   history,
-  onApprove,
-  onReject,
   onAddComment,
   onSaveCurrentVersion,
 }: Props) {
@@ -121,19 +119,19 @@ export default function ClauseDetailsModel({
     }
   };
 
-  const handleApprove = async () => {
-    // If user edited but didn’t save, save first; then approve.
-    if (onSaveCurrentVersion && hasUnsaved) {
-      setIsSaving(true);
-      try {
-        await onSaveCurrentVersion(currentText);
-        initialCurrentRef.current = currentText;
-      } finally {
-        setIsSaving(false);
-      }
-    }
-    onApprove?.();
-  };
+  // const handleApprove = async () => {
+  //   // If user edited but didn’t save, save first; then approve.
+  //   if (onSaveCurrentVersion && hasUnsaved) {
+  //     setIsSaving(true);
+  //     try {
+  //       await onSaveCurrentVersion(currentText);
+  //       initialCurrentRef.current = currentText;
+  //     } finally {
+  //       setIsSaving(false);
+  //     }
+  //   }
+  //   onApprove?.();
+  // };
 
   const canAcceptAi =
     typeof aiSuggested === 'string' &&
@@ -318,16 +316,16 @@ export default function ClauseDetailsModel({
 
 
             <div className="flex justify-end mt-2 space-x-3">
-              <button
+              {/* <button
                 className="flex items-center px-4 py-2 border border-red-500 text-red-600 rounded-md hover:bg-red-50 text-sm"
                 onClick={onReject}
                 type="button"
               >
                 <X className="w-4 h-4 mr-2" />
                 Reject
-              </button>
+              </button> */}
 
-              <button
+              {/* <button
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm disabled:opacity-60"
                 onClick={handleApprove}
                 type="button"
@@ -336,7 +334,7 @@ export default function ClauseDetailsModel({
               >
                 <Check className="w-4 h-4 mr-2" />
                 Approve
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

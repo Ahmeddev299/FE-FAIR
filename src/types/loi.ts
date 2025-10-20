@@ -319,7 +319,7 @@ export type LOIApiPayload = {
     leaseToPurchaseDuration?: string
   };
 
-  submit_status: "Submitted" | "Draft";
+  submit_status: "Submitted" | "Draft" | "Incomplete";
 };
 
 

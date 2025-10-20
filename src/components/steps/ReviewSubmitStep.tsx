@@ -13,7 +13,7 @@ import Toast from "@/components/Toast";
 import { LoadingOverlay } from "../loaders/overlayloader";
 
 import type { FormValues, LOIApiPayload } from "@/types/loi";
-import {  LoiServerData } from "@/services/dashboard/asyncThunk";
+import { LoiServerData } from "@/services/dashboard/asyncThunk";
 import { getLoiIdFromSession, setLoiIdInSession } from "@/utils/loisesion";
 
 interface ReviewSubmitStepProps {
@@ -81,7 +81,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
     }
   }, []);
 
-    const handleDownload = async () => {
+  const handleDownload = async () => {
     if (downloadingRef.current) return;
     downloadingRef.current = true;
     setIsDownloadingLoi(true);
@@ -89,9 +89,9 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
     try {
       const token = ls.get("access_token", { decrypt: true });
       if (!token) throw new Error("Authentication token not found");
-
+      const isDownload = true
       // pass the saved id if present
-      const clientPayload: LOIApiPayload = transformToApiPayload(values, savedLoiId ?? undefined);
+      const clientPayload: LOIApiPayload = transformToApiPayload(values , savedLoiId ?? undefined , isDownload);
 
       const response = await axios.post(
         `${Config.API_ENDPOINT}/dashboard/download_template_data`,
@@ -192,7 +192,7 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
                   </button>
                 </div>
 
-              
+
               </div>
             </div>
           </div>

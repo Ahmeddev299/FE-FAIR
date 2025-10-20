@@ -50,6 +50,14 @@ class LoiBaseService extends HttpService {
     return this.post(`landlord_loi/comment_on_single_clauses_of_single_LOI/${loiId}`, payload);
   };
 
+
+  currentverisonOnLanlordClause = (
+    loiId: string,
+    payload: { clause_key: string; clause_key_data: Record<string, any> }
+  ): Promise<any> => {
+    return this.post(`landlord_loi/clause_detail_or_current_version/${loiId}`, payload);
+  };
+
   approveLOIclause(
     clauseId: string,
     body: UpdateClausePayload
@@ -82,7 +90,7 @@ class LoiBaseService extends HttpService {
   };
 
   landlordLOI = (): Promise<any> =>
-    this.get(`/landlord_loi`, {});
+    this.get(`/landlord_loi/landlord_loi `, {});
 
 }
 

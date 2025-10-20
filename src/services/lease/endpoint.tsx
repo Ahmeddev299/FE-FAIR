@@ -26,8 +26,8 @@ class LeaseBaseService extends HttpService {
 
   getClauseDetails(leaseId: string, clauseDocId: string): Promise<any> {
     return this.get(
-      `clause/read_single_clause/${encodeURIComponent(leaseId)}/${encodeURIComponent(clauseDocId)}`
-    );
+      `clause/read_singple_clause/${encodeURIComponent(leaseId)}/${encodeURIComponent(clauseDocId)}`
+    )
   }
 
   getSingleLeaseDetail(leaseId: string): Promise<any> {
@@ -49,6 +49,17 @@ class LeaseBaseService extends HttpService {
       body
     );
   };
+
+   updateLandlordClauseDetailOrCurrentVersion(
+    clauseId: string,
+    body: UpdateClausePayload
+  ): Promise<any> {
+    return this.put(
+      `landlord_loi/clause_detail_or_current_version/${encodeURIComponent(clauseId)}`,
+      body
+    );
+  };
+
 
     approveLOIclause(
     clauseId: string,

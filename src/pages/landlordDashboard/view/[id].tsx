@@ -30,6 +30,7 @@ import Toast from "@/components/Toast";
 import { exportLoiToDocx } from "@/utils/exportDocx";
 import ls from "localstorage-slim";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
+import { updateLandlordClauseCurrentVersionAsync } from "@/services/lease/asyncThunk";
 
 /** ---------------- Local fallbacks if your shared types are missing ---------------- */
 export type LocalClauseStatus = "approved" | "pending" | "need-review" | "rejected" | undefined;
@@ -95,6 +96,7 @@ export default function ClauseDetailPanel() {
     };
   }, []);
 
+
   const { loiList, currentLOI } = useAppSelector(selectLOI) as {
     loiList?: { my_loi?: CurrentLOIShape[] };
     currentLOI?: CurrentLOIShape;
@@ -102,6 +104,13 @@ export default function ClauseDetailPanel() {
 
   const [selectedLOI, setSelectedLOI] = useState<CurrentLOIShape | null>(null);
   const [selectedClauseKey, setSelectedClauseKey] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftText, setDraftText] = useState<string>("");
+  const [dirty, setDirty] = useState(false);
+  const [localText, setLocalText] = useState<Record<string, string>>({});
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [commentingForKey, setCommentingForKey] = useState<string | null>(null);
 
   // Optimistic UI states
   const [localStatus, setLocalStatus] = useState<Record<string, LocalClauseStatus>>({});
@@ -275,16 +284,6 @@ export default function ClauseDetailPanel() {
   };
 
 
-  if (!currentLOI?.Clauses?.history && routeLoiId) {
-    return (
-      <DashboardLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-gray-500">No Clauses Found.</div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 
   const errorMessage = (e: unknown): string => {
@@ -325,6 +324,45 @@ export default function ClauseDetailPanel() {
 
   };
 
+
+  const onSaveClauseText = async () => {
+    if (!selectedClauseKey) return;
+    const clauseId = routeLoiId;
+    if (!clauseId) {
+      Toast.fire({ icon: "error", title: "Clause document id missing" });
+      return;
+    }
+
+    setLocalText(prev => ({ ...prev, [selectedClauseKey]: draftText }));
+    setIsEditing(false);
+    setDirty(false);
+
+    try {
+      await dispatch(
+        updateLandlordClauseCurrentVersionAsync({
+          clauseId,
+          clause_key: selectedClauseKey,
+          details: draftText,
+        })
+      ).unwrap();
+
+      Toast.fire({ icon: "success", title: "Clause updated" });
+
+      if (routeLoiId) {
+        dispatch(llReadClauseAsync({ loiId: routeLoiId, clause_key: selectedClauseKey }));
+      }
+    } catch {
+      setLocalText(prev => {
+        const clone = { ...prev };
+        delete clone[selectedClauseKey];
+        return clone;
+      });
+      setIsEditing(true);
+    }
+  };
+
+
+
   const handleDownload = async () => {
     if (downloadingRef.current) return;
     downloadingRef.current = true;
@@ -359,6 +397,39 @@ export default function ClauseDetailPanel() {
 
   // Use currentLOI data for display if selectedLOI not set yet
   const displayLOI: CurrentLOIShape | null = selectedLOI ?? currentLOI ?? null;
+
+
+  useEffect(() => {
+    if (!selectedClauseKey || !selectedClauseData) return;
+
+    // Only auto-fill when not editing or when user hasn't typed yet.
+    if (!isEditing || !dirty) {
+      const latest =
+        localText[selectedClauseData.key] ??
+        selectedClauseData.text ??
+        "";
+      setDraftText(latest);
+    }
+  }, [selectedClauseKey, selectedClauseData?.text, isEditing, dirty, localText, selectedClauseData, selectedClauseData?.key]);
+
+  const openCommentModal = (clauseKey: string) => {
+    setCommentingForKey(clauseKey);
+    setCommentText("");
+    setShowCommentModal(true);
+  };
+
+  const closeCommentModal = () => {
+    setShowCommentModal(false);
+    setCommentingForKey(null);
+    setCommentText("");
+  };
+
+  const submitComment = () => {
+    const text = commentText.trim();
+    if (!text || !commentingForKey) return;
+    onCommentClause(commentingForKey, text);
+    closeCommentModal();
+  };
 
   return (
     <DashboardLayout>
@@ -554,25 +625,123 @@ export default function ClauseDetailPanel() {
 
                     {/* Comment Button */}
                     <button
-                      onClick={() => {
-                        const text = prompt("Add a comment to this clause:");
-                        if (text) onCommentClause(selectedClauseData.key, text);
-                      }}
+                      onClick={() => openCommentModal(selectedClauseData.key)}
                       className="flex items-center gap-2 text-sm px-3 py-1.5 text-gray-700 bg-white rounded-md border border-gray-300 font-medium hover:bg-gray-50"
                     >
                       <MessageSquare className="w-4 h-4" />
                       Comment
                     </button>
+
                   </div>
                 </div>
 
                 {/* Clause Text */}
                 <div className="mb-5">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Clause Text</h4>
-                  <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-7 rounded-md border border-gray-200">
-                    {selectedClauseData.text || "—"}
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-gray-900">Clause Text</h4>
+                    {!isEditing ? (
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="text-sm px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50"
+                      >
+                        Edit
+                      </button>
+                    ) : null}
+                  </div>
+
+
+
+                  {!isEditing ? (
+                    <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-7 rounded-md border border-gray-200">
+                      {(localText[selectedClauseData.key] ?? selectedClauseData.text) || "—"}
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      <textarea
+                        className="w-full min-h-[180px] text-sm leading-relaxed bg-white p-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={draftText}
+                        onChange={(e) => { setDraftText(e.target.value); setDirty(true); }}
+                        placeholder="Edit clause text…"
+                        autoFocus
+                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={onSaveClauseText}
+                          className="inline-flex items-center h-9 px-4 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsEditing(false);
+                            setDirty(false);
+                            setDraftText(localText[selectedClauseData.key] ?? selectedClauseData.text ?? "");
+                          }}
+                          className="inline-flex items-center h-9 px-4 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50 text-sm"
+                        >
+                          Cancel
+                        </button>
+
+                      </div>
+                    </div>
+                  )}
                 </div>
+
+                {showCommentModal && (
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center"
+                    aria-modal="true"
+                    role="dialog"
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") closeCommentModal();
+                    }}
+                  >
+                    <div
+                      className="absolute inset-0 bg-black/40"
+                      onClick={closeCommentModal}
+                    />
+                    <div className="relative z-10 w-full max-w-md rounded-lg bg-white shadow-xl border border-gray-200">
+                      <div className="px-4 py-3 border-b border-gray-200">
+                        <h3 className="text-sm font-semibold text-gray-900">Add Comment</h3>
+                      </div>
+
+                      <div className="p-4">
+                       
+                        <textarea
+                          className="w-full min-h-[120px] text-sm leading-relaxed bg-white p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          placeholder="Write your comment…"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                              submitComment();
+                            }
+                          }}
+                        />
+                        <p className="mt-2 text-xs text-gray-500">Press Ctrl/⌘ + Enter to submit</p>
+                      </div>
+
+                      <div className="px-4 py-3 border-t border-gray-200 flex items-center justify-end gap-2">
+                        <button
+                          onClick={closeCommentModal}
+                          className="h-9 px-4 rounded-md border border-gray-300 text-sm text-gray-800 hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={submitComment}
+                          disabled={!commentText.trim()}
+                          className="h-9 px-4 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Add Comment
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
 
                 {/* Comments */}
                 <div className="mt-5">

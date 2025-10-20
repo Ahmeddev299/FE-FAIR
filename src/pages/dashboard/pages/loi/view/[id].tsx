@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/layouts";
 import { LoadingOverlay } from "@/components/loaders/overlayloader";
-import { ArrowLeft, Edit3, Download as MessageSquareMore, Download } from "lucide-react";
+import { ArrowLeft, Edit3, Download } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { RootState } from "@/redux/store";
 
@@ -581,28 +581,28 @@ const downloadingRef = useRef(false);
               /* ===== Clauses list ===== */
               <div className="divide-y divide-gray-100 rounded-xl border border-gray-100 overflow-hidden">
                 {loi.shapedClauses!.map((c) => (
-                  <div key={c.id} className="p-4 sm:p-5 flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-center">
+                  <div key={c.id} className="p-10 sm:p-5 flex flex-col gap-3 sm:gap-0 sm:flex-row sm:items-center">
                     {/* Clause + snippet */}
-                    <div className="sm:w-[32%]">
+                    <div className="sm:w-[35%]">
                       <div className="font-medium text-gray-900">{c.name}</div>
                       <div className="text-sm text-gray-500">{truncate(c.currentVersion)}</div>
                     </div>
 
                     {/* Status */}
-                    <div className="sm:w-[14%]">{pill(c.status)}</div>
+                    <div className="sm:w-[25%]">{pill(c.status)}</div>
 
                     {/* Risk / Confidence */}
-                    <div className="sm:w-[20%]">
+                    {/* <div className="sm:w-[20%]">
                       <div className="inline-flex px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 mr-2">
                         {c.risk || "—"}
                       </div>
                       <span className="text-xs text-gray-500">
                         {c.confidencePct != null ? `${c.confidencePct}% conf.` : "—"}
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* Comments */}
-                    <div className="sm:w-[15%]">
+                    <div className="sm:w-[25%]">
                       <span className="text-sm text-gray-600">
                         {c.commentsUnresolved ? `${c.commentsUnresolved} comment(s)` : "No comments"}
                       </span>
@@ -646,7 +646,6 @@ const downloadingRef = useRef(false);
                         }}
                         className="px-3 py-1.5 text-xs rounded-md border border-gray-300 bg-white hover:bg-gray-50 inline-flex items-center gap-1"
                       >
-                        <MessageSquareMore className="w-3.5 h-3.5" />
                         Comment
                       </button>
                     </div>

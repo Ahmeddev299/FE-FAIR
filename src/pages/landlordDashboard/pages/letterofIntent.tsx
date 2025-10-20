@@ -50,6 +50,9 @@ export default function ModernLOIReview() {
     router.push(`/landlordDashboard/view/${loi.id}`);
   };
 
+
+    const goCreate   = () => router.push("/dashboard/pages/start");
+
   const allLois: LandlordLOI[] = (loiList?.my_loi ?? []) as LandlordLOI[];
 
   const tenants = useMemo(() => {
@@ -106,7 +109,7 @@ export default function ModernLOIReview() {
                     {filtered.length}
                   </span>
                 </div>
-                <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700" onClick={goCreate}>
                   Upload LOI
                   <ArrowRight className="w-4 h-4" />
                 </button>
