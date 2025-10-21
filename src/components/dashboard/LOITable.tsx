@@ -336,11 +336,24 @@ export const LOITable: React.FC<LOITableProps> = ({
     router.push(url);
   };
 
+  type DownloadTemplateDataResponse = {
+    success: boolean;
+    message?: string;
+    data?: {
+      temp?: boolean;
+      // add any other fields your normalizeLoiResponse needs
+    };
+  };
 
   const handleDownload = async (row: Letter) => {
     if (downloadingRef.current) return;
-    downloadingRef.current = true;
     const rowId = row?.id || "";
+    if (!rowId) {
+      Toast.fire({ icon: "error", title: "Missing LOI ID" });
+      return;
+    }
+
+    downloadingRef.current = true;
     setDownloadingId(rowId);
 
     try {
@@ -349,13 +362,9 @@ export const LOITable: React.FC<LOITableProps> = ({
 
       const payload = sanitizeLoiPayload(row);
 
-      const resp = await axios.post(
+      const resp = await axios.post<DownloadTemplateDataResponse>(
         `${Config.API_ENDPOINT}/dashboard/download_template_data`,
-        {
-          ...payload,
-          doc_id: rowId
-
-        },
+        { ...payload, doc_id: rowId },
         {
           headers: {
             "Content-Type": "application/json",
@@ -364,20 +373,23 @@ export const LOITable: React.FC<LOITableProps> = ({
         }
       );
 
-      const maybe = resp?.data as { success?: boolean; message?: string } | undefined;
-      if (maybe?.success === false) throw new Error(maybe.message || "Failed to fetch LOI");
-      if (maybe?.message) Toast.fire({ icon: "success", title: maybe.message });
+      const body = resp.data; // strongly typed ✅
 
-      const data: LoiServerData = normalizeLoiResponse(resp.data);
-      let isTemp
-      await exportLoiToDocx(data, undefined, isTemp === false);
+      if (body.success === false) throw new Error(body.message || "Failed to fetch LOI");
+      if (body.message) Toast.fire({ icon: "success", title: body.message });
+
+      const data: LoiServerData = normalizeLoiResponse(body as any);
+
+      const isTemp = !!body.data?.temp;
+      await exportLoiToDocx(data, undefined, isTemp);
 
       if (isMountedRef.current) {
         Toast.fire({ icon: "success", title: "LOI exported successfully" });
       }
     } catch (err) {
-      const status =
-        (axios.isAxiosError(err) && err.response?.status) ? err.response!.status : undefined;
+      const status = (axios.isAxiosError(err) && err.response?.status)
+        ? err.response!.status
+        : undefined;
 
       const msg =
         status === 401 ? "Session expired. Please log in again."
@@ -393,6 +405,7 @@ export const LOITable: React.FC<LOITableProps> = ({
       setDownloadingId(null);
     }
   };
+
 
   const showLoading = isLoading || lois == null;
 

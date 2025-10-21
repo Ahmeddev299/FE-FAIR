@@ -36,7 +36,6 @@ type Props = {
   onApprove?: () => void;
   onReject?: () => void;
 
-  // Saves edited "Current Version"
   onSaveCurrentVersion?: (text: string) => Promise<boolean | void>;
 
   onAddComment?:

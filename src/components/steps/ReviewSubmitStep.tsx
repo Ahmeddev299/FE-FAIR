@@ -191,8 +191,6 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
                     {isDownloadingLoi ? "Downloading…" : "Download"}
                   </button>
                 </div>
-
-
               </div>
             </div>
           </div>

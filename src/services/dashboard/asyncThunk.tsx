@@ -162,8 +162,8 @@ export const getloiDataAsync = createAsyncThunk<
 );
 
 export const getLoggedInUserAsync = createAsyncThunk<
-  LoggedInUser, // return type
-  void,         // no args
+  LoggedInUser, 
+  void,        
   RejectString
 >(
   "dashboard/loggedInUser",

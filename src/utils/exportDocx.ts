@@ -232,10 +232,22 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
     let clauseMap: ClauseMap | undefined;
 
     if (isRecord(data) && hasProp(data, "data")) {
-      const d = data.data;
+      const d = data.data ;
+      console.log("36", d)
+
+      if (d) {
+        const inner = d ;
+        console.log("inner 40",inner)
+        if (isRecord(inner)) {
+          clauseMap = Object.fromEntries(
+            Object.entries(inner).map(([k, v]) => [k, (v as ClauseEntry)])
+          );
+        }
+      }
 
       if (isRecord(d) && hasProp(d, "data")) {
         const inner = d.data;
+        console.log("inner 40",inner)
         if (isRecord(inner)) {
           clauseMap = Object.fromEntries(
             Object.entries(inner).map(([k, v]) => [k, (v as ClauseEntry)])
@@ -615,6 +627,7 @@ export const exportLoiToDocx = async (data: LOIResponse, logoBase64?: string, is
 
     const createClauseReviewTable = () => {
       if ( !clauseMap || Object.keys(clauseMap).length === 0) {
+        console.log("clauseMap",clauseMap)
       console.log("thins is running")
         return new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },

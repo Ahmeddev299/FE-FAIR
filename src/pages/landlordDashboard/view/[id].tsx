@@ -545,7 +545,7 @@ export default function ClauseDetailPanel() {
         </div>
 
         {/* Clauses Section */}
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full mx-auto">
           <div className="bg-white border border-white p-6">
             {/* Clauses Header */}
             <div className="mb-5">
@@ -649,8 +649,6 @@ export default function ClauseDetailPanel() {
                     ) : null}
                   </div>
 
-
-
                   {!isEditing ? (
                     <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-7 rounded-md border border-gray-200">
                       {(localText[selectedClauseData.key] ?? selectedClauseData.text) || "—"}
@@ -740,8 +738,6 @@ export default function ClauseDetailPanel() {
                     </div>
                   </div>
                 )}
-
-
 
                 {/* Comments */}
                 <div className="mt-5">
