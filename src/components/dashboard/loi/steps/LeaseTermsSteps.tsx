@@ -26,7 +26,7 @@ export const LeaseTermsStep: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* ---------------- Financial Terms ---------------- */}
-        <div className="space-y-6 rounded-lg border border-gray-300 p-6">
+        <div className="spce-y-6 rounded-lg border border-gray-300 p-6">
           <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <DollarSign className="h-5 w-5 text-blue-500" />
             Financial Terms

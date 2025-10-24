@@ -10,11 +10,11 @@ import { INITIAL_VALUES, VALIDATION_SCHEMAS, EDIT_INITIAL_VALUES } from '../../.
 import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
-import { BasicInformationStep } from '../../../components/steps/BasicInformation';
-import { LeaseTermsStep } from '@/components/steps/LeaseTermsSteps';
-import { PropertyDetailsStep } from '@/components/steps/PropertyDetailsStep';
-import { AdditionalTermsStep } from '@/components/steps/AdditionalTermsSteps';
-import { ReviewSubmitStep } from '@/components/steps/ReviewSubmitStep';
+import { BasicInformationStep } from '../../../components/dashboard/loi/steps/BasicInformation';
+import { LeaseTermsStep } from '@/components/dashboard/loi/steps/LeaseTermsSteps';
+import { PropertyDetailsStep } from '@/components/dashboard/loi/steps/PropertyDetailsStep';
+import { AdditionalTermsStep } from '@/components/dashboard/loi/steps/AdditionalTermsSteps';
+import { ReviewSubmitStep } from '@/components/dashboard/loi/steps/ReviewSubmitStep';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useRouter } from 'next/router';
 import AiAssistantModal from '@/components/models/aIAssistant';
@@ -61,21 +61,17 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
     }
   }, [mode, loiId]);
 
-// inside component
 const handleSubmit = async (formValues: FormValues) => {
   console.log("values", formValues)
   try {
     if (currentStep === steps.length) {
       setSubmitting(true);
 
-      // 👇 Prefer the ID from storage if present
       const storedLoiId = getLoiIdFromSession();
       const effectiveLoiId = storedLoiId || loiId || undefined;
 
       const apiPayload = transformToApiPayload(formValues, effectiveLoiId);
-      console.log("apiPayload", apiPayload)
 
-      // If your thunk handles create vs. update based on presence of id, just call it:
       await dispatch(submitLOIAsync(apiPayload)).unwrap();
 
       setLastSaved(new Date().toLocaleTimeString());
@@ -132,16 +128,13 @@ const handleSubmit = async (formValues: FormValues) => {
           onSubmit={handleSubmit}
         >
           {({ values, isValid, validateForm }) => {
-            const aiEnabled = currentStep === steps.length; // step 5 only
-            // CreateLoiForm.tsx (inside Formik render)
+            const aiEnabled = currentStep === steps.length; 
             const askAI = async (note: string) => {
               console.log("note", note)
               setApplyingAI(true);
               try {
                 const payload = transformToApiPayload(values);
-                // API expects note included
                 const res = await dispatch(runAiAssistantAsync({ ...payload, user_message:note })).unwrap();
-                // res is expected to look like: { response: "..." }
                 return res || {};
               } finally {
                 setApplyingAI(false);
@@ -160,7 +153,6 @@ const handleSubmit = async (formValues: FormValues) => {
                   aiBusy={applyingAI}
                 />
 
-                {/* Modal lives outside header */}
 
                 <AiAssistantModal
                   open={showAiModal}

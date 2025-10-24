@@ -14,7 +14,7 @@ export const BasicInformationStep: React.FC = () => (
         <div className="space-y-6 border border-gray-300 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">1</div>
-            LOI & Property Details
+            LOI & Property DetailsP
           </h3>
 
           {/* Title */}

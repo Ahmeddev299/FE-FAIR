@@ -21,7 +21,7 @@ export function FormHeader({
   aiBusy = false,
 }: FormHeaderProps): JSX.Element {
   const getTitle = (): string =>
-    mode === "edit" ? "Update Draft LOI" : "Create New LOI";
+    mode === "edit" ? "Update Draft lease" : "Create New Lease";
 
   const getSubtitle = (): string =>
     mode === "edit"
