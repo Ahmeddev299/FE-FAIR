@@ -26,7 +26,7 @@ export function FormHeader({
   const getSubtitle = (): string =>
     mode === "edit"
       ? "Update your existing Letter of Intent draft"
-      : "Complete the form to create your Letter of Intent";
+      : "Complete the form to create your Lease";
 
   const getIcon = (): JSX.Element =>
     mode === "edit" ? (
