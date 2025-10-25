@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { LeaseFormValues } from "@/types/lease";
 import { CheckCircle, Edit, AlertCircle } from "lucide-react";
 
@@ -50,7 +52,7 @@ export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({ va
           <div>
             <h3 className="font-semibold text-blue-900">Review Your Lease</h3>
             <p className="text-sm text-blue-700 mt-1">
-              Please review all information carefully before submitting. You can edit any section by clicking the "Edit" button.
+              Please review all information carefully before submitting. You can edit any section by clicking the Edit button.
             </p>
           </div>
         </div>
@@ -111,7 +113,7 @@ export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({ va
       }, 4)}
 
       {/* Options & Special Rights */}
-      {renderSection('Options & Special Rights', {
+      {/* {renderSection('Options & Special Rights', {
         'Renewal Options': values.renewal_options_count,
         'Renewal Years': values.renewal_years,
         'Include Renewal Option': values.include_renewal_option,
@@ -119,7 +121,7 @@ export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({ va
         'Right of First Refusal': values.rofr,
         'Purchase Option': values.purchase_option,
         'Lease to Purchase': values.lease_to_purchase,
-      }, 4)}
+      }, 4)} */}
 
       {/* Assignment & Subletting */}
       {renderSection('Assignment & Subletting', {
@@ -185,7 +187,7 @@ export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({ va
           <div>
             <h4 className="font-medium text-green-900">Ready to Submit</h4>
             <p className="text-sm text-green-700 mt-1">
-              Once submitted, this lease will be available in your dashboard. You can continue to edit it until it's finalized.
+              Once submitted, this lease will be available in your dashboard. You can continue to edit it until it is finalized.
             </p>
           </div>
         </div>

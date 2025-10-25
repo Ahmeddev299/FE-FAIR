@@ -66,7 +66,7 @@ export const LeasePremisesStep: React.FC = () => {
     });
   };
 
-  const showExclusiveExtras = !!values.exclusive_parking_spaces;
+  // const showExclusiveExtras = !!values.exclusive_parking_spaces;
   const showLoadingDock = !!values.loading_dock_use;
   const showIndustrialInputs = showLoadingDock && values.loading_dock_type === "Industrial";
 
@@ -196,8 +196,8 @@ export const LeasePremisesStep: React.FC = () => {
                   toggle('exclusive_parking_spaces', e.target.checked, [
                     'exclusive_parking_spaces_count',
                     'parking_ratio',
-                    'common_area',
-                    'common_ratio',
+                    // 'common_area',
+                    // 'common_ratio',
                   ])
                 }
                 className="h-4 w-4 text-blue-600 rounded"

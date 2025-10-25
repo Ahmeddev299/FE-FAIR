@@ -53,7 +53,7 @@ const DELIVERY_CONDITIONS = [
 //   { key: "utilities", label: "Utilities (gas, water, electricity connections)" },
 //   { key: "specialEquipment", label: "Special Equipment / Fixtures (if applicable)" },
 // ];
-const MAINTENANCE_CATEGORIES = [
+export const MAINTENANCE_CATEGORIES = [
   { key: "structural", label: "Structural Repairs (foundation, roof, exterior walls)" },
   { key: "nonStructural", label: "Non-Structural Repairs (interior walls, ceilings, flooring)" },
   { key: "hvac", label: "HVAC" },
@@ -67,7 +67,7 @@ const MAINTENANCE_CATEGORIES = [
 type Party = "landlord" | "tenant";
 
 /** One row: two plain checkboxes; selecting one auto-unchecks the other; shows arrow on selected */
-const MaintenanceRow: React.FC<{ rowKey: MaintenanceKey; label: string }> = ({ rowKey, label }) => {
+export const MaintenanceRow: React.FC<{ rowKey: MaintenanceKey; label: string }> = ({ rowKey, label }) => {
   const { values, setFieldValue } = useFormikContext<FormValues>();
 
   const landlordChecked = !!values?.maintenance?.[rowKey]?.landlord;

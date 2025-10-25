@@ -1,10 +1,8 @@
 // pages/.../CreateLeaseForm.tsx
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { Formik, Form } from 'formik';
 import { DashboardLayout } from '@/components/layouts';
-import { useAppDispatch } from '@/hooks/hooks';
 import { useFormStepper } from '../../../hooks/useLeaseFormStepper';
-import { useRouter } from 'next/router';
 
 // —— services (lease) ——
 // import { submitLeaseAsync, getLeaseDetailsById } from '@/services/lease/asyncThunk';
@@ -14,17 +12,17 @@ import { useRouter } from 'next/router';
 import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
-import { LEASE_EDIT_INITIAL_VALUES, LEASE_INITIAL_VALUES, LeaseFormValues } from '@/types/lease';
+import {  LEASE_INITIAL_VALUES, LeaseFormValues } from '@/types/lease';
 import { BasicInformationStep } from '@/components/dashboard/lease/steps/leasebasicInformation'
 import { LeasePremisesStep } from '@/components/dashboard/lease/steps/premises'
-import { LeaseTermRentStep, LeaseTermTimingStep } from '@/components/dashboard/lease/steps/termTiming'
+// import { LeaseTermRentStep, LeaseTermTimingStep } from '@/components/dashboard/lease/steps/termTiming'
 import { LeaseReviewSubmitStep } from '@/components/dashboard/lease/steps/reviewlease';
-import { LeaseAdditionalTermsStep } from '@/components/dashboard/lease/steps/leaseadditionalterms';
 import { normalizeLease } from '@/utils/normalizeLease';
-import { Step } from '@/types/loi';
-import { LeaseRightsOptionsStep } from '@/components/dashboard/lease/steps/rightOptions';
+// import { LeaseRightsOptionsStep, UseHoursExclusivesSection } from '@/components/dashboard/lease/steps/rightOptions';
 import { LeaseOpsMaintenanceStep } from '@/components/dashboard/lease/steps/LeaseOpsMaintenance';
 import { LeaseRentEconomicsStep } from '@/components/dashboard/lease/steps/rentEconomics';
+import { LeaseTermTimingStep } from '@/components/dashboard/lease/steps/termTiming';
+import { UseHoursExclusivesSection } from '@/components/dashboard/lease/steps/rightOptions';
 
 // —— lease steps ——
 
@@ -34,14 +32,11 @@ interface Props {
   leaseId?: string;
 }
 
-const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
-  const dispatch = useAppDispatch();
+const CreateLeaseForm: React.FC<Props> = ({ mode = 'create' }) => {
   const { currentStep, nextStep, prevStep, isStepComplete, steps, jumpToStep } = useFormStepper();
-  const [initialData, setInitialData] = useState<LeaseFormValues | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
-  const router = useRouter();
 
   //   useEffect(() => {
   //     if (mode === 'edit' && leaseId) {
@@ -62,7 +57,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
       if (currentStep === steps.length) {
         console.log("values 59", formValues)
         setSubmitting(true);
-        const payload = normalipzeLease(formValues)
+        const payload = normalizeLease(formValues)
         console.log("lease payload", payload)
         // await dispatch(submitLeaseAsync({ ...formValues, submit_status: 'Submitted' })).unwrap();
         setLastSaved(new Date().toLocaleTimeString());
@@ -77,17 +72,17 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
     }
   };
 
-  //   const saveAsDraft = async (formValues: LeaseFormValues) => {
-  //     try {
-  //       setSaving(true);
-  //       await dispatch(submitLeaseAsync({ ...formValupes, submit_status: 'Draft' })).unwrap();
-  //       setLastSaved(new Date().toLocaleTimeString());
-  //     } catch (error) {
-  //       console.error('[Lease] Save draft failed:', error);
-  //     } finally {
-  //       setSaving(false);
-  //     }
-  //   };
+    const saveAsDraft = async ( ) => {
+      try {
+        setSaving(true);
+        // await dispatch(submitLeaseAsync({ ...formValupes, submit_status: 'Draft' })).unwrap();
+        setLastSaved(new Date().toLocaleTimeString());
+      } catch (error) {
+        console.error('[Lease] Save draft failed:', error);
+      } finally {
+        setSaving(false);
+      }
+    };
 
   const renderStepContent = (values: LeaseFormValues) => {
     switch (currentStep) {
@@ -96,7 +91,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
       case 3: return <LeaseTermTimingStep  />;
       case 4: return <LeaseRentEconomicsStep />;
       case 5: return <LeaseOpsMaintenanceStep />;
-      case 6: return <LeaseRightsOptionsStep />;
+      case 6: return <UseHoursExclusivesSection />;
       case 7: return <LeaseReviewSubmitStep values={values} onEdit={jumpToStep} />;
       default: return null;
     }
@@ -115,7 +110,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
             <Form>
               <FormHeader
                 mode={mode}
-                // onSaveDraft={() => saveAsDraft(values)}
+                onSaveDraft={() => saveAsDraft()}
                 isLoading={saving}
                 lastSaved={lastSaved}
                 aiEnabled={false} // keep off for lease (can wire later)

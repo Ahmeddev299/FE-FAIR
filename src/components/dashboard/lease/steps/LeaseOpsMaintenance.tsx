@@ -1,12 +1,12 @@
-// components/dashboard/lease/steps/opsMaintenance.tsx
-import { LeaseFormValues } from "@/types/loi";
+// components/dashboard/lease/steps/LeaseOpsMaintenance.tsx
+import { LeaseFormValues } from "@/types/lease"; // FIXED: Changed from @/types/loi
 import { Field, ErrorMessage, useFormikContext } from "formik";
-import { DollarSign, Shield, Wrench, Zap, Info } from "lucide-react";
+import { DollarSign, Shield, Wrench, Zap} from "lucide-react";
+import { MAINTENANCE_CATEGORIES, MaintenanceRow } from "../../loi/steps/PropertyDetailsStep";
 
 export const LeaseOpsMaintenanceStep: React.FC = () => {
     const { values, setFieldValue, setFieldTouched } = useFormikContext<LeaseFormValues>()
 
-    const isGross = values.lease_structure === "Gross";
     const isModGross = values.lease_structure === "Modified Gross";
     const isNNN = values.lease_structure === "Triple Net";
 
@@ -27,6 +27,7 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
             ].forEach((k) => setFieldValue(k, ""));
         }
     };
+    
     return (
         <>
             <div className="space-y-6">
@@ -77,7 +78,6 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                     {/* Pass-Throughs (Modified Gross / NNN) */}
                     {showPassThroughBlock && (
                         <>
-                         
                             <div>
                                 <label className="block text-sm font-medium mb-2">
                                     CAM Include / Exclude
@@ -118,7 +118,6 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                         </>
                     )}
 
-                    {/* Estimates (disclosure-only): show for NNN or when pass-throughs provided */}
                     {showDisclosureEstimates && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div>
@@ -189,38 +188,65 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                 </div>
 
                 {/* Insurance & Risk Management */}
-                    <div className="border border-gray-300 rounded-lg p-6 space-y-6">
-                        <h4 className="font-semibold flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-purple-500" />
-                            Insurance & Risk Management
-                        </h4>
+                <div className="border border-gray-300 rounded-lg p-6 space-y-6">
+                    <h4 className="font-semibold flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-purple-500" />
+                        Insurance & Risk Management
+                    </h4>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Tenant GL Coverage</label>
-                                <Field name="tenant_gl_coverage" placeholder="e.g., $1M per occurrence / $2M aggregate" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-2">Indemnity Type</label>
-                                <Field as="select" name="indemnity_type" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Select type</option>
-                                    <option value="Mutual">Mutual</option>
-                                    <option value="Landlord-favored">Landlord-favored</option>
-                                </Field>
-                            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Tenant GL Coverage</label>
+                            <Field
+                                name="tenant_gl_coverage"
+                                placeholder="e.g., $1M per occurrence / $2M aggregate"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
                         </div>
 
+                        {/* Radio group for clarity (select also fine) */}
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Indemnity Type</label>
+                            <div className="flex items-center gap-6">
+                                <label className="flex items-center gap-2">
+                                    <Field type="radio" name="indemnity_type" value="Mutual" />
+                                    <span className="text-sm">Mutual</span>
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <Field type="radio" name="indemnity_type" value="Landlord-favored" />
+                                    <span className="text-sm">Landlord-favored</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Checkboxes + conditional limit */}
+                    <div className="space-y-4">
                         <div className="flex flex-wrap gap-6">
                             <label className="flex items-center gap-3">
                                 <Field type="checkbox" name="property_contents_coverage" className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
                                 <span className="text-sm font-medium">Property Contents Coverage Required</span>
                             </label>
+
                             <label className="flex items-center gap-3">
                                 <Field type="checkbox" name="waiver_of_subrogation" className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
                                 <span className="text-sm font-medium">Waiver of Subrogation</span>
                             </label>
                         </div>
+
+                        {/* Only show limit when required */}
+                        {values.property_contents_coverage && (
+                            <div className="max-w-md">
+                                <label className="block text-sm font-medium mb-2">Property/Contents Coverage Limit</label>
+                                <Field
+                                    name="property_contents_limit"
+                                    placeholder="e.g., $100,000"
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        )}
                     </div>
+                </div>
 
                 {/* Maintenance, Repairs & Alterations */}
                 <div className="border border-gray-300 rounded-lg p-6 space-y-6">
@@ -229,39 +255,22 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                         Maintenance, Repairs & Alterations
                     </h4>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Roof Maintenance</label>
-                            <Field as="select" name="maintenance.roof" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select responsibility</option>
-                                <option value="Landlord">Landlord</option>
-                                <option value="Tenant">Tenant</option>
-                                <option value="Shared">Shared</option>
-                            </Field>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Structure Maintenance</label>
-                            <Field as="select" name="maintenance.structure" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select responsibility</option>
-                                <option value="Landlord">Landlord</option>
-                                <option value="Tenant">Tenant</option>
-                                <option value="Shared">Shared</option>
-                            </Field>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Parking Maintenance</label>
-                            <Field as="select" name="maintenance.parking" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                <option value="">Select responsibility</option>
-                                <option value="Landlord">Landlord</option>
-                                <option value="Tenant">Tenant</option>
-                                <option value="Shared">Shared</option>
-                            </Field>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Cosmetic Threshold (USD)</label>
-                            <Field name="cosmetic_threshold_usd" type="number" placeholder="5000" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                        </div>
+                    {/* Header row */}
+                    <div className="mb-2 grid grid-cols-12 items-center text-xs font-semibold text-gray-600 p-4">
+                        <div className="col-span-8">Category</div>
+                        <div className="col-span-2 text-center">Landlord</div>
+                        <div className="col-span-2 text-center">Tenant</div>
                     </div>
+
+                    <div className="rounded-lg border border-gray-200">
+                        {MAINTENANCE_CATEGORIES.map(({ key: rowKey, label }) => (
+                            <MaintenanceRow key={rowKey} rowKey={rowKey} label={label} />
+                        ))}
+                    </div>
+
+                    <p className="mt-3 text-xs text-gray-500">
+                        Per category, only one party can be selected. Click the other box to switch.
+                    </p>
 
                     <div className="flex flex-wrap gap-6">
                         <label className="flex items-center gap-3">
@@ -278,67 +287,70 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                         </label>
                     </div>
                 </div>
+            </div>
 
-                {/* Utilities & Services */}
-                <div className="border border-gray-300 rounded-lg p-6 space-y-6">
-                    <h4 className="font-semibold flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-yellow-500" />
-                        Utilities & Services
-                    </h4>
+            {/* Utilities & Services */}
+            <div className="border border-gray-300 rounded-lg p-6 space-y-6">
+                <h4 className="font-semibold flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-yellow-500" />
+                    Utilities & Services
+                </h4>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Service Hours</label>
-                            <Field name="service_hours" type="number" placeholder="24" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                            <p className="text-xs text-gray-500 mt-1">Hours per day (for office leases)</p>
-                        </div>
-
-                        <label className="flex items-center gap-3">
-                            <Field type="checkbox" name="trash_grease_interceptor" className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
-                            <span className="text-sm font-medium">Trash/Grease Interceptor (Retail/Industrial)</span>
-                        </label>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Service hours (office) */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Service Hours (Office)</label>
+                        <Field
+                            name="service_hours"
+                            placeholder="e.g., Mon–Fri 8am–6pm"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Typical building services availability.</p>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Available Utilities</label>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-                            {['Electric', 'Gas', 'Water', 'Sewer', 'Internet', 'Phone', 'HVAC', 'Security'].map(u => (
-                                <label key={u} className="flex items-center gap-2">
-                                    <Field type="checkbox" name="utilities" value={u} className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
-                                    <span className="text-sm">{u}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
+                    {/* Trash/grease interceptor (retail/industrial) */}
+                    <label className="flex items-center gap-3">
+                        <Field
+                            type="checkbox"
+                            name="trash_grease_interceptor"
+                            className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium">Trash/Grease Interceptor (Retail/Industrial)</span>
+                    </label>
+                </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Responsibility</label>
-                        <div className="flex gap-6 mt-2">
-                            <label className="flex items-center gap-2">
-                                <Field type="checkbox" name="responsibility" value="Tenant" className="w-4 h-4" />
-                                <span className="text-sm">Tenant</span>
+                {/* Available utilities list */}
+                <div>
+                    <label className="block text-sm font-medium mb-2">Available Utilities</label>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+                        {['Electric', 'Gas', 'Water', 'Sewer', 'Internet', 'Phone', 'HVAC', 'Security'].map(u => (
+                            <label key={u} className="flex items-center gap-2">
+                                <Field type="checkbox" name="utilities" value={u} className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
+                                <span className="text-sm">{u}</span>
                             </label>
-                            <label className="flex items-center gap-2">
-                                <Field type="checkbox" name="responsibility" value="Landlord" className="w-4 h-4" />
-                                <span className="text-sm">Landlord</span>
-                            </label>
-                        </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                        <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <h4 className="font-medium text-blue-900">Operating Expenses</h4>
-                            <p className="text-sm text-blue-700 mt-1">
-                                Triple Net passes through most operating costs. Modified Gross may cap or set a base year. Ensure clear CAM reconciliation.
-                            </p>
-                        </div>
+                {/* Responsibility: single-pick per spec */}
+                <div>
+                    <label className="block text-sm font-medium mb-2">Responsibility</label>
+                    <div className="flex flex-wrap gap-6 mt-2">
+                        <label className="flex items-center gap-2">
+                            <Field type="radio" name="utility_responsibility" value="Tenant direct" />
+                            <span className="text-sm">Tenant direct</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <Field type="radio" name="utility_responsibility" value="Sub-metered" />
+                            <span className="text-sm">Sub-metered</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <Field type="radio" name="utility_responsibility" value="Landlord with allocation" />
+                            <span className="text-sm">Landlord with allocation</span>
+                        </label>
                     </div>
                 </div>
             </div>
         </>
-
     )
 }

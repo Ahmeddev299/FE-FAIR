@@ -106,7 +106,6 @@ const handleSubmit = async (formValues: FormValues) => {
   }
 };
 
-
   const renderStepContent = (formValues: FormValues) => {
     switch (currentStep) {
       case 1: return <BasicInformationStep />;
