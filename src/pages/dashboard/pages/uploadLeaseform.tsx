@@ -158,15 +158,15 @@ const UploadLeaseForm: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="flex items-center justify-between">
+     <button
+        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+        onClick={goCreate}
+      >
+        <Plus className="w-4 h-4" />
+        Add Lease
+      </button>
+      <div className="flex items-center justify-between mt-6">
         <PageHeader />
-      <button 
-  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-  onClick={goCreate}
->
-  <Plus className="w-4 h-4" />
-  Add Lease
-</button>
       </div>
 
       <div className="w-full max-w-7xl xl:max-w-none mt-6 mx-auto px-4 sm:px-0">
