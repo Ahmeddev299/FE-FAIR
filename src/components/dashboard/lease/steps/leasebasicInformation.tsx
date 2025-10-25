@@ -7,7 +7,7 @@ import { PartyDropdowns } from '../../loi/steps/Dropdpwn'; // (typo in path kept
 export const BasicInformationStep: React.FC = () => (
   <div className="space-y-6">
     <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
-    <p>Lets start with the essential details about your LOI and the parties involved.</p>
+    <p>Lets start with the essential details about your Lease and the parties involved.</p>
 
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* LOI & Property Details */}
@@ -19,7 +19,7 @@ export const BasicInformationStep: React.FC = () => (
 
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium mb-2">LOI Title *</label>
+          <label className="block text-sm font-medium mb-2">Lease Title *</label>
           <Field
             name="title"
             type="text"
