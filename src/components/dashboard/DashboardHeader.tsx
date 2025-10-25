@@ -16,6 +16,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userName }) =>
           </p>
         </div>
       </div>
-    </header>
+    </header> 
   );
 };

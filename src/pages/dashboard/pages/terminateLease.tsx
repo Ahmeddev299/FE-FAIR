@@ -43,11 +43,9 @@ const TerminateLease: React.FC = () => {
 
     const { leaseList: leases, isLoading } = useAppSelector((s) => s.lease);
 
-    // ---- helpers (put above the component or in a utils file) ----
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null;
 
-/** Safely extract LeaseItem[] from: [], {data: []}, or {data: {data: []}} */
 const extractLeaseArray = (input: unknown): LeaseItem[] => {
   if (Array.isArray(input)) return input as LeaseItem[];
 
@@ -64,20 +62,16 @@ const extractLeaseArray = (input: unknown): LeaseItem[] => {
 };
 
 
-    // Robustly pull array regardless of whether it's data or data.data
 const leaseArray: LeaseItem[] = useMemo(() => extractLeaseArray(leases), [leases]);
 
     const [selectedLeaseId, setSelectedLeaseId] = useState<string>("");
-    // IMPORTANT: keep this as the code value so Doc_title stays a code like "breach"
     const [terminationReason, setTerminationReason] = useState<string>("");
     const [terminationDate, setTerminationDate] = useState<string>("");
     const [supportingNotes, setSupportingNotes] = useState<string>("");
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
     const [aiTemplate, setAiTemplate] = useState<string>("standard");
     const [showPreview, setShowPreview] = useState<boolean>(false);
-
     const isFormDisabled = isLoading || isSubmitting;
 
     useEffect(() => {
@@ -127,12 +121,11 @@ const leaseArray: LeaseItem[] = useMemo(() => extractLeaseArray(leases), [leases
         setIsSubmitting(true);
         try {
             const formData = new FormData();
-            // Payload EXACTLY as requested
             formData.append("lease_doc_id", selectedLeaseId);
-            formData.append("Doc_title", terminationReason); // send the code like "breach"
+            formData.append("Doc_title", terminationReason); 
             formData.append("termination_date", terminationDate);
             formData.append("reason", supportingNotes);
-            // formData.append("ai_template", aiTemplate);
+
             if (uploadedFile) formData.append("file", uploadedFile);
 
             await dispatch(terminateLeaseAsync(formData)).unwrap();
@@ -306,7 +299,6 @@ const leaseArray: LeaseItem[] = useMemo(() => extractLeaseArray(leases), [leases
                                     </div>
                                 </div>
                             </div>
-
 
                             {/* Termination Details */}
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200">

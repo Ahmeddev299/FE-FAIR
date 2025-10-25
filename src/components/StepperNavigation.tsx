@@ -1,21 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/StepperNavigation.tsx
 import React from 'react';
 import { Check } from 'lucide-react';
-import { FormValues, Step } from '../types/loi';
+import { Step } from '../types/loi';
 
-interface StepperNavigationProps {
+interface StepperNavigationProps<T = any> {
   steps: Step[];
   currentStep: number;
-  isStepComplete: (stepId: number, values: FormValues) => boolean;
-  values: FormValues;
+  isStepComplete: (stepId: number, values: T) => boolean;
+  values: T;
 }
 
-export const StepperNavigation: React.FC<StepperNavigationProps> = ({
+export const StepperNavigation = <T extends Record<string, any>>({
   steps,
   currentStep,
   isStepComplete,
   values
-}) => (
+}: StepperNavigationProps<T>) => (
   <div className="bg-white mt-4 rounded-lg shadow-sm px-3 py-4 overflow-x-auto">
     <div className="flex items-start justify-between min-w-[600px] sm:min-w-full">
       {steps.map((step, index) => (

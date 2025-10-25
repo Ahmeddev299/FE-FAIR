@@ -10,7 +10,7 @@ import { exportLoiToDocx } from "@/utils/exportDocx";
 import { transformToApiPayload } from "@/utils/apiTransform";
 import Config from "@/config/index";
 import Toast from "@/components/Toast";
-import { LoadingOverlay } from "../loaders/overlayloader";
+import { LoadingOverlay } from "../../../loaders/overlayloader";
 
 import type { FormValues, LOIApiPayload } from "@/types/loi";
 import { LoiServerData } from "@/services/dashboard/asyncThunk";

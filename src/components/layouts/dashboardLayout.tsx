@@ -82,7 +82,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     setShowLogoutModal(false);
   };
 
-  // map label -> icon component
   const getIcon = (label: string) => {
     switch (label) {
       case "Dashboard":

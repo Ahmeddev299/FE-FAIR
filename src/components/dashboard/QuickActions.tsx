@@ -18,7 +18,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onTerminateLease
 }) => {
   return (
-    <div className="bg-white rounded-xl shadow lg:p-4 p-6">
+    <div className="bg-white rounPded-xl shadow lg:p-4 p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-5">Quick Actions</h3>
       <div className="space-y-5">
         {/* Start New LOI */}

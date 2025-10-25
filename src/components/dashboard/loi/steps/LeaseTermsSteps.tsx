@@ -26,7 +26,7 @@ export const LeaseTermsStep: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* ---------------- Financial Terms ---------------- */}
-        <div className="space-y-6 rounded-lg border border-gray-300 p-6">
+        <div className="spce-y-6 rounded-lg border border-gray-300 p-6">
           <h4 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <DollarSign className="h-5 w-5 text-blue-500" />
             Financial Terms
@@ -231,15 +231,6 @@ export const LeaseTermsStep: React.FC = () => {
             </div>
           )}
 
-          {/* FMV helper (when type = fmv) */}
-          {/* {values.rentEscalationType === "fmv" && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              Escalations will adjust to <strong>Fair Market Value</strong> at each cadence. You can
-              clarify appraisal mechanics in “Additional Terms”.
-            </div>
-          )} */}
-
-          {/* Include renewal option */}
           <div className="flex items-center gap-3">
             <Field
               type="checkbox"
@@ -262,7 +253,6 @@ export const LeaseTermsStep: React.FC = () => {
             </label>
           </div>
 
-          {/* Two inputs shown only when checked */}
           {values?.includeRenewalOption && (
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3 border p-1 border-gray-300 rounded-lg pl-10">

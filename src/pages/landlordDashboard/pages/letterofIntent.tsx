@@ -31,7 +31,6 @@ export interface LandlordLOI {
 
 type StatusFilter = "All Status" | "New" | "In Review" | "Submitted" | "Finalized" | "Rejected";
 
-/** -------------------------------- Component -------------------------------- */
 export default function ModernLOIReview() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -50,8 +49,7 @@ export default function ModernLOIReview() {
     router.push(`/landlordDashboard/view/${loi.id}`);
   };
 
-
-    const goCreate   = () => router.push("/dashboard/pages/start");
+  const goCreate = () => router.push("/dashboard/pages/start");
 
   const allLois: LandlordLOI[] = (loiList?.my_loi ?? []) as LandlordLOI[];
 
