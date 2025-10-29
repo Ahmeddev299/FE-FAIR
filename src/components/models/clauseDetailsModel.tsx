@@ -190,14 +190,6 @@ export default function ClauseDetailsModel({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* <button
-                onClick={() => setShowHistory((v) => !v)}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-                type="button"
-              >
-                <History className="h-4 w-4" />
-                {showHistory ? 'Hide History' : 'History'}
-              </button> */}
               <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600" type="button">
                 <X className="h-5 w-5" />
               </button>

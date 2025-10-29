@@ -1,5 +1,5 @@
 // pages/.../CreateLeaseForm.tsx
-import React, {  useState } from 'react';
+import React, { useState } from 'react';
 import { Formik, Form } from 'formik';
 import { DashboardLayout } from '@/components/layouts';
 import { useFormStepper } from '../../../hooks/useLeaseFormStepper';
@@ -7,12 +7,11 @@ import { useFormStepper } from '../../../hooks/useLeaseFormStepper';
 // —— services (lease) ——
 // import { submitLeaseAsync, getLeaseDetailsById } from '@/services/lease/asyncThunk';
 
-
 // —— shared UI ——
 import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
-import {  LEASE_INITIAL_VALUES, LeaseFormValues } from '@/types/lease';
+import { LEASE_INITIAL_VALUES, LeaseFormValues } from '@/types/lease';
 import { BasicInformationStep } from '@/components/dashboard/lease/steps/leasebasicInformation'
 import { LeasePremisesStep } from '@/components/dashboard/lease/steps/premises'
 // import { LeaseTermRentStep, LeaseTermTimingStep } from '@/components/dashboard/lease/steps/termTiming'
@@ -23,9 +22,10 @@ import { LeaseOpsMaintenanceStep } from '@/components/dashboard/lease/steps/Leas
 import { LeaseRentEconomicsStep } from '@/components/dashboard/lease/steps/rentEconomics';
 import { LeaseTermTimingStep } from '@/components/dashboard/lease/steps/termTiming';
 import { UseHoursExclusivesSection } from '@/components/dashboard/lease/steps/rightOptions';
+import { useAppDispatch } from '@/hooks/hooks';
+import { submitLeaseAsync } from '@/services/lease/asyncThunk';
 
 // —— lease steps ——
-
 
 interface Props {
   mode?: 'edit' | 'create';
@@ -37,6 +37,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create' }) => {
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
 
   //   useEffect(() => {
   //     if (mode === 'edit' && leaseId) {
@@ -59,7 +60,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create' }) => {
         setSubmitting(true);
         const payload = normalizeLease(formValues)
         console.log("lease payload", payload)
-        // await dispatch(submitLeaseAsync({ ...formValues, submit_status: 'Submitted' })).unwrap();
+        await dispatch(submitLeaseAsync({ ...payload, submit_status: "Submitted" } as any)).unwrap();
         setLastSaved(new Date().toLocaleTimeString());
         // router.push({ pathname: '/dashboard/leases', query: { success: 'lease_submitted' } });
       } else {
@@ -72,23 +73,23 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create' }) => {
     }
   };
 
-    const saveAsDraft = async ( ) => {
-      try {
-        setSaving(true);
-        // await dispatch(submitLeaseAsync({ ...formValupes, submit_status: 'Draft' })).unwrap();
-        setLastSaved(new Date().toLocaleTimeString());
-      } catch (error) {
-        console.error('[Lease] Save draft failed:', error);
-      } finally {
-        setSaving(false);
-      }
-    };
+  const saveAsDraft = async () => {
+    try {
+      setSaving(true);
+      // await dispatch(submitLeaseAsync({ ...formValupes, submit_status: 'Draft' })).unwrap();
+      setLastSaved(new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error('[Lease] Save draft failed:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const renderStepContent = (values: LeaseFormValues) => {
     switch (currentStep) {
       case 1: return <BasicInformationStep />;
-            case 2: return <LeasePremisesStep />;
-      case 3: return <LeaseTermTimingStep  />;
+      case 2: return <LeasePremisesStep />;
+      case 3: return <LeaseTermTimingStep />;
       case 4: return <LeaseRentEconomicsStep />;
       case 5: return <LeaseOpsMaintenanceStep />;
       case 6: return <UseHoursExclusivesSection />;

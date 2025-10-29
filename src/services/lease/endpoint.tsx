@@ -18,6 +18,9 @@ class LeaseBaseService extends HttpService {
   submitLease = (data: any, option = {}): Promise<any> =>
     this.post(this.prefix + `/upload_lease_tenant`, data, option);
 
+   createLease = (data: any, option = {}): Promise<any> =>
+    this.post(`/leases`, data, option);
+
   userleasedetails = (): Promise<any> =>
     this.get(`termination/lease_of_user_for_termination`, {});
 

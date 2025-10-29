@@ -38,7 +38,7 @@ export const normalizeLease = (raw: ApiLease): UILease => {
         details: val.clause_details ?? '',
       };
     });
-
+ 
   const approvedCount = clauses.filter(c => c.status === 'Approved').length;
   const totalCount = clauses.length;
   const unresolvedCount = clauses.filter(

@@ -4,7 +4,6 @@
 import React, { useCallback, useRef } from 'react';
 import { FileText, Download, X } from 'lucide-react';
 
-// Extend the base Clause with optional fields your UI uses
 type PreviewClause = {
   id?: string | number;
   name?: string;
@@ -18,7 +17,6 @@ interface DocumentPreviewModalProps {
   approved?: PreviewClause[];
   pending?: PreviewClause[];
   rejected?: PreviewClause[];
-  /** Optional direct file to download; if omitted we generate a PDF of the preview */
   downloadUrl?: string;
 }
 
@@ -32,7 +30,6 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   const captureRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = useCallback(async () => {
-    // If API already gives you a PDF, prefer that
     if (downloadUrl) {
       const a = document.createElement('a');
       a.href = downloadUrl;
@@ -42,7 +39,6 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
       return;
     }
 
-    // Otherwise: capture the preview area and build a PDF on the fly
     const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
       import('html2canvas'),
       import('jspdf'),
@@ -51,7 +47,6 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
     const node = captureRef.current;
     if (!node) return;
 
-    // Make sure the background is white and scale is decent for readability
     const canvas = await html2canvas(node, {
       scale: 2,
       backgroundColor: '#ffffff',
@@ -67,10 +62,8 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
     const imgWidth = pageWidth;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // Add first page
     pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
-    // Add extra pages if content is taller than a single page
     let heightLeft = imgHeight - pageHeight;
     let position = -pageHeight;
 
@@ -84,14 +77,12 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
     pdf.save('lease-preview.pdf');
   }, [downloadUrl]);
 
-  // Combine all clauses and add status information
   const allClauses: (PreviewClause & { status: 'approved' | 'pending' | 'rejected' })[] = [
     ...approved.map(clause => ({ ...clause, status: 'approved' as const })),
     ...pending.map(clause => ({ ...clause, status: 'pending' as const })),
     ...rejected.map(clause => ({ ...clause, status: 'rejected' as const })),
   ];
 
-  // Helper function to get status badge classes
   const getStatusBadge = (status: 'approved' | 'pending' | 'rejected') => {
     switch (status) {
       case 'approved':
@@ -149,10 +140,8 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
           </div>
         </div>
 
-        {/* Body (capture this for PDF) */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
           <div ref={captureRef} className="max-w-3xl mx-auto">
-            {/* Legend with dynamic counts */}
             <div className="flex items-center justify-center gap-6 mb-6">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full" />
@@ -195,14 +184,12 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                       </span>
                     </div>
                     
-                    {/* Clause content - compact spacing */}
                     {hasText && (
                       <div className="text-xs text-gray-600 leading-relaxed">
                         <p>{clause.text}</p>
                       </div>
                     )}
                     
-                    {/* Additional info if available */}
                     {clause.risk && (
                       <div className="mt-1">
                         <span className="text-xs text-gray-500">
@@ -215,7 +202,6 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
               })}
             </div>
 
-            {/* Document footer */}
             <div className="mt-8 pt-6 border-t border-gray-200">
               <div className="text-center">
                 <p className="text-xs text-gray-500">

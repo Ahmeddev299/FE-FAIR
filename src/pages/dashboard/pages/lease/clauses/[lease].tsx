@@ -30,7 +30,6 @@ function firstString(v?: string | string[]): string | undefined {
   return Array.isArray(v) ? v[0] : (typeof v === 'string' ? v : undefined);
 }
 
-/** API clause history shape (from data.clauses[<name>]) */
 export type ClauseHistoryComment = {
   text: string;
   author?: string;
@@ -123,9 +122,6 @@ export default function ClauseManagementPage() {
   // Preview modal
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  // Build preview buckets the modal expects
-// Build preview buckets the modal expects
-// Build preview buckets the modal expects
 const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
   type PreviewClauseArray =
     NonNullable<React.ComponentProps<typeof DocumentPreviewModal>['approved']>;
@@ -141,7 +137,7 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
         id: c.id ?? idx,
         name: c.name,
         text: c.currentVersion,
-        risk: c.risk,                           // ← add this to satisfy `Clause` requirements
+        risk: c.risk,                          
       };
 
       const s = (c.status || '').toLowerCase();
@@ -228,7 +224,6 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
               }}
               onEdit={(c: UIClause) => {
                 setDetailsClause(mapUIClauseToExtended(c));
-                // ⬅️ pull clause history from API "clauses" map
                 const entry =
                   c.name && rawLease?.clauses ? rawLease.clauses[c.name] : undefined;
                 setDetailsHistory(entry);

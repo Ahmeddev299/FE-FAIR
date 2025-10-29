@@ -4,6 +4,7 @@ import { leaseBaseService } from "./endpoint";
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
+import { LeaseFormValues } from "@/types/loi";
 
 type UploadLeaseResponse = {
   Lease: { _id: string; name: string; lease_title: string; startDate?: string; endDate?: string; property_address?: string; };
@@ -156,6 +157,23 @@ export const getLeaseDetailsById = createAsyncThunk(
   }
 );
 
+export const submitLeaseAsync = createAsyncThunk(
+  "lease/submitLease",
+  async (payload: LeaseFormValues, { rejectWithValue }) => {
+    try {
+      const token = `${ls.get("access_token", { decrypt: true })}`;
+      HttpService.setToken(token);
+      const response = await leaseBaseService.createLease(payload);
+
+      if (!response || response.success === false || response.status === 400) {
+        return rejectWithValue(response?.message ?? "Lease submission failed");
+      }
+      return response.data ?? response;
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data?.message || error?.message || "Lease submission failed");
+    }
+  }
+);
 
 export const getallUserLeasesAsync = createAsyncThunk(
   "lease/listForClauses",

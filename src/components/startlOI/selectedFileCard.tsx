@@ -35,7 +35,7 @@ export function SelectedFileCard({ file, progress, uploading, onRemove, onSubmit
               </div>
               <div className="mt-1 text-xs text-gray-500">{progress}%</div>
             </div>
-          ) : progress === 100 ? (
+        ) : progress === 100 ? (
             <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
               Uploaded
