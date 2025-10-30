@@ -181,7 +181,7 @@ export const LEASE_INITIAL_VALUES: LeaseFormValues = {
   tenant_state: "",
   tenant_zip: "",
 
-  // STEP 2
+  // STEP 2a
   premisses_property_address_S1: "",
   premisses_property_address_S2: "",
   premisses_property_city: "",

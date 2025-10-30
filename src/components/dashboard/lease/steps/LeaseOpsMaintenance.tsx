@@ -38,136 +38,6 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                 <h3 className="text-lg font-semibold mb-4">Operations & Maintenance</h3>
                 <p className="text-gray-600">Operating expenses, insurance, upkeep, and services.</p>
 
-                {/* Operating Expenses / Structure */}
-                <div className="border border-gray-300 rounded-lg p-6 space-y-6">
-                    <h4 className="font-semibold flex items-center gap-2">
-                        <DollarSign className="w-5 h-5 text-green-500" />
-                        Operating Expenses / Structure
-                    </h4>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Lease Structure *</label>
-                            <Field
-                                as="select"
-                                name="lease_structure"
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    setFieldValue("lease_structure", e.target.value);
-                                    setFieldTouched("lease_structure", true, false);
-                                    clearIfGross();
-                                }}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Select structure</option>
-                                <option value="Gross">Gross</option>
-                                <option value="Modified Gross">Modified Gross</option>
-                                <option value="Triple Net">Triple Net</option>
-                            </Field>
-                            <ErrorMessage name="lease_structure" component="div" className="text-red-500 text-sm mt-1" />
-                        </div>
-
-                        {/* Auto pro-rata (read-only) */}
-                        {/* <div>
-                            <label className="block text-sm font-medium mb-2">Tenant Pro-Rata Share (%)</label>
-                            <input
-                                value={proRata !== null ? proRata.toFixed(2) : ""}
-                                readOnly
-                                placeholder={proRata === null ? "Enter total property size to auto-calculate" : ""}
-                                className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Auto: rentable_sf ÷ total_property_size. Edit premises to change.
-                            </p>
-                        </div> */}
-                    </div>
-
-                    {/* Pass-throughs + estimates */}
-                    {showPassThroughBlock && (
-                        <>
-                            <div>
-                                <label className="block text-sm font-medium mb-2">CAM Include / Exclude</label>
-                                <Field
-                                    name="cam_include_exclude"
-                                    as="textarea"
-                                    rows={2}
-                                    placeholder="e.g., exclude capital except code-required; management fee capped at 3%"
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Mgmt Fee Cap (%)</label>
-                                    <Field
-                                        name="management_fee_cap_percent"
-                                        type="number"
-                                        step="0.1"
-                                        placeholder="3.0"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div className="lg:col-span-2">
-                                    <label className="block text-sm font-medium mb-2">Capital Amortization Rules</label>
-                                    <Field
-                                        as="textarea"
-                                        name="capital_amortization_rules"
-                                        rows={2}
-                                        placeholder="e.g., amortize code-required over useful life @6%"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Estimates */}
-                            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Est. CAM per SF ($)</label>
-                                    <Field
-                                        name="est_cam_per_sf"
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="3.50"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Est. Taxes per SF ($)</label>
-                                    <Field
-                                        name="est_taxes_per_sf"
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="2.25"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Est. Insurance per SF ($)</label>
-                                    <Field
-                                        name="est_insurance_per_sf"
-                                        type="number"
-                                        step="0.01"
-                                        placeholder="0.75"
-                                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-
-                                {/* NNN annual estimate (client asked for a single annual estimate option) */}
-                                {isNNN && (
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2">Estimated NNN (Annual $)</label>
-                                        <Field
-                                            name="nnn_est_annual"
-                                            type="number"
-                                            placeholder="e.g., 18,000"
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </div>
-
                 {/* Insurance & Risk Management — rows with only Coverage + Limit */}
                 <div className="border border-gray-300 rounded-lg p-6 space-y-4">
                     <h4 className="font-semibold">Insurance & Risk Management</h4>
@@ -195,12 +65,11 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                     </p>
                 </div>
 
-
                 {/* Maintenance, Repairs & Alterations — unchanged logic */}
                 <div className="border border-gray-300 rounded-lg p-6 space-y-6">
                     <h4 className="font-semibold flex items-center gap-2">
                         <Wrench className="w-5 h-5 text-orange-500" />
-                        Maintenance, Repairs & Alterations
+                        Maintenance, Repairs & Alterations *
                     </h4>
 
                     <div className="mb-2 grid grid-cols-12 items-center text-xs font-semibold text-gray-600 p-4">

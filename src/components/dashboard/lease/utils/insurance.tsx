@@ -8,17 +8,6 @@ export type InsuranceOption = {
   defaultParty?: "Landlord" | "Tenant";
 };
 
-/**
- * Client-provided requirements:
- * - CGL combined single limit $1M each occurrence / $2M aggregate
- *   + Personal Injury $1M each occurrence
- *   + Products & Completed Ops $2M aggregate
- *   + Contractual Liability $1M
- *   + Independent Contractors $1M
- *   + Premises Damage $1M
- * - Workers Comp for $1M
- * - Liquor Liability (where applicable)
- */
 export const INSURANCE_CATEGORIES: InsuranceOption[] = [
   {
     key: "cgl",
