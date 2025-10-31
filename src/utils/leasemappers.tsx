@@ -1,7 +1,6 @@
 // src/utils/leaseMappers.ts
 import type { UIClause, UILeaseFull } from '@/types/loi';
 
-
 type ApiComment = {
   text?: string;
   author?: string;

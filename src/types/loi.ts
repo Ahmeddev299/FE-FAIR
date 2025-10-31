@@ -19,14 +19,12 @@ export type MaintenanceDTO = Partial<Record<MaintKey, MaintenanceRowDTO>>;
 export type LoiDTO = {
   title?: string;
   loiId: string;
-  // legacy single-line (keep for backward compat)
   propertyAddress?: string;
 
-  // NEW: structured property address (all optional)
   property_address_S1?: string;
   property_address_S2?: string;
   property_city?: string;
-  property_state?: string; // 2-letter
+  property_state?: string; 
   property_zip?: string;
 
   addFileNumber: boolean;
@@ -44,7 +42,7 @@ export type LoiDTO = {
     landlord_address_S1?: string;
     landlord_address_S2?: string;
     landlord_city?: string;
-    landlord_state?: string; // 2-letter
+    landlord_state?: string; 
     landlord_zip?: string;
 
     tenant_address_S1?: string;
@@ -234,10 +232,9 @@ export interface Step {
   title: string;
   subtitle: string;
 }
-// types/loi.ts (or types/api.ts if you separate DTOs)
+
 export type SubmitStatus = 'Draft' | 'Submitted';
 
-// "@/types/loi"
 export type LOIApiPayload = {
   title: string;
 
@@ -250,7 +247,6 @@ export type LOIApiPayload = {
     tenant_name: string;
     tenant_email: string;
 
-    // NEW
     landlord_home_town_address?: string;
     tenant_home_town_address?: string;
   };
@@ -264,13 +260,11 @@ export type LOIApiPayload = {
     prepaidRent: string;
     leaseType: string;
 
-    // legacy
     RentEscalation?: string;
     PrepaidRent?: string;
     LeaseType?: string;
     rentEsclation?: string;
 
-    // escalation
     rentEscalationType?: "percent" | "fmv";
     rentEscalationPercent?: string;
     rentStartMode?: string;
@@ -322,7 +316,6 @@ export type LOIApiPayload = {
   submit_status: "Submitted" | "Draft" | "Incomplete";
 };
 
-
 export type LOIStatus = 'Draft' | 'Sent' | 'Approved';
 export interface Letter {
   id: string;  
@@ -331,7 +324,6 @@ export interface Letter {
   updated_at?: string;
   submit_status: LOIStatus;
 }
-
 
 export interface PartyInfo {
   landlord_name: string;
@@ -389,12 +381,11 @@ export interface CustomFieldProps {
 
 export interface FileData {
   name: string;
-  size: string;      // e.g. "12.34 KB"
-  type: string;      // mime type
+  size: string;      
+  type: string;     
   file: File;
 }
 
-// in @/types/loi.ts
 export interface LeaseFormValues {
   title: string;
   startDate: string;
@@ -402,18 +393,16 @@ export interface LeaseFormValues {
   propertyAddress: string;
   notes: string;
   document: string;
-  leaseId?: string;     // optional
-  leaseTitle?: string;  // optional (but you already have `title`)p
+  leaseId?: string;     
+  leaseTitle?: string;  
 }
 
 export type SetFieldValue = (field: string, value: File | null) => void;
 
-// Extended FormikErrors to handle File type properly
 export interface ExtendedFormikErrors {
   document?: string;
 }
 
-// Extend shared Clause with optional fields this modal uses
 export type ExtendedClause = Clause & {
   lastEdited?: string;
   editor?: string;
@@ -421,11 +410,9 @@ export type ExtendedClause = Clause & {
   aiSuggestion?: string;
   currentVersion?: string;
    
-  // Add these so we don't need "as any"
   status?: string;
   risk?: string;
 
-  // Optional display helpers
   title?: string;
   name?: string;
 };
@@ -443,10 +430,9 @@ export interface Clause {
 
 export interface Lease {
   id: number | string;
-  title: string;               // e.g. "Common Area Maintena"
-  property_address?: string;   // may be blank
+  title: string;             
+  property_address?: string;   
   clauses: Clause[];
-  // optional server-calculated progress
   approvedCount?: number;
   totalCount?: number;
   unresolvedCount?: number;
@@ -460,13 +446,12 @@ export interface Paginated<T> {
 }
 
 export interface ClauseData {
-  risk: string; // "Low (2/10)"
+  risk: string; 
   status: "approved" | "pending" | "rejected";
   current_version: string;
   ai_suggested_clause_details: string;
   clause_details: string;
 
-  // optional id fields (your API might use one of these)
   clause_id?: string;
   id?: string;
   _id?: string;
@@ -483,14 +468,13 @@ export type UILease = {
   startDate?: string;
   endDate?: string;
   updatedAt?: string;
-  clauseDocId?: string; // backend _clause_log_id if present
+  clauseDocId?: string;
   clauses: UIClause[];
   approvedCount: number;
   totalCount: number;
   unresolvedCount: number;
 };
 
-// Shapes we expect from API/store
 export type ApiClause = {
   status?: string;
   risk?: string;
@@ -509,18 +493,17 @@ export type ApiLease = {
   clauses?: Record<string, unknown>;
 };
 
-// UI-only types you can reuse everywhere
 export type RiskLevel = 'Low' | 'Medium' | 'High';
 export type ClauseStatus = 'AI Suggested' | 'Edited' | 'Approved' | 'Needs Review' | 'Pending' | 'Suggested';
 
 export type UIClause = {
   id: string;
-  name: string;               // e.g., "Common Area Maintenance"
-  category?: string;          // e.g., "CAM Charges"
+  name: string;              
+  category?: string;          
   status: ClauseStatus;
   risk: RiskLevel;
-  lastEditedAt?: string;      // ISO
-  lastEditedBy?: string;      // e.g., "AI Assistant"
+  lastEditedAt?: string;   
+  lastEditedBy?: string;     
   commentsUnresolved?: number;
   currentVersion: string;
   aiSuggestion?: string;
@@ -531,11 +514,11 @@ export type UILeaseBrief = {
   id: string;
   title: string;
   type: 'Lease' | 'LOI' | 'Notice' | 'Termination';
-  documentId?: string;        // e.g., "2025-001"
-  status?: string;            // e.g., "Signed", "Draft", "Pending"
-  tags?: string[];            // e.g., ["Termination Clause", "Indemnity"]
+  documentId?: string;       
+  status?: string;          
+  tags?: string[];          
   sizeLabel?: string;
-  updatedAt?: string    // e.g., "2.4 MB"
+  updatedAt?: string   
 };
 
 export type UILeaseFull = {

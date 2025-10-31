@@ -5,7 +5,7 @@ export interface LeaseFormValues {
   title: string;
   addFileNumber: boolean;
   lease_type: string;
-  
+
   // Party Quick-select IDs (from PartyDropdowns)
   landlordId: string;
   landlordName: string;
@@ -13,14 +13,14 @@ export interface LeaseFormValues {
   tenantId: string;
   tenantName: string;
   tenantEmail: string;
-  
+
   // Landlord Address (from PartyDropdowns)
   landlord_address_S1: string;
   landlord_address_S2: string;
   landlord_city: string;
   landlord_state: string;
   landlord_zip: string;
-  
+
   // Tenant Address (from PartyDropdowns)
   tenant_address_S1: string;
   tenant_address_S2: string;
@@ -35,18 +35,18 @@ export interface LeaseFormValues {
   premisses_property_city: string;
   premisses_property_state: string;
   premisses_property_zip: string;
-  
+
   // Space Details
   rentable_sf: number | string;
   property_size: string;
-  
+
   // Outdoor Space
   hasExtraSpace: boolean;
   outdoor_size: number | string;
-  
+
   // Parking
   exclusive_parking_spaces: boolean;
-  exclusive_parking_spaces_count: number | string;
+  reserved_spaces: number | string;
 
   // === STEP 3: TERM, TIMING & TRIGGERS ===
   initial_term_years: number | string;
@@ -61,7 +61,7 @@ export interface LeaseFormValues {
   security_deposit: number | string;
   prepaid_rent: number | string;
   percentage_lease_percent: number | string;
-  
+
   // Base Rent Schedule
   schedule_basis: string; // "Monthly" | "$/SF/yr"
   base_rent_schedule_rows: Array<{
@@ -72,18 +72,18 @@ export interface LeaseFormValues {
 
   // === STEP 5: OPERATIONS & MAINTENANCE ===
   lease_structure: string;
-  
+
   // Pass-Through (only for Modified Gross / Triple Net)
   cam_include_exclude: string;
   management_fee_cap_percent: number | string;
   capital_amortization_rules: string;
-  
+
   // Disclosure Estimates
   est_cam_per_sf: number | string;
   est_taxes_per_sf: number | string;
   est_insurance_per_sf: number | string;
   nnn_est_annual: number | string; // Triple Net only
-  
+
   // Insurance & Risk - Coverage rows with only Party + Limit
   insurance_party_cgl: string;
   insurance_limit_cgl: string;
@@ -91,7 +91,8 @@ export interface LeaseFormValues {
   insurance_limit_workers_comp: string;
   insurance_party_liquor_liability: string;
   insurance_limit_liquor_liability: string;
-  
+  audit_right: boolean;
+  gross_estimate_amount: number;
   // Maintenance - Radio buttons (mutually exclusive per category)
   maintenance_structural: "landlord" | "tenant" | "";
   maintenance_non_structural: "landlord" | "tenant" | "";
@@ -101,9 +102,9 @@ export interface LeaseFormValues {
   maintenance_common_areas: "landlord" | "tenant" | "";
   maintenance_utilities: "landlord" | "tenant" | "";
   maintenance_special_equipment: "landlord" | "tenant" | "";
-  
+
   hvac_contract_required: boolean;
-  
+
   // Utilities & Services
   service_hours: string;
   vent_hood: boolean;
@@ -119,33 +120,33 @@ export interface LeaseFormValues {
   operating_hours: string;
   exclusive_requested: string;
   exclusive_description: string;
-  
+
   // Co-tenancy
   cotenancy_applicable: boolean;
   cotenancy_opening: string;
   cotenancy_ongoing: string;
   cotenancy_remedies: string;
-  
+
   // Options & Special Rights
   rentEscalationType: "percent" | "fmv";
   rentEscalationPercent: number | string;
   includeRenewalOption: boolean;
   renewalOptionsCount: number | string;
   renewalYears: number | string;
-  
+
   // ROFR (ROFO removed) / LTP
   rofr_yes: string;
   rofr_scope: string;
   ltp_yes: string;
   ltp_terms_window_days: number | string;
   ltp_notes: string;
-  
+
   // Subordination / SNDA / Estoppel
   subordination_automatic: string;
   non_disturbance_required: string;
   nondisturbance_condition: string;
   estoppel_delivery_days: number | string;
-  
+
   // Exhibits
   exhibits: Array<{
     title: string;
@@ -153,7 +154,7 @@ export interface LeaseFormValues {
     file?: File | null;
     previewUrl?: string;
   }>;
-  
+
   // Final Admin
   confidentiality_required: boolean;
 }
@@ -191,8 +192,8 @@ export const LEASE_INITIAL_VALUES: LeaseFormValues = {
   property_size: "",
   hasExtraSpace: false,
   outdoor_size: "",
-exclusive_parking_spaces: false,
-  exclusive_parking_spaces_count: "",
+  exclusive_parking_spaces: false,
+  reserved_spaces: "",
 
   // STEP 3
   initial_term_years: "",
@@ -219,7 +220,9 @@ exclusive_parking_spaces: false,
   est_taxes_per_sf: "",
   est_insurance_per_sf: "",
   nnn_est_annual: "",
-  
+  audit_right: false,
+  gross_estimate_amount: 0,
+
   // Insurance
   insurance_party_cgl: "",
   insurance_limit_cgl: "",
@@ -227,7 +230,7 @@ exclusive_parking_spaces: false,
   insurance_limit_workers_comp: "",
   insurance_party_liquor_liability: "",
   insurance_limit_liquor_liability: "",
-  
+
   // Maintenance (radio groups)
   maintenance_structural: "",
   maintenance_non_structural: "",
@@ -237,7 +240,7 @@ exclusive_parking_spaces: false,
   maintenance_common_areas: "",
   maintenance_utilities: "",
   maintenance_special_equipment: "",
-  
+
   hvac_contract_required: false,
   service_hours: "",
   vent_hood: false,

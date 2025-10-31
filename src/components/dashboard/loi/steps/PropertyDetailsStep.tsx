@@ -66,7 +66,6 @@ export const MAINTENANCE_CATEGORIES = [
 
 type Party = "landlord" | "tenant";
 
-/** One row: two plain checkboxes; selecting one auto-unchecks the other; shows arrow on selected */
 export const MaintenanceRow: React.FC<{ rowKey: MaintenanceKey; label: string }> = ({ rowKey, label }) => {
   const { values, setFieldValue } = useFormikContext<FormValues>();
 

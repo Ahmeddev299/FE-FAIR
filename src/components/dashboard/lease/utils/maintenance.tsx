@@ -23,7 +23,6 @@ export const MaintenanceRow: React.FC<{ rowKey: MaintenanceKey; label: string }>
   const { values, setFieldValue } = useFormikContext<Record<string, any>>();
 
   const handleRadioChange = (party: "Landlord" | "Tenant") => {
-    // Radio behavior: selecting one clears the other
     setFieldValue(rowKey, party);
   };
 
@@ -33,7 +32,6 @@ export const MaintenanceRow: React.FC<{ rowKey: MaintenanceKey; label: string }>
     <div className="grid grid-cols-12 items-center border-b border-gray-100 p-4 hover:bg-gray-50">
       <div className="col-span-8 text-sm text-gray-700">{label}</div>
       
-      {/* Landlord Radio */}
       <div className="col-span-2 flex justify-center">
         <input
           type="radio"
@@ -44,7 +42,6 @@ export const MaintenanceRow: React.FC<{ rowKey: MaintenanceKey; label: string }>
         />
       </div>
       
-      {/* Tenant Radio */}
       <div className="col-span-2 flex justify-center">
         <input
           type="radio"

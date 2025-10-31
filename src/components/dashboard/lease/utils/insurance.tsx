@@ -16,7 +16,6 @@ export const INSURANCE_CATEGORIES: InsuranceOption[] = [
       "Includes: Personal Injury $1M ea. occ.; Products & Completed Ops $2M agg.; Contractual $1M; Independent Contractors $1M; Premises Damage $1M.",
     limitOptions: [
       { label: "$1,000,000 each occurrence / $2,000,000 aggregate", value: "1M/2M" },
-      // keep room for future variants:
       { label: "$2,000,000 each occurrence / $4,000,000 aggregate", value: "2M/4M" },
       { label: "Custom", value: "custom" },
     ],

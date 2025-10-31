@@ -39,7 +39,7 @@ const step2Schema = Yup.object({
     otherwise: (schema) => schema.optional(),
   }),
   exclusive_parking_spaces: Yup.boolean(),
-  exclusive_parking_spaces_count: Yup.number().when('exclusive_parking_spaces', {
+  reserved_spaces: Yup.number().when('exclusive_parking_spaces', {
     is: true,
     then: (schema) => schema.required('Parking spaces count is required').positive('Must be positive').integer('Must be a whole number'),
     otherwise: (schema) => schema.optional(),

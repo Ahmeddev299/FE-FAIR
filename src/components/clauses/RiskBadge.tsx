@@ -3,10 +3,9 @@ import { AlertTriangle, Clock, Check } from 'lucide-react';
 import type { RiskLevel } from '@/types/loi';
 
 type Props = {
-  risk?: RiskLevel | string; // accepts strict RiskLevel or free-form strings like "High (8/10)"
+  risk?: RiskLevel | string; 
 };
 
-// Parse a string like "High", "Medium", "Low", "High (8/10)", or "8/10" to a RiskLevel
 const parseRiskString = (value?: string): RiskLevel => {
   if (!value) return 'Low';
 
@@ -26,7 +25,6 @@ const parseRiskString = (value?: string): RiskLevel => {
   return 'Low';
 };
 
-// Normalize to RiskLevel without using `any`
 const toRisk = (r?: RiskLevel | string): RiskLevel =>
   r === 'High' || r === 'Medium' || r === 'Low' ? r : parseRiskString(r);
 

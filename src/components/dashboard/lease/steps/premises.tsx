@@ -21,7 +21,7 @@ type PremisesValues = {
   hasExtraSpace: boolean;
   outdoor_size: number | string;
   exclusive_parking_spaces: boolean;
-  exclusive_parking_spaces_count: number | string;
+  reserved_spaces: number | string;
 };
 
 export const LeasePremisesStep: React.FC = () => {
@@ -186,7 +186,7 @@ export const LeasePremisesStep: React.FC = () => {
               name="exclusive_parking_spaces"
               checked={!!values.exclusive_parking_spaces}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                toggle("exclusive_parking_spaces", e.target.checked, ["exclusive_parking_spaces_count"])
+                toggle("exclusive_parking_spaces", e.target.checked, ["reserved_spaces"])
               }
               className="h-4 w-4 text-blue-600 rounded"
             />
@@ -195,16 +195,16 @@ export const LeasePremisesStep: React.FC = () => {
 
           {values.exclusive_parking_spaces && (
             <div className="mb-2">
-              <label className="block text-sm font-medium mb-2">How many exclusive spaces? *</label>
+              <label className="block text-sm font-medium mb-2">How many reserved spaces? *</label>
               <Field
-                name="exclusive_parking_spaces_count"
+                name="reserved_spaces"
                 type="number"
                 min="0"
                 placeholder="e.g., 5"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
               <ErrorMessage
-                name="exclusive_parking_spaces_count"
+                name="reserved_spaces"
                 component="div"
                 className="text-red-500 text-sm mt-1"
               />

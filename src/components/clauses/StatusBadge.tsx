@@ -7,23 +7,20 @@ type Props = {
   status?: ClauseStatus | string;
 };
 
-/** Use a local canonical union so we don't depend on project-wide variants */
 type CanonicalStatus = "AI Suggested" | "Edited" | "Approved" | "Needs Review" | "Pending";
 
-/** Parse loose strings -> canonical */
 const parseStatusString = (value?: string): CanonicalStatus => {
   const v = (value ?? "").toLowerCase();
 
   if (v.includes("approve")) return "Approved";
-  if (v.includes("ai") || v.includes("suggest")) return "AI Suggested"; // handles "Suggested"
-  if (v.includes("review") || v.includes("need")) return "Needs Review"; // handles "Review"
+  if (v.includes("ai") || v.includes("suggest")) return "AI Suggested"; 
+  if (v.includes("review") || v.includes("need")) return "Needs Review"; 
   if (v.includes("edit")) return "Edited";
   if (v.includes("pending") || v.includes("wait") || v.includes("queue")) return "Pending";
 
   return "Pending";
 };
 
-/** Normalize incoming status (ClauseStatus|string) to our canonical union */
 const toCanonical = (s?: ClauseStatus | string): CanonicalStatus => {
   switch (s) {
     case "Approved":

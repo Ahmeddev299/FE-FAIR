@@ -3,11 +3,11 @@ const globalPasswordSchema = Yup.string()
   .min(8, "Password should contain at least 8 characters")
   .required("Required")
   .matches(/[0-9]/, "Password must contain a number")
-  .matches(/[A-Z]/, "Password must contain at least one uppercase letter") // At least one capital letter
+  .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
   .matches(
     /[!@#$%^&*(),.?":{}|<>]/,
     "Password must contain at least one special character"
-  ); // At least one special character,
+  );
 export const SignupSchema = Yup.object().shape({
   fullname: Yup.string()
     .min(2, "Too Short!")

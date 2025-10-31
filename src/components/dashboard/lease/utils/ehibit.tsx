@@ -5,7 +5,6 @@ import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { useCallback } from "react";
 
 function nextExhibitTitle(currentCount: number) {
-  // A, B, C...; after Z it continues AA, AB if needed
   const n = currentCount;
   let s = "";
   let x = n;

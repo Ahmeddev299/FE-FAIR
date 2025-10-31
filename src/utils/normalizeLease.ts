@@ -112,8 +112,8 @@ export function normalizeLease(values: LeaseFormValues) {
       outdoor_size: b(values.hasExtraSpace) ? n(values.outdoor_size) : undefined,
 
       exclusive_parking_spaces: b(values.exclusive_parking_spaces),
-      exclusive_parking_spaces_count: b(values.exclusive_parking_spaces)
-        ? n(values.exclusive_parking_spaces_count)
+      reserved_spaces: b(values.exclusive_parking_spaces)
+        ? n(values.reserved_spaces)
         : undefined,
     },
 
@@ -136,7 +136,7 @@ export function normalizeLease(values: LeaseFormValues) {
       prepaid_rent: n(values.prepaid_rent),
 
       // REQUIRED by API
-      annual_escalation_type: s((values as any).annual_escalation_type) || mappedAnnualEscType,
+      // annual_escalation_type: s((values as any).annual_escalation_type) || mappedAnnualEscType,
       annual_escalation_percent:
         (values as any).annual_escalation_percent != null
           ? n((values as any).annual_escalation_percent)
@@ -161,11 +161,12 @@ export function normalizeLease(values: LeaseFormValues) {
     // === STEP 5: OPERATIONS & MNTC ===
     OPERATIONS_MAINTENANCE: {
       lease_structure: s(values.lease_structure),
+      audit_right: s(values.audit_right),
+        gross_estimate_amount:s(values.gross_estimate_amount),
 
       cam_include_exclude: showPassThrough ? s(values.cam_include_exclude) : undefined,
       management_fee_cap_percent: showPassThrough ? n(values.management_fee_cap_percent) : undefined,
       capital_amortization_rules: showPassThrough ? s(values.capital_amortization_rules) : undefined,
-
       est_cam_per_sf: showPassThrough ? n(values.est_cam_per_sf) : undefined,
       est_taxes_per_sf: showPassThrough ? n(values.est_taxes_per_sf) : undefined,
       est_insurance_per_sf: showPassThrough ? n(values.est_insurance_per_sf) : undefined,

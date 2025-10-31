@@ -3,9 +3,9 @@ import React from "react";
 import { Field } from "formik";
 
 type Props = {
-  rowKey: string;                   // e.g., "cgl"
-  label: string;                    // display label
-  help?: string;                    // helper text
+  rowKey: string;                  
+  label: string;                   
+  help?: string;                  
   limitOptions: { label: string; value: string }[];
 };
 
@@ -15,13 +15,11 @@ export const InsuranceRow: React.FC<Props> = ({ rowKey, label, help, limitOption
 
   return (
     <div className="grid grid-cols-12 items-start border-b border-gray-200 last:border-b-0">
-      {/* Coverage label + help */}
       <div className="col-span-10 p-3">
         <div className="text-sm font-medium text-gray-900">{label}</div>
         {help && <div className="mt-1 text-xs text-gray-500">{help}</div>}
       </div>
 
-      {/* Limit dropdown (+ custom text when selected) */}
       <div className="col-span-2 p-3">
         <Field as="select" name={limitPath} className="w-full p-2 border border-gray-300 rounded">
           {limitOptions.map((opt) => (

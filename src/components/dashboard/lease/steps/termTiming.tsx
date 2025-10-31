@@ -14,7 +14,6 @@ export const LeaseTermTimingStep: React.FC = () => {
     const v = e.target.value as Trigger;
     setFieldValue("commencement_trigger", v);
 
-    // Clear dependent fields when switching away from "Date certain"
     if (v !== "Date certain") {
       setFieldValue("commencement_date_certain", "");
       setFieldTouched("commencement_date_certain", false, false);
@@ -53,7 +52,6 @@ export const LeaseTermTimingStep: React.FC = () => {
             />
           </div>
 
-          {/* Delivery Condition */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Delivery Condition
@@ -72,7 +70,6 @@ export const LeaseTermTimingStep: React.FC = () => {
             </Field>
           </div>
 
-          {/* Commencement Trigger (no TCO) */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Commencement Trigger
@@ -90,7 +87,6 @@ export const LeaseTermTimingStep: React.FC = () => {
             </Field>
           </div>
 
-          {/* If Date Certain → date picker */}
           {values.commencement_trigger === "Date certain" && (
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -109,7 +105,6 @@ export const LeaseTermTimingStep: React.FC = () => {
             </div>
           )}
 
-          {/* Rent Commencement Offset */}
           <div>
             <label className="block text-sm font-medium mb-2">
               Rent Commencement Offset (Days)
@@ -125,11 +120,6 @@ export const LeaseTermTimingStep: React.FC = () => {
             </p>
           </div>
         </div>
-
-        {/* Removed per client feedback:
-            - Outside Opening Deadline / Industrial Operational Deadline
-            - Holdover Rent Multiplier (will auto-apply based on party posture / clause variation)
-        */}
       </div>
     </div>
   );

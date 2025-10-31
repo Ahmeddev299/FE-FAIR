@@ -137,7 +137,7 @@ export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({
           "Outdoor Space": fmtBool(values.hasExtraSpace),
           "Outdoor Space Size (sq ft)": values.hasExtraSpace ? values.outdoor_size : "",
           "Exclusive Parking": fmtBool(values.exclusive_parking_spaces),
-          "Exclusive Parking Count": values.exclusive_parking_spaces ? values.exclusive_parking_spaces_count : "",
+          "Exclusive Parking Count": values.exclusive_parking_spaces ? values.reserved_spaces : "",
         }}
       />
 

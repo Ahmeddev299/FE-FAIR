@@ -50,12 +50,10 @@ export const CustomField: React.FC<Props> = ({
 
   const idProp = (rest as { id?: string }).id ?? name;
 
-  // Build a typed change handler
   const handleChange: ChangeHandler | undefined = formik
     ? (formik.handleChange as unknown as ChangeHandler)
     : propOnChange;
 
-  // Only control `value` when we truly have one
   let controlledValue: FieldValue | undefined;
   if (formik) {
     controlledValue = (formikValue as FieldValue) ?? "";
