@@ -164,8 +164,8 @@ export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({
         onEdit={onEdit}
         data={{
           "Rent Type": values.rent_type,
-          "Monthly Base Rent": values.rent_type !== "Percentage" ? fmtMoney(values.monthly_rent) : "",
-          "Percentage Rent (%)": values.rent_type === "Percentage" ? fmtPct(values.percentage_lease_percent) : "",
+          "Monthly Base Rent": values.rent_type !== "Percent" ? fmtMoney(values.monthly_rent) : "",
+          "Percentage Rent (%)": values.rent_type === "Percent" ? fmtPct(values.percentage_lease_percent) : "",
           "Security Deposit": fmtMoney(values.security_deposit),
           "Prepaid Rent": fmtMoney(values.prepaid_rent),
           "Schedule Basis": values.schedule_basis,

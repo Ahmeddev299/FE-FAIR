@@ -4,8 +4,8 @@ import { FileText, X, CheckCircle } from 'lucide-react';
 import { FileData, SetFieldValue } from '@/types/loi';
 
 interface UploadedFilesProps {
-    uploadedFile: FileData;                             // parent guards null
-    setUploadedFile: (file: FileData | null) => void;   // matches parent setter type
+    uploadedFile: FileData;                             
+    setUploadedFile: (file: FileData | null) => void;   
     setFieldValue?: SetFieldValue;
     check: boolean;
 }

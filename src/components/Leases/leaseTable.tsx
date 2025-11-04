@@ -262,8 +262,7 @@ export default function LeasesTable({
             <th className="px-6 py-3">Type</th>
             <th className="px-6 py-3">Document ID</th>
             <th className="px-6 py-3">Status</th>
-            <th className="px-6 py-3">Tags</th>
-            <th className="px-6 py-3 text-right">Actions</th>
+        <th className="px-6 py-3 text-right">Actions</th>
           </tr>
 
 
@@ -293,19 +292,21 @@ export default function LeasesTable({
               ))}
 
             {rows.map((l) => (
+              console.log("1",l),
+
               <tr key={l.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <button
                     onClick={() => onRowClick(l.id)}
                     className="text-gray-900 font-medium hover:underline"
                   >
-                    {l.title}
+                    {l.documentName}
                   </button>
                 </td>
                 <td className="px-6 py-4">
                   <Pill tone={TypeTone[l.type]}>{l.type}</Pill>
                 </td>
-                <td className="px-6 py-4 text-gray-700">{l.documentId ?? "-"}</td>
+                <td className="px-6 py-4 text-gray-700">{l.id ?? "-"}</td>
                 <td className="px-6 py-4">
                   {l.status ? (
                     <Pill tone={StatusTone[l.status as keyof typeof StatusTone] ?? "gray"}>
@@ -315,15 +316,7 @@ export default function LeasesTable({
                     <span className="text-gray-500">—</span>
                   )}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-wrap gap-1.5">
-                    {(l.tags ?? []).map((t) => (
-                      <Pill key={t} tone={/risk|urgent|legal/i.test(t) ? "red" : "gray"}>
-                        {t}
-                      </Pill>
-                    ))}
-                  </div>
-                </td>
+               
                  <td className="px-5 py-3 text-right">
                     <KebabMenu
                       onView={() => onRowClick(l.id)}
@@ -386,7 +379,6 @@ export default function LeasesTable({
   );
 }
 
-/* ---------- Local actions popup (kebab) ---------- */
 function KebabMenu({
   onView,
   disabled,

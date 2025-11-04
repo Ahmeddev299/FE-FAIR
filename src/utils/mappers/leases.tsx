@@ -47,7 +47,9 @@ export type UILeaseBriefRow = UILeaseBrief & {
   _clauseDocId?: string;
   _address?: string;
   _updatedAt?: string;
+  _pdfUrl?: string;
 };
+
 
 const getRiskScore = (risk?: string): number => {
   const m = (risk || "").match(/\((\d+)\/10\)/);
@@ -138,23 +140,44 @@ const extractItems = (src: MaybeItems): ApiLeaseItem[] => {
   return [];
 };
 
-export const mapLeaseListToUI = (
-  res: ApiLeaseListResponse | ApiLeaseItem[] | EnvelopeWithArray | undefined
-): UILeaseBriefRow[] => {
-  const items = extractItems(
-    Array.isArray(res) ? res : res?.data ?? (res as unknown as EnvelopeWithArray)
-  );
-
-  return items.map((item): UILeaseBriefRow => ({
-    id: item.id,
-    title: item.title || "Untitled Lease",
-    type: deriveType(item.title),
-    documentId: item.id,
-    status: deriveStatus(item),
-    tags: extractTags(item),
-    sizeLabel: "",
-    _clauseDocId: getClauseDocId(item),
-    _address: item.property_address,
-    _updatedAt: item.log_updated_at,
-  }));
+// src/utils/mappers/leases.ts
+export type BackendLease = {
+  _id: string;
+  submit_status?: string;
+  file_url?: string; // stringified JSON like "{'pdf_url':'...'}"
+  BASIC_INFORMATION?: { title?: string };
+  template_data?: { header?: { tenant_trade_name?: string } };
+  // ... (keep only what you actually use)
 };
+
+
+
+// Map from BackendLease[] → UI rows
+export function mapLeaseListToUI(items: BackendLease[]): UILeaseBriefRow[] {
+  return (items ?? []).map((it) => {
+    const title =
+      it.BASIC_INFORMATION?.title?.trim() ||
+      it.template_data?.header?.tenant_trade_name?.trim() ||
+      "Untitled Lease";
+
+    let pdfUrl: string | undefined;
+    if (typeof it.file_url === "string") {
+      try {
+        const parsed = JSON.parse(it.file_url.replace(/'/g, '"'));
+        pdfUrl = parsed?.pdf_url;
+      } catch {}
+    }
+
+    return {
+      id: it._id,
+      documentName: title,  // 👈 this is what the table should read
+      type: "Lease",
+      documentId: "-",
+      status: it.submit_status || "Draft",
+      tags: [],
+      _pdfUrl: pdfUrl,
+    };
+  });
+}
+
+

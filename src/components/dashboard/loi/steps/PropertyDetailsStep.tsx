@@ -43,16 +43,6 @@ const DELIVERY_CONDITIONS = [
   { value: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed) ", label: "White Box (walls primed, standard ceiling, basic lighting, HVAC stubbed)" },
 ];
 
-// const MAINTENANCE_CATEGORIES = [
-//   { key: "structural", label: "Structural Repairs (foundation, roof, exterior walls)" },
-//   { key: "nonStructural", label: "Non-Structural Repairs (interior walls, ceilings, flooring)" },
-//   { key: "hvac", label: "HVAC" },
-//   { key: "plumbing", label: "Plumbing" },
-//   { key: "electrical", label: "Electrical" },
-//   { key: "commonAreas", label: "Common Areas (lobbies, parking lots, landscaping)" },
-//   { key: "utilities", label: "Utilities (gas, water, electricity connections)" },
-//   { key: "specialEquipment", label: "Special Equipment / Fixtures (if applicable)" },
-// ];
 export const MAINTENANCE_CATEGORIES = [
   { key: "structural", label: "Structural Repairs (foundation, roof, exterior walls)" },
   { key: "nonStructural", label: "Non-Structural Repairs (interior walls, ceilings, flooring)" },
@@ -220,7 +210,6 @@ export const PropertyDetailsStep: React.FC = () => {
             <ErrorMessage name="patioSize" component="div" className="mt-1 text-sm text-red-500" />
           </div>
           )}
-
 
           {/* Intended Use */}
           <div>

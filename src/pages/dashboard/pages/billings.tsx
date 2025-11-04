@@ -8,7 +8,7 @@ import { DashboardLayout } from "@/components/layouts";
 type BillingAndPaymentProps = {
   autoRenewal: boolean;
   onAutoRenewalChange: (value: boolean) => void;
-  nextChargeText?: string; // e.g. "Next charge: $29.00 on January 15, 2024"
+  nextChargeText?: string; 
 };
 
 const BillingAndPayment: React.FC<BillingAndPaymentProps> = ({

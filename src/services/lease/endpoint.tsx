@@ -34,13 +34,13 @@ class LeaseBaseService extends HttpService {
   }
 
   getSingleLeaseDetail(leaseId: string): Promise<any> {
-    return this.get(`clause/get_lease/${encodeURIComponent(leaseId)}`);
+    return this.get(`/leases/${encodeURIComponent(leaseId)}`);
   }
 
   getUserLeases(params?: { page?: number; limit?: number }): Promise<any> {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 5;
-    return this.get(`clause/get_user_leases?page=${page}&limit=${limit}`);
+    return this.get(`/leases`);
   }
 
   updateClauseDetailOrCurrentVersion(

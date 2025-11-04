@@ -8,10 +8,8 @@ import {
 
 type FormShape = FormikValues; // or your concrete FormValues
 
-// Value types that make sense for input/select/textarea
 type FieldValue = string | number | readonly string[];
 
-// Unified change handler for the three elements we support
 type ChangeHandler = (
   e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
 ) => void;
@@ -20,12 +18,11 @@ type BaseProps =
   React.InputHTMLAttributes<HTMLInputElement> &
   React.SelectHTMLAttributes<HTMLSelectElement> &
   React.TextareaHTMLAttributes<HTMLTextAreaElement>;
-
+  
 type Props = BaseProps & {
   name: string;
   label?: string;
   as?: "select" | "input" | "textarea";
-  /** Fallback value/onChange when used outside <Formik> */
   value?: FieldValue;
   onChange?: ChangeHandler;
   children?: React.ReactNode;
@@ -41,7 +38,6 @@ export const CustomField: React.FC<Props> = ({
   children,
   ...rest
 }) => {
-  // Formik may be null if no <Formik> wrapper
   const formik = useFormikContext<FormShape>() as
     | (FormikContextType<FormShape> & { values: FormShape })
     | null;
@@ -89,7 +85,6 @@ export const CustomField: React.FC<Props> = ({
           name={name}
           className={baseClasses}
           onChange={handleChange}
-          // only add value when defined to avoid switching to controlled unintentionally
           {...(controlledValue !== undefined ? { value: controlledValue } : {})}
           {...(rest as React.SelectHTMLAttributes<HTMLSelectElement>)}
         >

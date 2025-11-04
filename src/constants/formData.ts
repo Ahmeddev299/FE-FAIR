@@ -46,7 +46,7 @@ export interface LeaseFormValues {
 
   // Parking
   exclusive_parking_spaces: boolean;
-  reserved_spaces: number | string;
+  reserved_spaces: number | string; 
 
   // === STEP 3: TERM, TIMING & TRIGGERS ===
   initial_term_years: number | string;
@@ -56,7 +56,7 @@ export interface LeaseFormValues {
   rent_commencement_offset_days: number | string;
 
   // === STEP 4: RENT & ECONOMICS ===
-  rent_type: string; // "Fixed" | "Percentage"
+  rent_type: string; // "Fixed" | "Percent"
   monthly_rent: number | string;
   security_deposit: number | string;
   prepaid_rent: number | string;

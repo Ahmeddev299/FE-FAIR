@@ -7,7 +7,7 @@ import { DashboardLayout } from "@/components/layouts";
 
 export type NotificationPrefs = {
   leaseEvents: boolean;
-  legalNotices: boolean; // shown but locked disabled
+  legalNotices: boolean; 
   mentions: boolean;
   renewals: boolean;
 };
@@ -20,7 +20,7 @@ type NotificationPreferencesProps = {
 const NotificationPreferences: React.FC<NotificationPreferencesProps> = ({ initial, onChange }) => {
   const [prefs, setPrefs] = useState<NotificationPrefs>({
     leaseEvents: initial?.leaseEvents ?? true,
-    legalNotices: initial?.legalNotices ?? false, // cannot be disabled, but we display it disabled
+    legalNotices: initial?.legalNotices ?? false,
     mentions: initial?.mentions ?? false,
     renewals: initial?.renewals ?? true,
   });
@@ -61,7 +61,7 @@ const NotificationPreferences: React.FC<NotificationPreferencesProps> = ({ initi
           </div>
           <Switch
             isOn={prefs.leaseEvents}
-            onChange={(checked) => setPrefs((p) => ({ ...p, leaseEvents: checked }))}
+            onChange={(checked) => setPrefs((p) => ({ ...p, leaseEvents: checked }))} 
             ariaLabel="Toggle lease events"
           />
         </div>

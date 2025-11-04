@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 type LeaseItem = {
     lease_id: string;
     lease_title: string;
-    property_addess?: string;   // <-- from your API payload
+    property_addess?: string;  
     facility_name?: string;
     facility_code?: string;
     address_line1?: string;
@@ -24,7 +24,6 @@ type LeaseItem = {
     term_end?: string;
     region_badge?: string;
 };
-
 
 const REASON_OPTIONS: Array<{ value: string; label: string }> = [
     { value: "default", label: "Default" },

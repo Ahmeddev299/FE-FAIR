@@ -20,6 +20,7 @@ export default function LeasesPage() {
   const dispatch = useAppDispatch();
 
   const { leaseList, isLoading } = useAppSelector(selectLease);
+  console.log("leaselist",leaseList)
   const showLoader = isLoading || leaseList === null;
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -33,13 +34,26 @@ export default function LeasesPage() {
   //   return mapLeaseListToUI({ data } as any);
   // }, [leaseList]);
 
-  const leases: UILeaseBriefRow[] = useMemo(
-    () => mapLeaseListToUI(leaseList as unknown as { data: ApiLeaseItem[] } | ApiLeaseListResponse | ApiLeaseItem[]),
-    [leaseList]
-  );
+// AFTER
+const apiItems: ApiLeaseItem[] = useMemo(() => {
+  if (!leaseList) return [];
+  // Support a few possible shapes:
+  if (Array.isArray(leaseList)) return leaseList as ApiLeaseItem[];
+  if ('leases' in leaseList) return (leaseList as ApiLeaseListResponse).leases;
+  if ('data' in leaseList) return (leaseList as { data: ApiLeaseItem[] }).data ?? [];
+  return [];
+}, [leaseList]);
 
-  const total = leaseList?.meta?.total ?? leases.length;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+const leases: UILeaseBriefRow[] = useMemo(
+  () => mapLeaseListToUI(apiItems),
+  [apiItems]
+);
+
+console.log("leases",leases)
+const total = (leaseList as any)?.pagination?.total_items ?? leases.length;
+const totalPages =
+  (leaseList as any)?.pagination?.total_pages ??
+  Math.max(1, Math.ceil(total / limit));
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -56,7 +70,6 @@ export default function LeasesPage() {
 
       <div className="p-4 bg-white shadow-sm border border-gray-200 rounded mb-4">
         <div className="flex items-center justify-between">
-          {/* Left: Back button */}
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
@@ -65,7 +78,6 @@ export default function LeasesPage() {
             <span className="text-sm">Back to Review</span>
           </button>
 
-          {/* Middle: Icon + Title + Subtitle */}
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100">
               <span className="text-blue-600 font-semibold text-lg">D</span>
@@ -76,16 +88,6 @@ export default function LeasesPage() {
                 Edit, review, and approve lease clauses before proceeding to signature.
               </p>
             </div>
-          </div>
-
-          {/* Right: Search input */}
-          <div className="relative w-1/2">
-            {/* <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /> */}
-            {/* <input
-              type="text"
-              placeholder="Search documents by title, clause or keyword..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            /> */}
           </div>
         </div>
       </div>

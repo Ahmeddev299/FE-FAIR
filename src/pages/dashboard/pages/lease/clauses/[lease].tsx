@@ -1,4 +1,3 @@
-// pages/.../ClauseManagementPage.tsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -19,7 +18,8 @@ import type { UIClause, ExtendedClause, ClauseStatus, RiskLevel } from '@/types/
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { getLeaseDetailsById, acceptClauseSuggestionAsync } from '@/services/lease/asyncThunk';
 
-import { extractOne, mapToUILease } from '@/utils/leasemappers';
+import { mapApiLeaseToUI, type UILeaseForPage } from '@/utils/leasemappers';
+
 import { LoadingOverlay } from '@/components/loaders/overlayloader';
 
 import ClauseDetailsModel from '@/components/models/clauseDetailsModel';
@@ -54,13 +54,86 @@ export type ClauseHistoryEntry = {
 };
 
 type RawLeaseWithClauses = {
-  url?: string;
-  title?: string;
-  property_address?: string;
+  _id?: string;
+  submit_status?: string;
+  file_url?: string | { pdf_url?: string };
+  template_data?: {
+    header?: {
+      landlord_name?: string;
+      landlord_email?: string;
+      landlord_address_line1?: string;
+      landlord_address_line2?: string;
+      tenant_name?: string;
+      tenant_email?: string;
+      tenant_address_line1?: string;
+      tenant_address_line2?: string;
+      tenant_trade_name?: string;
+      shopping_center?: string;
+    };
+    premises?: {
+      description?: string;
+      square_footage?: string;
+      suite_number?: string;
+      shopping_center_name?: string;
+      street_address?: string;
+      city_state_zip?: string;
+    };
+    lease_terms?: {
+      base_rent_monthly?: string;
+      rent_calculation_text?: string;
+      term_months?: string;
+      term_display?: string;
+      percentage_rent?: string;
+      tenant_pro_rata_share?: string;
+      initial_monthly_cam?: string;
+      initial_monthly_tax_insurance?: string;
+      operating_hours?: string;
+      rent_commencement_date?: string;
+      termination_date?: string;
+      security_deposit?: string;
+      permitted_use?: string;
+      late_fee_percentage?: string;
+      late_fee_grace_days?: string;
+    };
+    clauses?: {
+      data?: {
+        [category: string]: {
+          [key: string]: string;
+        };
+      };
+    };
+  };
+  BASIC_INFORMATION?: {
+    party_posture?: string;
+    lease_type?: string;
+    title?: string;
+    landlord_legal_name?: string;
+    tenant_legal_name?: string;
+  };
+  PREMISES_PROPERTY_DETAILS?: unknown;
+  TERM_TIMING_TRIGGERS?: {
+    initial_term_years?: number;
+    delivery_condition?: string;
+    commencement_trigger?: string;
+    commencement_date_certain?: string;
+  };
+  RENT_ECONOMICS?: {
+    security_deposit?: number;
+    prepaid_rent?: number;
+    rent_type?: string;
+    monthly_rent?: number | null;
+    percentage_lease_percent?: number;
+  };
+  OPERATIONS_MAINTENANCE?: unknown;
+  RIGHTS_OPTIONS_CONDITIONS?: unknown;
+  // NOTE: for this payload there is no rich per-clause history object;
+  // keep this optional hook for future compatibility.
   clauses?: Record<string, ClauseHistoryEntry>;
+  created_at?: string;
+  updated_at?: string;
 };
 
-/** Map UIClause → ExtendedClause */
+/** Map UIClause → ExtendedClause for the details modal */
 function mapUIClauseToExtended(c: UIClause): ExtendedClause {
   return {
     id: c.id,
@@ -92,21 +165,24 @@ export default function ClauseManagementPage() {
   const dispatch = useAppDispatch();
   const { currentLease, isLoading } = useAppSelector((s) => s.lease);
 
-  const SingleLeaseLoader = isLoading || currentLease == null;
-  const lease = useMemo(() => mapToUILease(extractOne(currentLease)), [currentLease]);
-
-  // Raw lease for pulling API "clauses" map
-  const rawLease = useMemo(
-    () => (currentLease ? (extractOne(currentLease) as unknown as RawLeaseWithClauses) : undefined),
+  // Raw lease from store (single-lease payload)
+  const rawLease = useMemo<RawLeaseWithClauses | undefined>(
+    () => (currentLease ?? undefined) as RawLeaseWithClauses | undefined,
     [currentLease]
   );
+
+  // UI-friendly lease object
+  const lease = useMemo<UILeaseForPage | null>(() => mapApiLeaseToUI(rawLease as any), [rawLease]);
+
+  const SingleLeaseLoader = isLoading || rawLease == null;
 
   useEffect(() => {
     if (!router.isReady || !leaseId) return;
     void dispatch(getLeaseDetailsById(leaseId));
   }, [router.isReady, leaseId, dispatch]);
 
-  const clauseDocId: string | undefined = clauseDocIdFromQuery || undefined;
+  // Use lease id as clauseDocId (or query override)
+  const clauseDocId: string | undefined = clauseDocIdFromQuery || lease?.id;
 
   const [filters, setFilters] = useState({
     status: 'All Status',
@@ -122,34 +198,37 @@ export default function ClauseManagementPage() {
   // Preview modal
   const [previewOpen, setPreviewOpen] = useState(false);
 
-const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
-  type PreviewClauseArray =
-    NonNullable<React.ComponentProps<typeof DocumentPreviewModal>['approved']>;
-  type PreviewClauseItem = PreviewClauseArray[number];
+  // Buckets for preview modal
+  const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
+    type PreviewClauseArray =
+      NonNullable<React.ComponentProps<typeof DocumentPreviewModal>['approved']>;
+    type PreviewClauseItem = PreviewClauseArray[number];
 
-  const approvedBucket: PreviewClauseArray = [];
-  const pendingBucket: PreviewClauseArray = [];
-  const rejectedBucket: PreviewClauseArray = [];
+    const approvedBucket: PreviewClauseArray = [];
+    const pendingBucket: PreviewClauseArray = [];
+    const rejectedBucket: PreviewClauseArray = [];
 
-  if (lease?.clauses?.length) {
-    lease.clauses.forEach((c, idx) => {
-      const item: PreviewClauseItem = {
-        id: c.id ?? idx,
-        name: c.name,
-        text: c.currentVersion,
-        risk: c.risk,                          
-      };
+    if (lease?.clauses?.length) {
+      lease.clauses.forEach((c, idx) => {
+        const item: PreviewClauseItem = {
+          id: c.id ?? idx,
+          name: c.name,
+          text: c.currentVersion,
+          risk: c.risk,
+        };
 
-      const s = (c.status || '').toLowerCase();
-      if (s.includes('approve')) approvedBucket.push(item);
-      else if (s.includes('reject')) rejectedBucket.push(item);
-      else pendingBucket.push(item);
-    });
-  }
+        const s = (c.status || '').toLowerCase();
+        if (s.includes('approve')) approvedBucket.push(item);
+        else if (s.includes('reject')) rejectedBucket.push(item);
+        else pendingBucket.push(item);
+      });
+    }
 
-  return { approvedBucket, pendingBucket, rejectedBucket };
-}, [lease]);
+    return { approvedBucket, pendingBucket, rejectedBucket };
+  }, [lease]);
 
+  // PDF URL
+  const pdfUrl = lease?.pdfUrl;
 
   return (
     <DashboardLayout>
@@ -162,6 +241,12 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
             <ArrowLeft className="h-5 w-5" />
             <span className="text-sm">Back to Review</span>
           </button>
+
+          {lease && (
+            <Pill tone={lease.submitStatus === 'Submitted' ? 'green' : 'yellow'}>
+              {lease.submitStatus}
+            </Pill>
+          )}
         </div>
 
         <div className="mt-3">
@@ -189,18 +274,60 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 space-y-3">
             <Card className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">{lease.title}</div>
-                  <div className="text-xs text-gray-500">
-                    {(lease as { propertyAddress?: string }).propertyAddress ??
-                      (lease as { property_address?: string }).property_address ??
-                      ''}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1">
+                  <div className="text-base font-semibold text-gray-900">
+                    {lease.title}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {lease.propertyAddress || 'No address provided'}
                   </div>
                 </div>
                 <button className="px-3 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700">
                   Send to Landlord
                 </button>
+              </div>
+
+              {/* Lease Summary Info */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-gray-100">
+                <div>
+                  <div className="text-xs text-gray-500">Lease Type</div>
+                  <div className="text-sm font-medium text-gray-900">{lease.leaseType}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Square Footage</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {lease.squareFootage ? `${lease.squareFootage} SF` : 'N/A'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Term</div>
+                  <div className="text-sm font-medium text-gray-900">{lease.termDisplay ?? 'N/A'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Commencement</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {lease.commencementDate
+                      ? new Date(lease.commencementDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })
+                      : 'N/A'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Party Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 mt-3 border-t border-gray-100">
+                <div>
+                  <div className="text-xs text-gray-500">Landlord</div>
+                  <div className="text-sm font-medium text-gray-900">{lease.landlordName}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Tenant</div>
+                  <div className="text-sm font-medium text-gray-900">{lease.tenantName}</div>
+                </div>
               </div>
             </Card>
 
@@ -214,16 +341,16 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
                 await dispatch(
                   acceptClauseSuggestionAsync({
                     clauseId: clauseDocId,
-                    clause_key: c.name,
-                    details: c.aiSuggestion ?? '',
+                    clause_key: c.name, // "<category> #<n>"
+                    details: c.aiSuggestion ?? c.currentVersion ?? '',
                   })
                 ).unwrap();
-                // optimistic update
                 c.status = 'Approved';
                 if (c.aiSuggestion) c.currentVersion = c.aiSuggestion;
               }}
               onEdit={(c: UIClause) => {
                 setDetailsClause(mapUIClauseToExtended(c));
+                // No detailed history available in current payload; keep undefined
                 const entry =
                   c.name && rawLease?.clauses ? rawLease.clauses[c.name] : undefined;
                 setDetailsHistory(entry);
@@ -234,28 +361,24 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
                 const entry =
                   c.name && rawLease?.clauses ? rawLease.clauses[c.name] : undefined;
                 setDetailsHistory(entry);
-                setDetailsOpen(true); // comment inside the same modal
+                setDetailsOpen(true);
               }}
             />
           </div>
 
           <div className="lg:col-span-4 space-y-4">
             <ManagementProgress
-              approved={lease.approvedCount ?? 0}
-              total={lease.totalCount ?? lease.clauses.length}
-              unresolved={lease.unresolvedCount ?? 0}
+              approved={lease.approvedCount}
+              total={lease.totalCount}
+              unresolved={lease.unresolvedCount}
             />
             <DocumentPreviewCard onPreview={() => setPreviewOpen(true)} />
             <ReadyToProceed />
             <QuickStats
-              total={lease.totalCount ?? lease.clauses.length}
+              total={lease.totalCount}
               completionRate={
-                (lease.totalCount ?? lease.clauses.length)
-                  ? Math.round(
-                    ((lease.approvedCount ?? 0) /
-                      (lease.totalCount ?? lease.clauses.length)) *
-                    100
-                  )
+                lease.totalCount
+                  ? Math.round((lease.approvedCount / lease.totalCount) * 100)
                   : 0
               }
               openComments={lease.clauses.filter((c) => (c.commentsUnresolved ?? 0) > 0).length}
@@ -270,11 +393,10 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
           approved={approvedBucket}
           pending={pendingBucket}
           rejected={rejectedBucket}
-          downloadUrl={(rawLease as { url?: string })?.url} // optional: if you have a server PDF
+          downloadUrl={pdfUrl}
         />
       )}
 
-      {/* Clause Details Modal */}
       {detailsOpen && detailsClause && (
         <ClauseDetailsModel
           onClose={() => setDetailsOpen(false)}
@@ -286,42 +408,27 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
               acceptClauseSuggestionAsync({
                 clauseId: clauseDocId,
                 clause_key: detailsClause.name,
-                details: detailsClause.aiSuggestion ?? '',
+                details: detailsClause.aiSuggestion ?? detailsClause.currentVersion ?? '',
               })
             ).unwrap();
 
-            // optimistic update (modal/list)
             setDetailsClause((prev) =>
               prev
                 ? {
-                  ...prev,
-                  currentVersion: prev.aiSuggestion ?? prev.currentVersion,
-                  status: 'Approved',
-                }
+                    ...prev,
+                    currentVersion: prev.aiSuggestion ?? prev.currentVersion,
+                    status: 'Approved',
+                  }
                 : prev
             );
-
-            if (lease) {
-              const idx = lease.clauses.findIndex((x) => x.name === detailsClause.name);
-              if (idx >= 0) {
-                lease.clauses[idx] = {
-                  ...lease.clauses[idx],
-                  currentVersion:
-                    detailsClause.aiSuggestion ?? lease.clauses[idx].currentVersion,
-                  status: 'Approved',
-                };
-              }
-            }
           }}
           onReject={() => {
             setDetailsOpen(false);
             setDetailsClause((prev) => (prev ? { ...prev, status: 'Needs Review' } : prev));
           }}
-          // onRequestReview={() => setDetailsOpen(false)}
           onAddComment={async (text) => {
             if (!clauseDocId || !detailsClause?.name || !leaseId) return;
 
-            // 1) post
             const res = await dispatch(
               commentOnClauseAsync({
                 clauseDocId,
@@ -330,13 +437,9 @@ const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
               })
             ).unwrap();
 
-            // 2) refresh lease so next open shows latest comments
             await dispatch(getLeaseDetailsById(leaseId));
-
-            // 3) toast + close modal
             setDetailsOpen(false);
 
-            // 4) return created comment for instant append (defensive fallback)
             const created = (res?.comment && typeof res.comment === 'object'
               ? res.comment
               : undefined) as ClauseHistoryComment | undefined;

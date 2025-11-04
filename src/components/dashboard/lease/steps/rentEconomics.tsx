@@ -10,7 +10,7 @@ export const LeaseRentEconomicsStep: React.FC = () => {
   const { values, setFieldValue, setFieldTouched } = useFormikContext<LeaseFormValues>();
 
   const scheduleBasis: ScheduleBasis = (values.schedule_basis as ScheduleBasis) || "Monthly";
-  const isPercentage = values.rent_type === "Percentage";
+  const isPercentage = values.rent_type === "Percent";
   const isModGross = values.lease_structure === "Modified Gross";
   const isNNN = values.lease_structure === "Triple Net";
   const isGross = values.lease_structure === "Gross";
@@ -54,13 +54,13 @@ export const LeaseRentEconomicsStep: React.FC = () => {
             >
               <option value="">Select</option>
               <option value="Fixed">Fixed</option>
-              <option value="Percentage">Percentage</option>
+              <option value="Percent">Percentage</option>
             </Field>
             <ErrorMessage name="rent_type" component="div" className="text-red-500 text-sm mt-1" />
           </div>
 
           {/* Base Rent (if Fixed) */}
-          {values.rent_type !== "Percentage" && (
+          {values.rent_type !== "Percent" && (
             <div>
               <label className="block text-sm font-medium mb-2">Monthly Rent ($) *</label>
               <Field

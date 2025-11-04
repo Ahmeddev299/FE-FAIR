@@ -130,8 +130,8 @@ export function normalizeLease(values: LeaseFormValues) {
     // === STEP 4: RENT & ECONOMICS ===
     RENT_ECONOMICS: {
       rent_type: s(values.rent_type),
-      monthly_rent: values.rent_type !== "Percentage" ? n(values.monthly_rent) : undefined,
-      percentage_lease_percent: values.rent_type === "Percentage" ? n(values.percentage_lease_percent) : undefined,
+      monthly_rent: values.rent_type !== "Percent" ? n(values.monthly_rent) : undefined,
+      percentage_lease_percent: values.rent_type === "Percent" ? n(values.percentage_lease_percent) : undefined,
       security_deposit: n(values.security_deposit),
       prepaid_rent: n(values.prepaid_rent),
 

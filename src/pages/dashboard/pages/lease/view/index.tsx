@@ -26,7 +26,7 @@ type LeaseRow = {
   status?: string;
 
   updatedAt?: string | number | Date;
-  last_uppdated_date?: string | number | Date; // backend typo safeguard
+  last_uppdated_date?: string | number | Date;
   startDate?: string | number | Date;
   endDate?: string | number | Date;
 };
@@ -59,6 +59,7 @@ export default function LeaseListPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { leaseList, isLoading } = useAppSelector(selectLease);
+  console.log("leaseList", leaseList)
 
   // read QS
   const qsPage = Number(router.query.page ?? 1);

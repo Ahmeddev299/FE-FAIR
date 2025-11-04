@@ -86,7 +86,6 @@ export default function ClausesTable({
               <th className="px-4 py-3">Clause</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Risk</th>
-              <th className="px-4 py-3">Last Edited</th>
               <th className="px-4 py-3">Comments</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
@@ -119,13 +118,6 @@ export default function ClausesTable({
                     {c.risk}
                   </Pill>
                 </div>
-              </td>
-
-              <td className="px-4 py-3 text-gray-700">
-                {c.lastEditedAt
-                  ? `${new Date(c.lastEditedAt).toLocaleDateString()} ${new Date(c.lastEditedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                  : '-'}
-                {c.lastEditedBy && <span className="text-xs text-gray-500"> by {c.lastEditedBy}</span>}
               </td>
 
               <td className="px-4 py-3">

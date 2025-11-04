@@ -11,7 +11,6 @@ export const LeaseTermsStep: React.FC = () => {
     rentEscalationType?: "percent" | "fmv";
   }>();
 
-  // If user flips to FMV, clear the percent so validation doesn't nag later
   useEffect(() => {
     if (values.rentEscalationType === "fmv" && values.rentEscalationPercent) {
       setFieldValue("rentEscalationPercent", "");
@@ -133,9 +132,6 @@ export const LeaseTermsStep: React.FC = () => {
             </div>
           )}
         </div>
-        {/* NEW: Percentage of Gross Sales (only for Percentage Lease) */}
-
-
 
         {/* ---------------- Timing Terms ---------------- */}
         <div className="space-y-6 rounded-lg border border-gray-300 p-6">
