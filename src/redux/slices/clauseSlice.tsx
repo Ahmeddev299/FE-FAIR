@@ -1,108 +1,71 @@
-
-// src/store/slices/clauseSlice.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice } from "@reduxjs/toolkit";
-import {
-  getClausesByLeaseAsync,
-  getClauseByIdAsync,
-  updateClauseAsync,
-} from "@/services/clause/asyncThunk";
-import { commentOnClauseAsync } from "@/services/clause/asyncThunk"; 
+import { addBulletCommentAsync, changeBulletTextAsync, approveRejectBulletAsync } from "@/services/clause/asyncThunk";
 import Toast from "@/components/Toast";
+
+// Helper: update a nested bullet inside your state by (section, bullet_number).
+// Adjust this to your exact state shape. Here we assume `state.clauseList` is an array
+// of { section: string, bullets: [{ bullet_number, text, comments, status }] }
+const patchBullet = (
+  state: any,
+  key: { section: string; bullet_number: string | number },
+  updater: (b: any) => void
+) => {
+  const secIdx = state.clauseList.findIndex((s: any) => s.section?.toLowerCase() === key.section.toLowerCase());
+  if (secIdx < 0) return;
+  const section = state.clauseList[secIdx];
+  const bIdx = section.bullets?.findIndex?.((b: any) => `${b.bullet_number}` === `${key.bullet_number}`);
+  if (bIdx < 0) return;
+  updater(section.bullets[bIdx]);
+};
 
 export const clauseSlice = createSlice({
   name: "clause",
   initialState: {
     isLoading: false,
     clauseError: "",
-    clauseList: [] as any[],
-    currentClause: {} as any,     
-    updateSuccess: false,
+    clauseList: [] as any[],   // [{ section, bullets: [{ bullet_number, text, comments, status }] }]
   },
   reducers: {
-    setClauseLoading: (state, action) => {
-      state.isLoading = action.payload;
-    },
-    setClauseError: (state, action) => {
-      state.clauseError = action.payload;
-    },
-    resetClauseState: (state) => {
-      state.updateSuccess = false;
-      state.clauseError = "";
-    },
+    setClauseLoading: (state, action) => { state.isLoading = action.payload; },
+    setClauseError: (state, action) => { state.clauseError = action.payload; },
+    resetClauseState: (state) => { state.isLoading = false; state.clauseError = ""; },
+    // (Optionally add a setter to hydrate clauseList from API if needed)
   },
   extraReducers: (builder) => {
     builder
-      // get all clauses
-      .addCase(getClausesByLeaseAsync.pending, (state) => {
-        state.isLoading = true;
+      // comment
+      .addCase(addBulletCommentAsync.fulfilled, (state, { payload }) => {
+        patchBullet(state, payload, (b) => {
+          b.comments = Array.isArray(b.comments) ? b.comments : [];
+          b.comments.push({ text: payload.text, author: "You", created_at: new Date().toISOString() });
+          b.commentsUnresolved = (b.commentsUnresolved ?? 0) + 1;
+        });
+        Toast.fire({ icon: "success", title: "Comment added" });
       })
-      .addCase(getClausesByLeaseAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.clauseList = action.payload;
-      })
-      .addCase(getClausesByLeaseAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.clauseError = action.payload as string;
-      })
-
-      // get single clause
-      .addCase(getClauseByIdAsync.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(getClauseByIdAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.currentClause = action.payload;
-      })
-      .addCase(getClauseByIdAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.clauseError = action.payload as string;
+      .addCase(addBulletCommentAsync.rejected, (state, { payload }) => {
+        state.clauseError = payload as string;
+        Toast.fire({ icon: "error", title: payload as string });
       })
 
-      // update clause
-      .addCase(updateClauseAsync.pending, (state) => {
-        state.isLoading = true;
-        state.updateSuccess = false;
+      // change text
+      .addCase(changeBulletTextAsync.fulfilled, (state, { payload }) => {
+        patchBullet(state, payload, (b) => { b.text = payload.text; });
+        Toast.fire({ icon: "success", title: "Clause text updated" });
       })
-      .addCase(updateClauseAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.updateSuccess = true;
-        state.currentClause = { ...state.currentClause, ...action.payload };
-      })
-      .addCase(updateClauseAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.updateSuccess = false;
-        state.clauseError = action.payload as string;
-        Toast.fire({ icon: "error", title: action.payload as string });
+      .addCase(changeBulletTextAsync.rejected, (state, { payload }) => {
+        state.clauseError = payload as string;
+        Toast.fire({ icon: "error", title: payload as string });
       })
 
-      .addCase(commentOnClauseAsync.fulfilled, (state, action) => {
-        const { clause_key, comment } = action.payload as any;
-
-        if ((state as any).currentClause) {
-          const cc = (state as any).currentClause;
-          cc.comments = Array.isArray(cc.comments) ? cc.comments : [];
-          cc.comments.push(comment);
-        }
-
-        const lease = (state as any).currentLease;
-        if (lease?.clauses?.length) {
-          const idx = lease.clauses.findIndex((x: any) => x.name === clause_key);
-          if (idx >= 0) {
-            const prev = lease.clauses[idx];
-            const prevComments = Array.isArray((prev as any).comments) ? (prev as any).comments : [];
-            lease.clauses[idx] = {
-              ...prev,
-              comments: [...prevComments, comment],
-              commentsUnresolved: (prev.commentsUnresolved ?? 0) + 1,
-            };
-          }
-        }
-                Toast.fire({ icon: "success", title: "Comments Added successfully!" });
-
+      // approve / reject
+      .addCase(approveRejectBulletAsync.fulfilled, (state, { payload }) => {
+        patchBullet(state, payload, (b) => { b.status = payload.action; });
+        Toast.fire({ icon: "success", title: payload.action === "approved" ? "Approved" : "Rejected" });
       })
-      .addCase(commentOnClauseAsync.rejected, (state, action) => {
-        (state as any).clauseError = action.payload as string;
+      .addCase(approveRejectBulletAsync.rejected, (state, { payload }) => {
+        state.clauseError = payload as string;
+        Toast.fire({ icon: "error", title: payload as string });
       });
   },
 });
@@ -110,4 +73,3 @@ export const clauseSlice = createSlice({
 export const { setClauseLoading, setClauseError, resetClauseState } = clauseSlice.actions;
 export const selectClause = (state: any) => state.clause;
 export default clauseSlice.reducer;
-

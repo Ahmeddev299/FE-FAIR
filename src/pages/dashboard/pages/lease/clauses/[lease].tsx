@@ -165,13 +165,13 @@ export default function ClauseManagementPage() {
   const dispatch = useAppDispatch();
   const { currentLease, isLoading } = useAppSelector((s) => s.lease);
 
-  // Raw lease from store (single-lease payload)
+  console.log("currentLease 168",currentLease )
+
   const rawLease = useMemo<RawLeaseWithClauses | undefined>(
     () => (currentLease ?? undefined) as RawLeaseWithClauses | undefined,
     [currentLease]
   );
 
-  // UI-friendly lease object
   const lease = useMemo<UILeaseForPage | null>(() => mapApiLeaseToUI(rawLease as any), [rawLease]);
 
   const SingleLeaseLoader = isLoading || rawLease == null;
@@ -181,7 +181,6 @@ export default function ClauseManagementPage() {
     void dispatch(getLeaseDetailsById(leaseId));
   }, [router.isReady, leaseId, dispatch]);
 
-  // Use lease id as clauseDocId (or query override)
   const clauseDocId: string | undefined = clauseDocIdFromQuery || lease?.id;
 
   const [filters, setFilters] = useState({
@@ -190,15 +189,12 @@ export default function ClauseManagementPage() {
     category: 'Category',
   });
 
-  // Details modal state
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [detailsClause, setDetailsClause] = useState<ExtendedClause | null>(null);
   const [detailsHistory, setDetailsHistory] = useState<ClauseHistoryEntry | undefined>(undefined);
 
-  // Preview modal
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  // Buckets for preview modal
   const { approvedBucket, pendingBucket, rejectedBucket } = useMemo(() => {
     type PreviewClauseArray =
       NonNullable<React.ComponentProps<typeof DocumentPreviewModal>['approved']>;
@@ -227,7 +223,6 @@ export default function ClauseManagementPage() {
     return { approvedBucket, pendingBucket, rejectedBucket };
   }, [lease]);
 
-  // PDF URL
   const pdfUrl = lease?.pdfUrl;
 
   return (

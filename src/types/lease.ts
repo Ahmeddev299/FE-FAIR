@@ -1,3 +1,93 @@
+/* ---------------- Types ---------------- */
+export interface ClauseComment {
+  author?: string;
+  text: string;
+  resolved?: boolean;
+  created_at?: string;
+}
+
+export interface Clause {
+  id?: string;
+  title?: string;
+  name?: string;             // <== used as clause_key with API
+  category?: string;
+  clause_details?: string;   // original clause text
+  status?: string;           // pending | approved | rejected
+  risk?: string;             // High | Medium | Low
+  ai_confidence_score?: number;
+  ai_suggested_clause_details?: string;
+  comments?: ClauseComment[];
+  comment?: ClauseComment[]; // some payloads use "comment"
+  current_version?: string;
+  updated_at?: string | number | Date;
+}
+
+export interface LeaseData {
+  _id?: string;
+  id?: string;
+  title?: string;
+  lease_title?: string;
+  propertyAddress?: string;
+  property_address?: string;
+  leaseType?: string;
+  submitStatus?: string;
+  submit_status?: string;
+  squareFootage?: number;
+  termDisplay?: string;
+  startDate?: string | number | Date;
+  endDate?: string | number | Date;
+  rentAmount?: string;
+  securityDeposit?: string;
+  BASIC_INFORMATION?: {
+    landlord_legal_name?: string;
+    landlord_notice_email?: string;
+    tenant_legal_name?: string;
+    tenant_notice_email?: string;
+    lease_type?: string;
+    party_posture?: string;
+    title?: string;
+  };
+  PREMISES_PROPERTY_DETAILS?: {
+    property_address_line1?: string;
+    property_address_line2?: string;
+    property_city?: string;
+    property_state?: string;
+    property_zip?: number;
+    rentable_sf?: number;
+    property_size?: number;
+  };
+  TERM_TIMING_TRIGGERS?: {
+    initial_term_years?: number;
+    commencement_date_certain?: string;
+  };
+  template_data?: {
+    header?: {
+      landlord_name?: string;
+      tenant_name?: string;
+    };
+    premises?: {
+      square_footage?: string;
+      street_address?: string;
+      city_state_zip?: string;
+    };
+    lease_terms?: {
+      base_rent_monthly?: string;
+      term_display?: string;
+      rent_commencement_date?: string;
+      termination_date?: string;
+      security_deposit?: string;
+    };
+    clauses?: {
+      data?: {
+        [category: string]: {
+          [key: string]: string;
+        };
+      };
+    };
+  };
+  clauses?: Record<string, Clause> | Clause[];
+}
+
 export interface LeaseFormValues {
   title: string;
   addFileNumber: boolean;

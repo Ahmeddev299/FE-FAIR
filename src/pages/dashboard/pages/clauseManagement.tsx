@@ -104,7 +104,7 @@ const totalPages =
         onRowClick={(id) => {
           const row = leases.find(l => l.id === id) as UILeaseBrief & { _clauseDocId?: string };
           const clauseDocId = row?._clauseDocId;
-          router.push(`/dashboard/pages/lease/clauses/${id}${clauseDocId ? `?clauseDocId=${clauseDocId}` : ""}`);
+          router.push(`/dashboard/pages/lease/view/${id}${clauseDocId ? `?clauseDocId=${clauseDocId}` : ""}`);
         }}
       />
     </DashboardLayout>

@@ -1,44 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpService } from "../index";
 
-export type AddCommentPayload = {
-  clause_key: string;
-  comment: string;
-};
+export type BulletKey = { section: string; bullet_number: string | number };
 
-export type AddCommentResponse = {
-  success?: boolean;
-  status?: number;
-  message?: string;
-  data?: { comment?: { text: string; author?: string; created_at?: string } } | unknown;
-};
+export type AddBulletCommentPayload = BulletKey & { text: string };
+export type ChangeBulletTextPayload  = BulletKey & { text: string };
+export type ApproveRejectPayload     = BulletKey & { action: "approved" | "rejected" };
 
 class ClauseBaseService extends HttpService {
- 
-  getClausesByLease(leaseId: string): Promise<any> {
-    return this.get(`clause/get_clauses/${leaseId}`);
+  // PUT /leases/comment/:leaseId  { section, bullet_number, text }
+  addBulletComment(leaseId: string, payload: AddBulletCommentPayload): Promise<any> {
+    return this.put(`leases/comment/${leaseId}`, payload);
   }
 
-  getClauseById(leaseId: string, clauseId: string): Promise<any> {
-    return this.get(`clause/read_single_clause/${leaseId}/${clauseId}`);
+  // PUT /leases/clause_change/:leaseId  { section, bullet_number, text }
+  changeBulletText(leaseId: string, payload: ChangeBulletTextPayload): Promise<any> {
+    return this.put(`leases/clause_change/${leaseId}`, payload);
   }
 
-  updateClauseStatus = (
-    leaseId: string,
-    payload: { clause_key: string; tag: "approved" | "reject" }
-  ): Promise<any> =>
-    this.put(
-      `clause/landlord_clause_update_accept_reject_lease/${leaseId}`,
-      payload
-    )
-  addCommentToClause(clauseDocId: string, payload: AddCommentPayload): Promise<AddCommentResponse> {
-    return this.put(
-      `clause/comment_on_signle_clauses_of_single_lease/${clauseDocId}`,
-      {
-        clause_key: payload.clause_key,
-        clause_key_data: { text: payload.comment },
-      }
-    );
+  // PUT /leases/approve_or_reject/:leaseId  { section, bullet_number, action }
+  approveOrRejectBullet(leaseId: string, payload: ApproveRejectPayload): Promise<any> {
+    return this.put(`leases/approve_or_reject/${leaseId}`, payload);
   }
 }
 

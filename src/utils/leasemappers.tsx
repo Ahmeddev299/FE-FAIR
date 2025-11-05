@@ -76,7 +76,6 @@ function buildClauses(raw?: RawLease["template_data"]): UIClause[] {
   return out;
 }
 
-/** Main mapper for the page */
 export function mapApiLeaseToUI(raw?: RawLease): UILeaseForPage | null {
   if (!raw?._id) return null;
 
