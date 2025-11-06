@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Eye, FileDown, MoreVertical, Trash2, Signature, ViewIcon, DownloadIcon, SignalIcon, DeleteIcon } from "lucide-react";
 import { useRouter } from "next/router";
+import axios from "axios";
 import { formatDate } from "@/utils/dateFormatter";
 import Toast from "../Toast";
+import { LoadingOverlay } from "../loaders/overlayloader";
+import Config from "@/config/index";
+import ls from "localstorage-slim";
 
 /* ---------- types ---------- */
 type ClauseBlock = { status?: string };
@@ -34,11 +38,11 @@ interface LeaseTableProps {
   onViewAll?: () => void;
   onAddNew?: () => void;
   onClearError?: () => void;
-  onDelete?: (id: string) => void; // optional: wire to your API
-  onSendForSign?: (id: string) => void; // optional: wire to your e-sign flow
+  onDelete?: (id: string) => void;
+  onSendForSign?: (id: string) => void;
 }
-const getRowId = (row: Lease) => row._id || row.id; // centralize id selection
 
+const getRowId = (row: Lease) => row._id || row.id;
 
 /* ---------- utils ---------- */
 const norm = (s?: string) => (s || "").trim().toLowerCase();
@@ -98,7 +102,6 @@ const truncateWords = (text: string | undefined, limit: number) => {
   return words.length > limit ? words.slice(0, limit).join(" ") + "..." : text;
 };
 
-
 const RowActionMenu: React.FC<{
   open: boolean;
   x: number;
@@ -135,70 +138,55 @@ const RowActionMenu: React.FC<{
     <div
       ref={menuRef}
       style={{ position: "fixed", top: y + 8, left: x - 8, zIndex: 50 }}
-      className="w-[150px] rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden"
+      className="w-[176px] rounded-[6px] border border-slate-200 bg-white shadow-[0_6px_18px_rgba(15,23,42,0.08)] antialiased"
       role="menu"
       aria-label="Actions"
     >
-      <div
-        role="menu"
-        className="
-    w-[176px] rounded-[6px] border border-slate-200 bg-white
-    shadow-[0_6px_18px_rgba(15,23,42,0.08)]
-    antialiased
-  "
-      >
-        <div className="px-[10px] py-[6px] text-[11px] font-semibold text-slate-500">
-          Actions
-        </div>
-
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
-               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
-          onClick={() => { onView(); onClose(); }}
-        >
-          <ViewIcon className="w-[14px] h-[14px]" />
-          View
-        </button>
-
-        <div className="mx-[6px] h-px bg-slate-100" />
-
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
-               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
-          onClick={() => { onDownload(); onClose(); }}
-        >
-          <DownloadIcon className="w-[14px] h-[14px]" />
-          Download
-        </button>
-
-        <div className="mx-[6px] h-px bg-slate-100" />
-
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
-               text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
-          onClick={() => { onSendForSign(); onClose(); }}
-        >
-          <SignalIcon  className="w-[14px] h-[14px]" />
-          Send for Sign
-        </button>
-
-        <div className="mx-[6px] h-px bg-slate-100" />
-
-        <button
-          role="menuitem"
-          className="flex w-full items-center gap-[10px] px-[10px] py-[6px]
-               text-[13px] leading-[18px] text-rose-600 hover:bg-rose-50"
-          onClick={() => { onDelete(); onClose(); }}
-        >
-          <DeleteIcon className="w-[14px] h-[14px]" />
-          Delete
-        </button>
-
+      <div className="px-[10px] py-[6px] text-[11px] font-semibold text-slate-500">
+        Actions
       </div>
 
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px] text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+        onClick={() => { onView(); onClose(); }}
+      >
+        <ViewIcon className="w-[14px] h-[14px]" />
+        View
+      </button>
+
+      <div className="mx-[6px] h-px bg-slate-100" />
+
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px] text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+        onClick={() => { onDownload(); onClose(); }}
+      >
+        <DownloadIcon className="w-[14px] h-[14px]" />
+        Download
+      </button>
+
+      <div className="mx-[6px] h-px bg-slate-100" />
+
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px] text-[13px] leading-[18px] text-slate-800 hover:bg-slate-50"
+        onClick={() => { onSendForSign(); onClose(); }}
+      >
+        <SignalIcon className="w-[14px] h-[14px]" />
+        Send for Sign
+      </button>
+
+      <div className="mx-[6px] h-px bg-slate-100" />
+
+      <button
+        role="menuitem"
+        className="flex w-full items-center gap-[10px] px-[10px] py-[6px] text-[13px] leading-[18px] text-rose-600 hover:bg-rose-50"
+        onClick={() => { onDelete(); onClose(); }}
+      >
+        <DeleteIcon className="w-[14px] h-[14px]" />
+        Delete
+      </button>
     </div>
   );
 };
@@ -214,9 +202,11 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
 }) => {
   const router = useRouter();
   const [openId, setOpenId] = React.useState<string | null>(null);
-    const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
-      id: null, x: 0, y: 0
-    });
+  const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
+    id: null, x: 0, y: 0
+  });
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const downloadingRef = useRef(false);
 
   const view = React.useCallback((row: Lease) => {
     const id = getRowId(row);
@@ -224,12 +214,74 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
       console.warn("Lease id missing for row:", row);
       return;
     }
-    // ✅ make sure this matches your actual route:
     router.push(`/dashboard/pages/lease/view/${encodeURIComponent(id)}`);
   }, [router]);
 
+  const handleDownload = async (row: Lease) => {
+    const id = getRowId(row);
+    if (!id || downloadingRef.current) return;
 
-const getRowId = (row: Lease) => row._id || row.id || "";
+    downloadingRef.current = true;
+    setDownloadingId(id);
+
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
+
+      const resp = await axios.post(
+        `${Config.API_ENDPOINT}/leases/download`,
+        { doc_id: id },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const maybe = resp as {
+        data?: {
+          success?: boolean;
+          message?: string;
+          data?: {
+            link?: {
+              pdf_url?: string
+            }
+          }
+        }
+      };
+
+      if (maybe?.data?.success === false) {
+        throw new Error(maybe.data.message || "Failed to download lease");
+      }
+
+      const pdfUrl = maybe?.data?.data?.link?.pdf_url;
+
+      if (!pdfUrl) {
+        throw new Error("PDF URL not found in response");
+      }
+
+      // Auto-download the PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank';
+      link.download = `Lease_${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      const msg = maybe?.data?.message || "Lease downloaded successfully";
+      Toast.fire({ icon: "success", title: msg });
+
+    } catch (err: unknown) {
+      console.error("Download lease error:", err);
+      const errorMsg = err instanceof Error ? err.message : "Failed to download lease";
+      Toast.fire({ icon: "error", title: errorMsg });
+    } finally {
+      downloadingRef.current = false;
+      setDownloadingId(null);
+    }
+  };
 
   const showLoading = isLoading || leases == null;
 
@@ -269,16 +321,8 @@ const getRowId = (row: Lease) => row._id || row.id || "";
         </div>
       </div>
 
-      {error && (
-        <div className="px-6 py-3 text-sm text-red-700 bg-red-50 border-b border-red-100 flex items-start justify-between">
-          <span>{error}</span>
-          {onClearError && (
-            <button onClick={onClearError} className="text-red-600 hover:underline">
-              Dismiss
-            </button>
-          )}
-        </div>
-      )}
+      {/* Global Loading Overlay - shows when downloading */}
+      {(isLoading || downloadingId) && <LoadingOverlay visible />}
 
       <div className="p-6">
         {/* Desktop table */}
@@ -296,12 +340,11 @@ const getRowId = (row: Lease) => row._id || row.id || "";
                   Status
                 </th>
                 <th className="py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
-                  upload By
+                  Upload By
                 </th>
                 <th className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Last Updated
                 </th>
-
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-1/6">
                   Action
                 </th>
@@ -316,13 +359,13 @@ const getRowId = (row: Lease) => row._id || row.id || "";
                     <td className="px-2 py-4"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
                     <td className="px-2 py-4"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
                     <td className="px-4 py-4"><div className="h-4 w-24 bg-gray-100 rounded animate-pulse" /></td>
-                    <td className="px-4=6 py-"><div className="h-8 w-20 bg-gray-100 rounded animate-pulse" /></td>
+                    <td className="px-4 py-4"><div className="h-8 w-20 bg-gray-100 rounded animate-pulse" /></td>
                   </tr>
                 ))}
 
               {!showLoading && Array.isArray(leases) && leases.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center text-sm text-gray-500 py-6">
+                  <td colSpan={6} className="text-center text-sm text-gray-500 py-6">
                     No records found
                   </td>
                 </tr>
@@ -336,7 +379,8 @@ const getRowId = (row: Lease) => row._id || row.id || "";
                   const derived = deriveLeaseStatus(row);
                   const updated = getUpdated(row);
                   const isOpen = openId === id;
-                  const rowId  = row._id || row.id 
+                  const rowId = row._id || row.id;
+
                   return (
                     <tr key={id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 text-sm font-medium text-gray-900" title={title || "N/A"}>
@@ -354,7 +398,7 @@ const getRowId = (row: Lease) => row._id || row.id || "";
                       <td className="py-4 text-sm text-gray-700">
                         {updated ? formatDate(updated) : "—"}
                       </td>
-                       <td className="px-4 py-4">
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
                           <button
                             className="h-9 w-9 inline-flex items-center justify-center border-slate-200 hover:bg-slate-50"
@@ -376,18 +420,16 @@ const getRowId = (row: Lease) => row._id || row.id || "";
                             y={menuState.y}
                             onClose={() => setMenuState({ id: null, x: 0, y: 0 })}
                             onView={() => view(row)}
-                            onDownload={() => handleDownload(row as Letter)}
+                            onDownload={() => handleDownload(row)}
                             onSendForSign={() => {
                               Toast.fire({ icon: "success", title: "Sent for signature (demo)" });
                             }}
-                            // onDelete={() => {
-                            //   if (!rowId) return;
-                            //   setDeleteModal({ open: true, id: rowId });
-                            // }}
+                            onDelete={() => {
+                              Toast.fire({ icon: "info", title: "Delete functionality not implemented" });
+                            }}
                           />
                         </div>
                       </td>
-
                     </tr>
                   );
                 })}

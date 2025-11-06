@@ -21,105 +21,49 @@ import { LeaseRentEconomicsStep } from '@/components/dashboard/lease/steps/rentE
 import { LeaseTermTimingStep } from '@/components/dashboard/lease/steps/termTiming';
 import { UseHoursExclusivesSection } from '@/components/dashboard/lease/steps/rightOptions';
 import { useAppDispatch } from '@/hooks/hooks';
-import { submitLeaseAsync } from '@/services/lease/asyncThunk';
+import { getLeaseDetailsById, submitLeaseAsync } from '@/services/lease/asyncThunk';
 import { useRouter } from 'next/router';
 import { clearLoiIdInSession, getLoiIdFromSession } from '@/utils/loisesion';
+import { unwrapResult } from '@reduxjs/toolkit';
+import { mapLeaseApiToForm } from '@/components/dashboard/lease/utils/leaseMappers';
 
 interface Props {
   mode?: 'edit' | 'create';
   leaseId?: string;
 }
 
-const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
+const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
   const { currentStep, nextStep, prevStep, isStepComplete, steps, jumpToStep } = useFormStepper();
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [initialData, setInitialData] = useState<LeaseFormValues | null>(null);
+  console.log("initialDayta", initialData)
+
   const dispatch = useAppDispatch();
   const router = useRouter();
-
-  // Add this helper function at the top of your component or in a utils file
-  // const downloadFileFromUrl = async (url: string, filename: string = 'lease-document.pdf') => {
-  //   try {
-  //     const response = await fetch(url);
-  //     const blob = await response.blob();
-  //     const blobUrl = window.URL.createObjectURL(blob);
-
-  //     const link = document.createElement('a');
-  //     link.href = blobUrl;
-  //     link.download = filename;
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     document.body.removeChild(link);
-
-  //     // Clean up the blob URL
-  //     window.URL.revokeObjectURL(blobUrl);
-  //   } catch (error) {
-  //     console.error('Download failed:', error);
-  //     // Fallback: open in new tab
-  //     window.open(url, '_blank');
-  //   }
-  // };
-
-  // const handleSubmit = async (formValues: LeaseFormValues) => {
-  //   try {
-  //     if (currentStep === steps.length) {
-  //       console.log("values", formValues);
-  //       setSubmitting(true);
-  //       const payload = normalizeLease(formValues);
-  //       console.log("lease payload", payload);
-
-  //       // Submit the lease and get the response
-  //       const response = await dispatch(
-  //         submitLeaseAsync({ ...payload, submit_status: "Submitted" } as any)
-  //       ).unwrap();
-
-  //       setLastSaved(new Date().toLocaleTimeString());
-  //       console.log("resposme", response.link)
-  //       // Automatically download the document if link is available
-  //       if (response?.link) {
-
-  //         console.log('Starting document download from:', response.link);
-
-  //         // Use the download helper function
-  //         await downloadFileFromUrl(
-  //           response.link,
-  //           `lease-${Date.now()}.pdf` // Dynamic filename with timestamp
-  //         );
-  //       }
-
-  //       // Navigate to leases page after successful submission
-  //       // router.push({ pathname: '/dashboard/leases', query: { success: 'lease_submitted' } });
-  //     } else {
-  //       nextStep();
-  //     }
-  //   } catch (error) {
-  //     console.error('[Lease] Submit failed:', error);
-  //     alert('Failed to submit lease. Please try again.');
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
-  //   const saveAsDraft = async () => {
-  //     try {
-  //       setSaving(true);
-  //       // await dispatch(submitLeaseAsync({ ...formValues, submit_status: 'Draft' })).unwrap();
-  //       setLastSaved(new Date().toLocaleTimeString());
-  //     } catch (error) {
-  //       console.error('[Lease] Save draft failed:', error);
-  //     } finally {
-  //       setSaving(false);
-  //     }
-  //   };
 
   useEffect(() => {
     if (mode === "create") {
       clearLoiIdInSession();
-      // (optional) if you also saved to localstorage-slim earlier, cleaaar that too:
-      // ls.remove("loi_id");
       console.log("[LOI] reset loi_id for new Create session");
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (mode === "edit" && leaseId) {
+      (async () => {
+        try {
+          const resultAction = await dispatch(getLeaseDetailsById(leaseId));
+          const payload = unwrapResult(resultAction);   // your JSON shown above
+          setInitialData(mapLeaseApiToForm(payload));
+        } catch (err) {
+          console.error("Error fetching LOI details", err);
+        }
+      })();
+    }
+  }, [mode, leaseId, dispatch]);
+
 
   const handleSubmit = async (formValues: LeaseFormValues) => {
     console.log("values", formValues)
@@ -128,7 +72,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
         setSubmitting(true);
 
         const storedLoiId = getLoiIdFromSession();
-        const effectiveLoiId = storedLoiId || loiId || undefined;
+        const effectiveLoiId = storedLoiId || leaseId || undefined;
 
         const apiPayload = normalizeLease(formValues, effectiveLoiId);
 
@@ -186,12 +130,10 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
     <DashboardLayout>
       <div className="w-full mx-auto">
         <Formik
-          initialValues={LEASE_INITIAL_VALUES}
+          initialValues={initialData}
           enableReinitialize
           validationSchema={LEASE_VALIDATION_SCHEMAS[currentStep as keyof typeof LEASE_VALIDATION_SCHEMAS]}
           onSubmit={handleSubmit}
-          validateOnChange={true}
-          validateOnBlur={true}
         >
           {({ values, isValid, validateForm, errors, touched }) => (
             <Form>

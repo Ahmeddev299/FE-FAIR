@@ -1,332 +1,233 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { LeaseFormValues } from "@/types/lease";
-import { CheckCircle, Edit, AlertCircle } from "lucide-react";
+// components/steps/ReviewSubmitStep.tsx
+import React, { useRef, useState, useEffect } from "react";
+import { CheckCircle2, Download as DownloadIcon, ChevronRight } from "lucide-react";
+import ls from "localstorage-slim";
+import axios from "axios";
 
-interface LeaseReviewSubmitStepProps {
-  values: LeaseFormValues;
+import Config from "@/config/index";
+import Toast from "@/components/Toast";
+import { LoadingOverlay } from "../../../loaders/overlayloader";
+
+import type { FormValues } from "@/types/loi";
+import { getLoiIdFromSession, setLoiIdInSession } from "@/utils/loisesion";
+
+interface ReviewSubmitStepProps {
+  values: FormValues;
+  goToStep?: (step: number) => void;
+  onDownload?: () => void;
   onEdit: (step: number) => void;
+  mode?: string;
 }
 
-// small pretty-printer
-const hasVal = (v: any) => !(v === null || v === undefined || v === "");
-const fmtMoney = (v: any) => (hasVal(v) ? `$${v}` : "");
-const fmtPct = (v: any) => (hasVal(v) ? `${v}%` : "");
-const fmtBool = (v?: boolean) => (v === undefined ? "" : v ? "Yes" : "No");
+const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
+  <div className="flex items-center justify-between py-1 text-sm">
+    <span className="text-gray-500">{label}</span>
+    <span className="font-medium text-gray-900">{value ? value : "Not Specified"}</span>
+  </div>
+);
 
-const Section = ({
-  title,
-  data,
-  stepNumber,
-  onEdit,
-}: {
-  title: string;
-  data: Record<string, any>;
-  stepNumber: number;
-  onEdit: (step: number) => void;
-}) => {
-  // hide empty sections
-  const anyVisible = Object.values(data).some((v) =>
-    Array.isArray(v) ? v.length > 0 : hasVal(v)
-  );
-  if (!anyVisible) return null;
+export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) => {
+  // flags
+  const [isDownloadingLoi, setIsDownloadingLoi] = useState(false);
+  const downloadingRef = useRef(false);
+
+  // 🆔 Persisted LOI id (download-only flow)
+  const [savedLoiId, setSavedLoiId] = useState<string | null>(null);
+
+  // Avoid state updates after unmount
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // hydrate saved id on mount (SSR-safe)
+  useEffect(() => {
+    const existing = getLoiIdFromSession();
+    if (existing) {
+      setSavedLoiId(existing);
+      console.log("[LOI] restored loi_id from sessionStorage:", existing);
+    }
+  }, []);
+
+  const handleDownload = async () => {
+    if (downloadingRef.current) return;
+    downloadingRef.current = true;
+    setIsDownloadingLoi(true);
+
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
+
+      // Use the saved LOI ID or get from session
+      const docId = savedLoiId || getLoiIdFromSession();
+      
+      if (!docId) {
+        throw new Error("LOI ID not found. Please save the LOI first.");
+      }
+
+      const response = await axios.post(
+        `${Config.API_ENDPOINT}/lois/download`,
+        { doc_id: docId },
+        { 
+          headers: { 
+            "Content-Type": "application/json", 
+            Authorization: `Bearer ${token}` 
+          } 
+        }
+      );
+
+      const maybe = response as {
+        data?: {
+          success?: boolean;
+          message?: string;
+          data?: {
+            link?: {
+              pdf_url?: string
+            }
+          }
+        }
+      };
+
+      if (maybe?.data?.success === false) {
+        throw new Error(maybe.data.message || "Failed to download LOI");
+      }
+
+      const pdfUrl = maybe?.data?.data?.link?.pdf_url;
+
+      if (!pdfUrl) {
+        throw new Error("PDF URL not found in response");
+      }
+
+      // Auto-download the PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank';
+      link.download = `LOI_${docId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      const msg = maybe?.data?.message || "LOI downloaded successfully";
+      if (isMountedRef.current) {
+        Toast.fire({ icon: "success", title: msg });
+      }
+
+      // If we got a new ID from the response, save it
+      const responseId = (maybe?.data?.data as any)?.id;
+      if (responseId && responseId !== savedLoiId) {
+        setLoiIdInSession(responseId);
+        setSavedLoiId(responseId);
+        console.log("[LOI] saved loi_id to sessionStorage:", responseId);
+      }
+
+    } catch (err: unknown) {
+      console.error("Download LOI error:", err);
+      const errorMsg = err instanceof Error ? err.message : "Failed to download LOI";
+      if (isMountedRef.current) {
+        Toast.fire({ icon: "error", title: errorMsg });
+      }
+    } finally {
+      downloadingRef.current = false;
+      if (isMountedRef.current) {
+        setIsDownloadingLoi(false);
+      }
+    }
+  };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h4 className="font-semibold text-lg">{title}</h4>
-        <button
-          type="button"
-          onClick={() => onEdit(stepNumber)}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
-        >
-          <Edit className="w-4 h-4" />
-          Edit
-        </button>
-      </div>
+    <div className="relative">
+      <h3 className="text-lg font-semibold mb-1">Review & Submit</h3>
+      <p className="text-sm text-gray-600">
+        Review all the information below and submit your Letter of Intent.
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.entries(data).map(([label, value]) => {
-          if (!Array.isArray(value) && !hasVal(value)) return null;
-          const display =
-            typeof value === "boolean"
-              ? fmtBool(value)
-              : Array.isArray(value)
-              ? value.join(", ")
-              : String(value);
-          if (!hasVal(display)) return null;
+      <LoadingOverlay visible={isDownloadingLoi} size="default" fullscreen />
 
-          return (
-            <div key={label} className="space-y-1">
-              <p className="text-sm text-gray-500">{label}</p>
-              <p className="text-sm font-medium text-gray-900">{display}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <h4 className="font-semibold">Basic Information</h4>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <Row label="LOI Title" value={values.title} />
+              <Row label="Property Address" value={values.propertyAddress} />
+              <Row label="Landlord" value={values.landlordName} />
+              <Row label="Tenant" value={values.tenantName} />
+            </div>
+          </div>
 
-// Step 7: Review & Submit
-export const LeaseReviewSubmitStep: React.FC<LeaseReviewSubmitStepProps> = ({
-  values,
-  onEdit,
-}) => {
-  // Insurance quick view rows
-  const insuranceRows = [
-    {
-      label: "Commercial General Liability (CGL)",
-      party: values.insurance_party_cgl,
-      limit: values.insurance_limit_cgl,
-    },
-    {
-      label: "Workers' Compensation",
-      party: values.insurance_party_workers_comp,
-      limit: values.insurance_limit_workers_comp,
-    },
-    {
-      label: "Liquor Liability",
-      party: values.insurance_party_liquor_liability,
-      limit: values.insurance_limit_liquor_liability,
-    },
-  ].filter((r) => hasVal(r.party) || hasVal(r.limit));
+          <div className="border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <h4 className="font-semibold">Lease Terms</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <Row label="Monthly Rent" value={values.rentAmount ? `$${values.rentAmount}` : undefined} />
+              <Row label="Security Deposit" value={values.securityDeposit ? `$${values.securityDeposit}` : undefined} />
+              <Row label="Lease Duration" value={values.leaseDuration && `${values.leaseDuration} months`} />
+              <Row label="Start Date" value={values.startDate} />
+            </div>
+          </div>
 
-  return (
-    <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-          <div>
-            <h3 className="font-semibold text-blue-900">Review Your Lease</h3>
-            <p className="text-sm text-blue-700 mt-1">
-              Please review all information carefully before submitting. You can
-              edit any section by clicking the Edit button.
-            </p>
+          <div className="border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <h4 className="font-semibold">Property Details</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <Row label="Property Size" value={values.propertySize && `${values.propertySize} sq ft`} />
+              <Row label="Property Type" value={values.propertyType} />
+              <Row label="Intended Use" value={values.intendedUse} />
+              <Row label="Parking Spaces" value={values.parkingSpaces} />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 1) Basic Information */}
-      <Section
-        title="Basic Information"
-        stepNumber={1}
-        onEdit={onEdit}
-        data={{
-          "Lease Type": values.lease_type,
-          "Landlord": values.landlordName,
-          "Landlord Email": values.landlordEmail,
-          "Tenant": values.tenantName,
-          "Tenant Email": values.tenantEmail,
-        }}
-      />
+        <div className="space-y-4">
+          <div className="border border-green-300 rounded-lg bg-green-50 p-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-green-900">Ready to Submit</h4>
+                <p className="text-sm text-green-800 mt-1">
+                  Your LOI is complete and ready to be submitted. You can
+                  download a PDF copy or send it directly to the landlord.
+                </p>
 
-      {/* 2) Premises & Property */}
-      <Section
-        title="Premises & Property"
-        stepNumber={2}
-        onEdit={onEdit}
-        data={{
-          "Property Address": [
-            values.premisses_property_address_S1,
-            values.premisses_property_address_S2,
-            `${values.premisses_property_city}, ${values.premisses_property_state} ${values.premisses_property_zip}`,
-          ].filter(Boolean).join(", "),
-          "Rentable SF": values.rentable_sf,
-          "Total Property Size": values.property_size,
-          "Outdoor Space": fmtBool(values.hasExtraSpace),
-          "Outdoor Space Size (sq ft)": values.hasExtraSpace ? values.outdoor_size : "",
-          "Exclusive Parking": fmtBool(values.exclusive_parking_spaces),
-          "Exclusive Parking Count": values.exclusive_parking_spaces ? values.reserved_spaces : "",
-        }}
-      />
-
-      {/* 3) Term & Timing */}
-      <Section
-        title="Term, Timing & Triggers"
-        stepNumber={3}
-        onEdit={onEdit}
-        data={{
-          "Initial Term (Years)": values.initial_term_years,
-          "Delivery Condition": values.delivery_condition,
-          "Commencement Trigger": values.commencement_trigger,
-          "Commencement Date (Certain)": values.commencement_trigger === "Date certain" 
-            ? values.commencement_date_certain 
-            : "",
-          "Rent Commencement Offset (Days)": values.rent_commencement_offset_days,
-        }}
-      />
-
-      {/* 4) Rent & Economics */}
-      <Section
-        title="Rent & Economics"
-        stepNumber={4}
-        onEdit={onEdit}
-        data={{
-          "Rent Type": values.rent_type,
-          "Monthly Base Rent": values.rent_type !== "Percent" ? fmtMoney(values.monthly_rent) : "",
-          "Percentage Rent (%)": values.rent_type === "Percent" ? fmtPct(values.percentage_lease_percent) : "",
-          "Security Deposit": fmtMoney(values.security_deposit),
-          "Prepaid Rent": fmtMoney(values.prepaid_rent),
-          "Schedule Basis": values.schedule_basis,
-          "Schedule Periods": values.base_rent_schedule_rows.length > 0 
-            ? values.base_rent_schedule_rows.map(r => r.period).join(", ")
-            : "",
-        }}
-      />
-
-      {/* 5) Operations, Maintenance & Insurance */}
-      <Section
-        title="Operations, Maintenance & Insurance"
-        stepNumber={5}
-        onEdit={onEdit}
-        data={{
-          "Lease Structure": values.lease_structure,
-          "CAM Include/Exclude": ["Modified Gross", "Triple Net"].includes(values.lease_structure) 
-            ? values.cam_include_exclude 
-            : "",
-          "Mgmt Fee Cap (%)": ["Modified Gross", "Triple Net"].includes(values.lease_structure)
-            ? fmtPct(values.management_fee_cap_percent)
-            : "",
-          "Est. CAM per SF": ["Modified Gross", "Triple Net"].includes(values.lease_structure)
-            ? fmtMoney(values.est_cam_per_sf)
-            : "",
-          "Est. Taxes per SF": ["Modified Gross", "Triple Net"].includes(values.lease_structure)
-            ? fmtMoney(values.est_taxes_per_sf)
-            : "",
-          "Est. Insurance per SF": ["Modified Gross", "Triple Net"].includes(values.lease_structure)
-            ? fmtMoney(values.est_insurance_per_sf)
-            : "",
-          "Estimated NNN (Annual)": values.lease_structure === "Triple Net"
-            ? fmtMoney(values.nnn_est_annual)
-            : "",
-          "HVAC Contract Required": fmtBool(values.hvac_contract_required),
-          "Service Hours": values.service_hours,
-          "Vent Hood": fmtBool(values.vent_hood),
-          "Grease Trap": fmtBool(values.grease_trap),
-          "Utilities": values.utilities.length > 0 ? values.utilities.join(", ") : "",
-          "Utility Responsibility": values.utility_responsibility,
-        }}
-      />
-
-      {/* Insurance quick summary */}
-      {insuranceRows.length > 0 && (
-        <div className="border border-gray-200 rounded-lg p-6 -mt-4">
-          <h5 className="font-medium mb-3">Insurance Summary</h5>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {insuranceRows.map((r) => (
-              <div key={r.label} className="text-sm">
-                <div className="text-gray-500">{r.label}</div>
-                <div className="font-medium text-gray-900">
-                  {r.party || "-"}{r.party && r.limit ? " — " : ""}{r.limit || ""}
+                <div className="w-full mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    disabled={isDownloadingLoi || downloadingRef.current}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <DownloadIcon className="w-4 h-4" />
+                    {isDownloadingLoi ? "Downloading…" : "Download"}
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Maintenance Summary */}
-      <div className="border border-gray-200 rounded-lg p-6">
-        <h5 className="font-medium mb-3">Maintenance Responsibilities</h5>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          {[
-            { label: "Structural", value: values.maintenance_structural },
-            { label: "Non-Structural", value: values.maintenance_non_structural },
-            { label: "HVAC", value: values.maintenance_hvac },
-            { label: "Plumbing", value: values.maintenance_plumbing },
-            { label: "Electrical", value: values.maintenance_electrical },
-            { label: "Common Areas", value: values.maintenance_common_areas },
-            { label: "Utilities", value: values.maintenance_utilities },
-            { label: "Special Equipment", value: values.maintenance_special_equipment },
-          ].filter(m => hasVal(m.value)).map((m) => (
-            <div key={m.label}>
-              <span className="text-gray-500">{m.label}: </span>
-              <span className="font-medium capitalize">{m.value}</span>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 6) Rights, Options & Conditions */}
-      <Section
-        title="Rights, Options & Conditions"
-        stepNumber={6}
-        onEdit={onEdit}
-        data={{
-          "Permitted Use": values.permitted_use,
-          "Prohibited Uses (Custom)": values.prohibited_custom ? values.prohibited_uses : "",
-          "Operating Hours": values.operating_hours,
-          "Exclusive Use Requested": values.exclusive_requested,
-          "Exclusive Description": values.exclusive_requested === "Yes" ? values.exclusive_description : "",
-          
-          "Co-tenancy Applies": fmtBool(values.cotenancy_applicable),
-          "Opening Co-tenancy": values.cotenancy_applicable ? values.cotenancy_opening : "",
-          "Ongoing Co-tenancy": values.cotenancy_applicable ? values.cotenancy_ongoing : "",
-          "Co-tenancy Remedies": values.cotenancy_applicable ? values.cotenancy_remedies : "",
-          
-          "Renewal Escalation Type": values.rentEscalationType === "fmv" ? "FMV" : "Percent",
-          "Escalation % (If Percent)": values.rentEscalationType === "percent"
-            ? fmtPct(values.rentEscalationPercent)
-            : "",
-          
-          "Include Renewal Option": fmtBool(values.includeRenewalOption),
-          "Renewal Options Count": values.includeRenewalOption ? values.renewalOptionsCount : "",
-          "Renewal Years Each": values.includeRenewalOption ? values.renewalYears : "",
-          
-          "Right of First Refusal": values.rofr_yes,
-          "ROFR Scope": values.rofr_yes === "Yes" ? values.rofr_scope : "",
-          
-          "Lease-to-Purchase": values.ltp_yes,
-          "LTP Terms Window (Days)": values.ltp_yes === "Yes" ? values.ltp_terms_window_days : "",
-          "LTP Notes": values.ltp_yes === "Yes" ? values.ltp_notes : "",
-          
-          "Subordination (Automatic)": values.subordination_automatic,
-          "Non-Disturbance Required": values.non_disturbance_required,
-          "NDS Condition": values.non_disturbance_required === "Yes" ? values.nondisturbance_condition : "",
-          "Estoppel Delivery (Days)": values.estoppel_delivery_days,
-        }}
-      />
-
-      {/* Exhibits */}
-      {values.exhibits.length > 0 && (
-        <div className="border border-gray-200 rounded-lg p-6">
-          <h5 className="font-medium mb-3">Exhibits</h5>
-          <div className="space-y-2">
-            {values.exhibits.map((ex, i) => (
-              <div key={i} className="text-sm">
-                <span className="font-medium">{ex.title}</span>
-                {ex.notes && <span className="text-gray-500"> — {ex.notes}</span>}
-              </div>
-            ))}
           </div>
-        </div>
-      )}
 
-      {/* Final Confirmation */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-          <div>
-            <h4 className="font-medium text-yellow-900">Before You Submit</h4>
-            <ul className="text-sm text-yellow-700 mt-2 space-y-1 list-disc list-inside">
-              <li>All required fields have been completed</li>
-              <li>All dates and financial terms are accurate</li>
-              <li>Party information is correct</li>
+          <div className="border border-gray-200 rounded-lg p-4">
+            <h4 className="font-semibold mb-2">Next Steps</h4>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li className="flex items-start gap-2">
+                <ChevronRight className="w-4 h-4 mt-0.5 text-gray-400" />
+                LOI will be sent to the landlord for review.
+              </li>
+              <li className="flex items-start gap-2">
+                <ChevronRight className="w-4 h-4 mt-0.5 text-gray-400" />
+                You'll receive notifications about the status.
+              </li>
+              <li className="flex items-start gap-2">
+                <ChevronRight className="w-4 h-4 mt-0.5 text-gray-400" />
+                Negotiate terms and proceed to lease agreement.
+              </li>
             </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-        <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-          <div>
-            <h4 className="font-medium text-green-900">Ready to Submit</h4>
-            <p className="text-sm text-green-700 mt-1">
-              Once submitted, this lease will be available in your dashboard.
-              You can continue to edit it until it is finalized.
-            </p>
           </div>
         </div>
       </div>

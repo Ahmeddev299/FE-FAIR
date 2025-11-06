@@ -17,10 +17,9 @@ function MainPage() {
         useAppSelector((state) => state.dashboard);
     console.log("isLoading", isLoading)
     console.log("isLoadingLeases", isLoadingLeases)
-    // helper at the top (inside the component file, outside JSX)
+
     const toErrorMessage = (err: unknown): string | null =>
         err == null ? null : typeof err === 'string' ? err : String(err);
-
 
     useEffect(() => {
         dispatch(getDashboardStatsAsync());

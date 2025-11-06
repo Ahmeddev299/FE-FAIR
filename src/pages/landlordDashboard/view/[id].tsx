@@ -272,7 +272,7 @@ export default function ClauseDetailPanel() {
     return <Clock className="w-4 h-4 text-yellow-500" />;
   };
 
-  const RiskBadge = ({ risk }: { risk?: "Low" | "Medium" | "High" }) => {
+   const RiskBadge = ({ risk }: { risk?: "Low" | "Medium" | "High" }) => {
     const styles: Record<string, string> = {
       Low: "bg-[#DCFCE7] text-emerald-700",
       Medium: "bg-[#FEF9C3] text-yellow-700",
@@ -324,8 +324,39 @@ export default function ClauseDetailPanel() {
 
   };
 
+  const handleDownload = async () => {
+    if (downloadingRef.current) return;
+    downloadingRef.current = true;
+    setIsDownloadingLoi(true);
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
 
-  const onSaveClauseText = async () => {
+      const resp = await axios.post(
+        `${Config.API_ENDPOINT}/dashboard/download_template_data`,
+        { ...currentLOI, doc_id: docid },
+        { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
+      );
+
+      const maybe = resp as { data?: { success?: boolean; message?: string; data?: { temp?: boolean } } };
+      if (maybe?.data?.success === false) throw new Error(maybe.data.message || "Failed to fetch LOI");
+
+      const msg = maybe?.data?.message;
+      if (msg) Toast.fire({ icon: "success", title: msg });
+
+      const data = normalizeLoiResponse(resp);
+      const isTemp = true
+      await exportLoiToDocx(data, undefined, isTemp);
+      if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
+    } catch (err: unknown) {
+      Toast.fire({ icon: "warning", title: errorMessage(err) });
+    } finally {
+      downloadingRef.current = false;
+      setIsDownloadingLoi(false);
+    }
+  };
+
+    const onSaveClauseText = async () => {
     if (!selectedClauseKey) return;
     const clauseId = routeLoiId;
     if (!clauseId) {
@@ -361,43 +392,7 @@ export default function ClauseDetailPanel() {
     }
   };
 
-
-
-  const handleDownload = async () => {
-    if (downloadingRef.current) return;
-    downloadingRef.current = true;
-    setIsDownloadingLoi(true);
-    try {
-      const token = ls.get("access_token", { decrypt: true });
-      if (!token) throw new Error("Authentication token not found");
-
-      const resp = await axios.post(
-        `${Config.API_ENDPOINT}/dashboard/download_template_data`,
-        { ...currentLOI, doc_id: docid },
-        { headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } }
-      );
-
-      const maybe = resp as { data?: { success?: boolean; message?: string; data?: { temp?: boolean } } };
-      if (maybe?.data?.success === false) throw new Error(maybe.data.message || "Failed to fetch LOI");
-
-      const msg = maybe?.data?.message;
-      if (msg) Toast.fire({ icon: "success", title: msg });
-
-      const data = normalizeLoiResponse(resp);
-      const isTemp = true
-      await exportLoiToDocx(data, undefined, isTemp);
-      if (isMountedRef.current) Toast.fire({ icon: "success", title: "LOI exported successfully" });
-    } catch (err: unknown) {
-      Toast.fire({ icon: "warning", title: errorMessage(err) });
-    } finally {
-      downloadingRef.current = false;
-      setIsDownloadingLoi(false);
-    }
-  };
-
-  // Use currentLOI data for display if selectedLOI not set yet
   const displayLOI: CurrentLOIShape | null = selectedLOI ?? currentLOI ?? null;
-
 
   useEffect(() => {
     if (!selectedClauseKey || !selectedClauseData) return;

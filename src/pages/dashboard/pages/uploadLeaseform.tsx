@@ -9,7 +9,6 @@ import Config from "@/config/index";
 import ls from "localstorage-slim";
 
 import { LeaseFormValues, FileData } from '@/types/loi';
-import { validationSchema } from '@/validations/schemas';
 
 import { PageHeader } from '@/components/uploadLeaseForm/PageHeader';
 import { FileUpload } from '@/components/uploadLeaseForm/FileUpload';
@@ -45,40 +44,6 @@ const UploadLeaseForm: React.FC = () => {
     // leaseTitle: '',   // OPTIONAL: only include if you actually bind it in the UI
   };
 
-  interface UploadPayload {
-    leaseId?: string;
-    Lease?: { _id?: string };
-    lease?: { _id?: string };
-    data?: {
-      leaseId?: string;
-      lease?: { _id?: string };
-      clauseDocId?: string;
-      clauses?: { _id?: string };
-    };
-    clauseDocId?: string;
-    Clauses?: { _id?: string };
-    clauses?: { _id?: string };
-  }
-
-  function extractIds(data: UploadPayload) {
-    console.log("data", data)
-    const leaseId =
-      data?.leaseId ??
-      data?.Lease?._id ??
-      data?.lease?._id ??
-      data?.leaseId ??
-      data?.lease?._id;
-
-    const clauseDocId =
-      data?.clauseDocId ??
-      data?.Clauses?._id ??
-      data?.clauses?._id ??
-      data?.clauseDocId ??
-      data?.clauses?._id;
-
-    return { leaseId, clauseDocId };
-  }
-
   const MAX_MB = 10;
   const ALLOWED = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // PDF, DOCX
 
@@ -94,41 +59,25 @@ const UploadLeaseForm: React.FC = () => {
     { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
   ) => {
     try {
-      if (!uploadedFile) {
-        Toast.fire({ icon: "error", title: "Please upload a document first." });
-        return;
+      if (uploadedFile) {
+        const sizeErr = validateLeaseFile(uploadedFile.file);
+        if (sizeErr) {
+          Toast.fire({ icon: "error", title: sizeErr });
+          return;
+        }
       }
+      console.log("112", values.leaseId)
 
-      const sizeErr = validateLeaseFile(uploadedFile.file);
-      if (sizeErr) {
-        Toast.fire({ icon: "error", title: sizeErr });
-        return;
-      }
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
+      console.log("token", token)
 
-      const formData = new FormData();
-      if (values.leaseId?.trim()) {
-        formData.append("loi_id", values.leaseId.trim());
-      }
-      formData.append(
-        "lease_title",
-        (values.leaseTitle?.trim() || values.title).trim()
-      );
-      formData.append("startDate", values.startDate);
-      formData.append("endDate", values.endDate);
-      formData.append("property_address", values.propertyAddress);
-      formData.append("notes", values.notes || "");
-      formData.append("file", uploadedFile.file);
-
-      // 🔹 Grab token from localstorage-slim
-      const token: string = `${ls.get("access_token", { decrypt: true })}`;
-
-      // 🔹 Axios call with Bearer token
       const response = await axios.post(
-        `${Config.API_ENDPOINT}/dashboard/upload_lease_tenant`,
-        formData,
+        `${Config.API_ENDPOINT}/leases/submit_by_loi/${values.leaseId}`,
+        {}, // or the actual body if the endpoint expects one
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -137,17 +86,7 @@ const UploadLeaseForm: React.FC = () => {
       const payload = response.data;
       console.log("payload", payload);
 
-      const { leaseId, clauseDocId } = extractIds(payload.data);
-
-      console.log("leaseId", leaseId)
-      console.log("clauses", clauseDocId)
-      if (!leaseId || !clauseDocId) {
-        throw new Error("Upload succeeded but IDs were not returned by the server.");
-      }
-      router.push({
-        pathname: "/dashboard/pages/lease/review/[leaseId]",
-        query: { leaseId, clauseDocId },
-      });
+      router.push(`/dashboard/pages/lease/edit/${response.data.data.lease_id}`);
     } catch (err) {
       console.error("Upload error", err);
       Toast.fire({ icon: "error", title: "Upload failed. Try again." });
@@ -172,7 +111,6 @@ const UploadLeaseForm: React.FC = () => {
       <div className="w-full max-w-7xl xl:max-w-none mt-6 mx-auto px-4 sm:px-0">
         <Formik<ExtendedLeaseFormValues>
           initialValues={initialValues}
-          validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
           {({ setFieldValue, errors, touched, isSubmitting }: FormikProps<ExtendedLeaseFormValues>) => (

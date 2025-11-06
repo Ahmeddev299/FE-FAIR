@@ -1,7 +1,8 @@
 // pages/SectionClausesPage.tsx
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft, DownloadIcon } from "lucide-react";
+import axios from "axios";
 import { DashboardLayout } from "@/components/layouts";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { selectLease } from "@/redux/slices/leaseSlice";
@@ -11,23 +12,28 @@ import { ClauseReviewPanel } from "@/components/dashboard/lease/viewleaseSection
 import { CommentsPanel } from "@/components/dashboard/lease/viewleaseSection/commentsPanel";
 import { useSectionClauses } from "@/hooks/useSectionClauses";
 import { ClausesList } from "@/components/dashboard/lease/viewleaseSection/clauseList";
-
+import Config from "@/config/index";
+import ls from "localstorage-slim";
 
 export default function SectionClausesPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { currentLease } = useAppSelector(selectLease);
-  
-  // Local state to manage updated clauses
+
   const [localClauses, setLocalClauses] = useState<Record<string, any>>({});
-  
+  const [isSubmittingLoi, setIsSubmittingLoi] = useState(false);
+  const [isDownloadingLoi, setIsDownloadingLoi] = useState(false);
+
+  const submittingLoi = useRef(false);
+  const downloadingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
   const { id, section, displayClauses: originalClauses, title } = useSectionClauses(
     router,
     dispatch,
     currentLease
   );
 
-  // Merge original clauses with local updates
   const displayClauses = useMemo(() => {
     return originalClauses.map(clause => {
       const localUpdate = localClauses[clause.id];
@@ -35,7 +41,6 @@ export default function SectionClausesPage() {
     });
   }, [originalClauses, localClauses]);
 
-  // Handle clause updates
   const handleClauseUpdate = useCallback((updatedClause: any) => {
     setLocalClauses(prev => ({
       ...prev,
@@ -49,7 +54,6 @@ export default function SectionClausesPage() {
     editedText,
     loading,
     commentText,
-    setSelectedClause,
     setIsEditing,
     setEditedText,
     setCommentText,
@@ -60,11 +64,126 @@ export default function SectionClausesPage() {
     handleAddComment,
   } = useClauseActions(currentLease, handleClauseUpdate);
 
-  // Wrapper to handle clause click with updated data
   const onClauseClickWrapper = useCallback((clause: any) => {
     const updatedClause = localClauses[clause.id] || clause;
     handleClauseClick(updatedClause);
   }, [handleClauseClick, localClauses]);
+
+  // Toast utility (assuming you have Swal or similar)
+  const Toast = {
+    fire: ({ icon, title }: { icon: string; title: string }) => {
+      console.log(`[${icon.toUpperCase()}] ${title}`);
+      // Replace with your actual toast implementation
+    }
+  };
+
+  const handleSubmitLOI = async () => {
+    if (submittingLoi.current) return;
+    submittingLoi.current = true;
+    setIsSubmittingLoi(true);
+
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
+
+      const resp = await axios.put(
+        `${Config.API_ENDPOINT}/leases/submit_clauses`,
+        { doc_id: id },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const maybe = resp as { data?: { success?: boolean; message?: string } };
+      if (maybe?.data?.success === false) {
+        throw new Error(maybe.data.message || "Failed to submit LOI");
+      }
+
+      const msg = maybe?.data?.message || "LOI submitted successfully";
+      Toast.fire({ icon: "success", title: msg });
+
+    } catch (err: unknown) {
+      console.error("Submit LOI error:", err);
+      const errorMsg = err instanceof Error ? err.message : "Failed to submit LOI";
+      Toast.fire({ icon: "error", title: errorMsg });
+    } finally {
+      submittingLoi.current = false;
+      setIsSubmittingLoi(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (downloadingRef.current) return;
+    downloadingRef.current = true;
+    setIsDownloadingLoi(true);
+
+    try {
+      const token = ls.get("access_token", { decrypt: true });
+      if (!token) throw new Error("Authentication token not found");
+
+      const resp = await axios.post(
+        `${Config.API_ENDPOINT}/leases/download`,
+        { doc_id: id },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const maybe = resp as {
+        data?: {
+          success?: boolean;
+          message?: string;
+          data?: {
+            link?: {
+              pdf_url?: string
+            }
+          }
+        }
+      };
+
+      if (maybe?.data?.success === false) {
+        throw new Error(maybe.data.message || "Failed to download LOI");
+      }
+
+      const pdfUrl = maybe?.data?.data?.link?.pdf_url;
+
+      if (!pdfUrl) {
+        throw new Error("PDF URL not found in response");
+      }
+
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.target = '_blank';
+      link.download = `LOI_${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      const msg = maybe?.data?.message || "Lease downloaded successfully";
+      Toast.fire({ icon: "success", title: msg });
+
+    } catch (err: unknown) {
+      console.error("Download LOI error:", err);
+      const errorMsg = err instanceof Error ? err.message : "Failed to download LOI";
+      Toast.fire({ icon: "error", title: errorMsg });
+    } finally {
+      downloadingRef.current = false;
+      setIsDownloadingLoi(false);
+    }
+  };
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   if (!currentLease) {
     return (
@@ -79,30 +198,55 @@ export default function SectionClausesPage() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50">
+
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-6">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Lease
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              {displayClauses.length} {displayClauses.length === 1 ? 'clause' : 'clauses'}
-            </p>
+          <div className="bg-white border-b border-gray-200">
+
+            <div className="px-6 pb-3 flex items-center gap-3">
+              <button
+                onClick={() => {
+                  router.push("/landlordDashboard/pages/mainpage");
+                }}
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back to Dashboard
+              </button>
+
+              <span className="h-5 w-px bg-gray-200" />
+
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  disabled={isDownloadingLoi || downloadingRef.current}
+                  className="inline-flex items-center gap-2 h-9 px-4 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50 text-sm"
+                >
+                  Download
+                  <DownloadIcon className="w-4 h-4" />
+                  {isDownloadingLoi && (<LoadingOverlay visible />)}
+                </button>
+
+                <button
+                  onClick={handleSubmitLOI}
+                  disabled={isSubmittingLoi || submittingLoi.current}
+                  className="inline-flex items-center justify-center h-9 px-4 rounded-md bg-blue-600 text-white text-sm font-medium shadow-sm hover:bg-blue-700"
+                >
+                  Finalize Lease
+                  {isSubmittingLoi && (<LoadingOverlay visible fullscreen />)}
+
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          {/* Clauses List */}
           <ClausesList
             clauses={displayClauses}
             section={section}
             onClauseClick={onClauseClickWrapper}
           />
 
-          {/* Selected Clause Details */}
           {selectedClause && (
             <div className="flex gap-6">
               <ClauseReviewPanel
@@ -132,6 +276,10 @@ export default function SectionClausesPage() {
           )}
         </div>
       </div>
+
+      {/* Loading overlays */}
+      {isDownloadingLoi && <LoadingOverlay visible />}
+      {isSubmittingLoi && <LoadingOverlay visible fullscreen />}
     </DashboardLayout>
   );
 }
