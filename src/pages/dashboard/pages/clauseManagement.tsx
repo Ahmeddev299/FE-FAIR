@@ -20,7 +20,6 @@ export default function LeasesPage() {
   const dispatch = useAppDispatch();
 
   const { leaseList, isLoading } = useAppSelector(selectLease);
-  console.log("leaselist",leaseList)
   const showLoader = isLoading || leaseList === null;
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -29,31 +28,24 @@ export default function LeasesPage() {
     void dispatch(getallUserLeasesAsync({ page, limit }));
   }, [dispatch, page, limit]);
 
-  // const leases: UILeaseBriefRow[] = useMemo(() => {
-  //   const data = leaseList?.data ?? null; 
-  //   return mapLeaseListToUI({ data } as any);
-  // }, [leaseList]);
 
-// AFTER
-const apiItems: ApiLeaseItem[] = useMemo(() => {
-  if (!leaseList) return [];
-  // Support a few possible shapes:
-  if (Array.isArray(leaseList)) return leaseList as ApiLeaseItem[];
-  if ('leases' in leaseList) return (leaseList as ApiLeaseListResponse).leases;
-  if ('data' in leaseList) return (leaseList as { data: ApiLeaseItem[] }).data ?? [];
-  return [];
-}, [leaseList]);
+  const apiItems: ApiLeaseItem[] = useMemo(() => {
+    if (!leaseList) return [];
+    if (Array.isArray(leaseList)) return leaseList as ApiLeaseItem[];
+    if ('leases' in leaseList) return (leaseList as ApiLeaseListResponse).leases;
+    if ('data' in leaseList) return (leaseList as { data: ApiLeaseItem[] }).data ?? [];
+    return [];
+  }, [leaseList]);
 
-const leases: UILeaseBriefRow[] = useMemo(
-  () => mapLeaseListToUI(apiItems),
-  [apiItems]
-);
+  const leases: UILeaseBriefRow[] = useMemo(
+    () => mapLeaseListToUI(apiItems),
+    [apiItems]
+  );
 
-console.log("leases",leases)
-const total = (leaseList as any)?.pagination?.total_items ?? leases.length;
-const totalPages =
-  (leaseList as any)?.pagination?.total_pages ??
-  Math.max(1, Math.ceil(total / limit));
+  const total = (leaseList as any)?.pagination?.total_items ?? leases.length;
+  const totalPages =
+    (leaseList as any)?.pagination?.total_pages ??
+    Math.max(1, Math.ceil(total / limit));
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);

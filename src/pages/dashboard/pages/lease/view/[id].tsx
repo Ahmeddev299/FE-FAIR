@@ -1,4 +1,4 @@
-// pages/lease/[id].tsx - REDESIGNED PAGE WITH CORRECT ROUTING
+// pages/lease/[id].tsx - DYNAMIC CLAUSE CATEGORIES
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
 import { FileText, ChevronRight, Download, Upload, Search } from "lucide-react";
@@ -27,75 +27,37 @@ export default function LeaseDetailPage() {
     dispatch(getLeaseDetailsById(id));
   }, [dispatch, router.isReady, id, currentLease?._id, currentLease?.id]);
 
-  // Parse clauses from API data structure
   const clausesData = useMemo(() => {
     if (!currentLease?.clauses?.history) {
-      return { tenantAgreesTo: [], tenantNotAgreesTo: [] };
+      return { categories: {}, allCategories: [] };
     }
 
     const history = currentLease.clauses.history;
-    
-    // Parse "Tenant agrees to"
-    const tenantAgreesTo = history["Tenant agrees to"] 
-      ? Object.entries(history["Tenant agrees to"]).map(([key, clause]: [string, any]) => ({
+    const categories: Record<string, any[]> = {};
+    const allCategories: string[] = [];
+
+    Object.keys(history).forEach((categoryKey) => {
+      const categoryData = history[categoryKey];
+            if (typeof categoryData === 'object' && categoryData !== null) {
+        const clauses = Object.entries(categoryData).map(([key, clause]: [string, any]) => ({
           id: key,
-          title: `Tenant agrees to - Clause ${key}`,
-          category: "Tenant agrees to",
+          title: `${categoryKey} - Clause ${key}`,
+          category: categoryKey,
           status: clause.status || "pending",
           ai_score: Math.round((clause.ai_confidence_score || 0) * 100),
           risk_level: clause.risk || "Low",
           comments: clause.comment || [],
           details: clause.clause_details || "",
           ...clause
-        }))
-      : [];
+        }));
 
-    // Parse "Tenant agrees not to"
-    const tenantNotAgreesTo = history["Tenant agrees not to"]
-      ? Object.entries(history["Tenant agrees not to"]).map(([key, clause]: [string, any]) => ({
-          id: key,
-          title: `Tenant agrees not to - Clause ${key}`,
-          category: "Tenant agrees not to",
-          status: clause.status || "pending",
-          ai_score: Math.round((clause.ai_confidence_score || 0) * 100),
-          risk_level: clause.risk || "Low",
-          comments: clause.comment || [],
-          details: clause.clause_details || "",
-          ...clause
-        }))
-      : [];
-
-    return { tenantAgreesTo, tenantNotAgreesTo };
-  }, [currentLease]);
-
-  // All clauses combined
-  const allClauses = useMemo(() => {
-    return [...clausesData.tenantAgreesTo, ...clausesData.tenantNotAgreesTo];
-  }, [clausesData]);
-
-  // Filter clauses based on search and status
-  const filteredClauses = useMemo(() => {
-    return allClauses.filter(clause => {
-      const matchesStatus = filterStatus === "all" || 
-        clause.status.toLowerCase() === filterStatus.toLowerCase();
-      
-      const matchesSearch = !searchQuery || 
-        clause.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        clause.details.toLowerCase().includes(searchQuery.toLowerCase());
-
-      return matchesStatus && matchesSearch;
+        categories[categoryKey] = clauses;
+        allCategories.push(categoryKey);
+      }
     });
-  }, [allClauses, filterStatus, searchQuery]);
 
-  // Calculate stats
-  const stats = useMemo(() => {
-    return {
-      total: allClauses.length,
-      approved: allClauses.filter(c => c.status.toLowerCase() === "approved").length,
-      rejected: allClauses.filter(c => c.status.toLowerCase() === "rejected").length,
-      pending: allClauses.filter(c => c.status.toLowerCase() === "pending").length,
-    };
-  }, [allClauses]);
+    return { categories, allCategories };
+  }, [currentLease]);
 
   const leaseInfo = useMemo(() => {
     if (!currentLease) return null;
@@ -115,9 +77,9 @@ export default function LeaseDetailPage() {
     };
   }, [currentLease]);
 
-  const handleSectionClick = (section: string) => {
-    // Fixed routing - match your actual file structure
-    router.push(`/dashboard/pages/lease/${id}/section/${section}`);
+  const handleSectionClick = (categoryName: string) => {
+    const encodedCategory = encodeURIComponent(categoryName);
+    router.push(`/dashboard/pages/lease/${id}/section/${encodedCategory}`);
   };
 
   const handleBack = () => router.push(`/dashboard/pages/lease/view${id}`);
@@ -127,7 +89,7 @@ export default function LeaseDetailPage() {
   };
 
   const handleUpload = () => {
-    console.log("Upload lease");
+    console.log(router.push("/dashboard/pages/uploadLeaseform"))
   };
 
   if (!currentLease || !leaseInfo) {
@@ -155,7 +117,7 @@ export default function LeaseDetailPage() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
@@ -183,7 +145,6 @@ export default function LeaseDetailPage() {
               </div>
             </div>
 
-            {/* Search and Filters */}
             <div className="flex gap-3">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -214,38 +175,32 @@ export default function LeaseDetailPage() {
             </div>
           </div>
 
-          {/* Section Navigation Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-            <div
-              onClick={() => handleSectionClick("agrees")}
-              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Tenant Agrees To</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {clausesData.tenantAgreesTo.length} clauses
-                  </p>
+            {clausesData.allCategories.map((categoryKey) => (
+              <div
+                key={categoryKey}
+                onClick={() => handleSectionClick(categoryKey)}
+                className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">{categoryKey}</h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {clausesData.categories[categoryKey].length} clauses
+                    </p>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-gray-400" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-gray-400" />
               </div>
-            </div>
-
-            <div
-              onClick={() => handleSectionClick("notAgrees")}
-              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Tenant Not Agrees To</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {clausesData.tenantNotAgreesTo.length} clauses
-                  </p>
-                </div>
-                <ChevronRight className="w-6 h-6 text-gray-400" />
-              </div>
-            </div>
+            ))}
           </div>
+
+          {clausesData.allCategories.length === 0 && (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">No clause categories found in this lease.</p>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
