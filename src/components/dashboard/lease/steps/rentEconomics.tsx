@@ -130,6 +130,19 @@ export const LeaseRentEconomicsStep: React.FC = () => {
           </div>
         </div>
 
+        {/* NEW: Base Rent Name (single text field) */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Base Rent </label>
+          <Field
+            name="base_rent_schedule"
+            placeholder="e.g., Retail Base Rent"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Optional label/name for the base rent schedule.
+          </p>
+        </div>
+
         {/* Base Rent Schedule */}
         <div className="space-y-3">
           <label className="block text-sm font-medium">Base Rent Schedule</label>
@@ -241,7 +254,7 @@ export const LeaseRentEconomicsStep: React.FC = () => {
           </div>
         )}
 
-        {showPassThroughBlock && (
+        {(isModGross || isNNN) && (
           <>
             <div>
               <label className="block text-sm font-medium mb-2">CAM Include / Exclude</label>
@@ -333,7 +346,8 @@ export const LeaseRentEconomicsStep: React.FC = () => {
             className="h-4 w-4 rounded border-gray-300"
           />
           <label htmlFor="operating_expenses_applicable" className="text-sm">
-            Audit Right          </label>
+            Audit Right
+          </label>
         </div>
       </div>
 

@@ -54,17 +54,12 @@ function normalizeLoiResponse(response: unknown): LoiServerData {
   return loi as LoiServerData;
 }
 
-// --------------------------------------------------------------------------
-
 export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) => {
-  // flags
   const [isDownloadingLoi, setIsDownloadingLoi] = useState(false);
   const downloadingRef = useRef(false);
 
-  // 🆔 Persisted LOI id (download-only flow)
   const [savedLoiId, setSavedLoiId] = useState<string | null>(null);
 
-  // Avoid state updates after unmount
   const isMountedRef = useRef(true);
   useEffect(() => {
     return () => {
@@ -72,7 +67,6 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
     };
   }, []);
 
-  // hydrate saved id on mount (SSR-safe)
   useEffect(() => {
     const existing = getLoiIdFromSession();
     if (existing) {
@@ -90,7 +84,6 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
       const token = ls.get("access_token", { decrypt: true });
       if (!token) throw new Error("Authentication token not found");
       const isDownload = true
-      // pass the saved id if present
       const clientPayload: LOIApiPayload = transformToApiPayload(values , savedLoiId ?? undefined , isDownload);
 
       const response = await axios.post(
@@ -101,12 +94,10 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
 
       const realData: LoiServerData = normalizeLoiResponse(response);
 
-      // pull id from response and persist in SESSION
       const newLoiId = (realData as any)?.id ?? (realData as any)?.data?.id;
       if (newLoiId && newLoiId !== savedLoiId) {
         setLoiIdInSession(newLoiId);
         setSavedLoiId(newLoiId);
-        console.log("[LOI] saved loi_id to sessionStorage:", newLoiId);
       }
 
       let isTemp;
@@ -114,7 +105,6 @@ export const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) =>
       Toast.fire({ icon: "success", title: "LOI exported successfully" });
     } catch (err) {
       console.log(err)
-      // … your error handling …
     } finally {
       downloadingRef.current = false;
       setIsDownloadingLoi(false);

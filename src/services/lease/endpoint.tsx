@@ -32,6 +32,8 @@ class LeaseBaseService extends HttpService {
       `clause/read_singple_clause/${encodeURIComponent(leaseId)}/${encodeURIComponent(clauseDocId)}`
     )
   }
+    deleteLease = (id: string): Promise<any> =>
+    this.delete(`/leases/${id}`, {});
 
   getSingleLeaseDetail(leaseId: string): Promise<any> {
     return this.get(`/leases/${encodeURIComponent(leaseId)}`);
@@ -62,7 +64,6 @@ class LeaseBaseService extends HttpService {
       body
     );
   };
-
 
     approveLOIclause(
     clauseId: string,

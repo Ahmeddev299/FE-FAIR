@@ -14,6 +14,7 @@ import { useSectionClauses } from "@/hooks/useSectionClauses";
 import { ClausesList } from "@/components/dashboard/lease/viewleaseSection/clauseList";
 import Config from "@/config/index";
 import ls from "localstorage-slim";
+import Toast from "@/components/Toast";
 
 export default function SectionClausesPage() {
   const router = useRouter();
@@ -69,13 +70,6 @@ export default function SectionClausesPage() {
     handleClauseClick(updatedClause);
   }, [handleClauseClick, localClauses]);
 
-  // Toast utility (assuming you have Swal or similar)
-  const Toast = {
-    fire: ({ icon, title }: { icon: string; title: string }) => {
-      console.log(`[${icon.toUpperCase()}] ${title}`);
-      // Replace with your actual toast implementation
-    }
-  };
 
   const handleSubmitLOI = async () => {
     if (submittingLoi.current) return;
@@ -88,7 +82,7 @@ export default function SectionClausesPage() {
 
       const resp = await axios.put(
         `${Config.API_ENDPOINT}/leases/submit_clauses`,
-        { doc_id: id },
+        { lease_id: id },
         {
           headers: {
             "Content-Type": "application/json",
@@ -151,6 +145,10 @@ export default function SectionClausesPage() {
         throw new Error(maybe.data.message || "Failed to download LOI");
       }
 
+      const msg = maybe?.data?.message || "Lease downloaded successfully";
+
+      Toast.fire({ icon: "success", title: msg });
+
       const pdfUrl = maybe?.data?.data?.link?.pdf_url;
 
       if (!pdfUrl) {
@@ -165,11 +163,7 @@ export default function SectionClausesPage() {
       link.click();
       document.body.removeChild(link);
 
-      const msg = maybe?.data?.message || "Lease downloaded successfully";
-      Toast.fire({ icon: "success", title: msg });
-
     } catch (err: unknown) {
-      console.error("Download LOI error:", err);
       const errorMsg = err instanceof Error ? err.message : "Failed to download LOI";
       Toast.fire({ icon: "error", title: errorMsg });
     } finally {
@@ -202,7 +196,7 @@ export default function SectionClausesPage() {
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white border-b border-gray-200">
 
-            <div className="px-6 pb-3 flex items-center gap-3">
+            <div className="px-6 h-20 pb-1 flex items-center gap-3">
               <button
                 onClick={() => {
                   router.push("/landlordDashboard/pages/mainpage");
@@ -213,7 +207,7 @@ export default function SectionClausesPage() {
                 Back to Dashboard
               </button>
 
-              <span className="h-5 w-px bg-gray-200" />
+              <span className="h-10 w-px bg-gray-200" />
 
               <div className="ml-auto flex items-center gap-2">
                 <button

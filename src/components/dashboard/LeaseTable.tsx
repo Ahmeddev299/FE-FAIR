@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Eye, FileDown, MoreVertical, Trash2, Signature, ViewIcon, DownloadIcon, SignalIcon, DeleteIcon } from "lucide-react";
+import { MoreVertical, ViewIcon, DownloadIcon, SignalIcon, DeleteIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import { formatDate } from "@/utils/dateFormatter";
@@ -9,6 +9,10 @@ import Toast from "../Toast";
 import { LoadingOverlay } from "../loaders/overlayloader";
 import Config from "@/config/index";
 import ls from "localstorage-slim";
+import { DeleteLoiModal } from "../models/loiDeleteModel";
+import { useAppDispatch } from "@/hooks/hooks";
+import { getDashboardStatsAsync } from "@/services/dashboard/asyncThunk";
+import { deleteLeaseAsync } from "@/services/lease/asyncThunk";
 
 /* ---------- types ---------- */
 type ClauseBlock = { status?: string };
@@ -200,10 +204,15 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
   onAddNew,
   onClearError,
 }) => {
+  const dispatch = useAppDispatch()
   const router = useRouter();
   const [openId, setOpenId] = React.useState<string | null>(null);
   const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
     id: null, x: 0, y: 0
+  });
+  const [deleteModal, setDeleteModal] = React.useState<{ open: boolean; id: string | null }>({
+    open: false,
+    id: null,
   });
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const downloadingRef = useRef(false);
@@ -392,10 +401,11 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                       <td className="px-2 py-4">
                         <span className={getStatusPill(derived)}>{statusLabel(derived)}</span>
                       </td>
-                      <td className="px-2 py-4">
-                        <span></span>
+                        <td className="px-2 py-4 text-sm text-gray-700">
+                        {truncateWords(row?.relatedUser, 3)}
                       </td>
-                      <td className="py-4 text-sm text-gray-700">
+              
+                      <td className="py-4 text-sm text-gray-700 w-1/2">
                         {updated ? formatDate(updated) : "—"}
                       </td>
                       <td className="px-4 py-4">
@@ -424,8 +434,10 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                             onSendForSign={() => {
                               Toast.fire({ icon: "success", title: "Sent for signature (demo)" });
                             }}
+
                             onDelete={() => {
-                              Toast.fire({ icon: "info", title: "Delete functionality not implemented" });
+                              if (!rowId) return;
+                              setDeleteModal({ open: true, id: rowId });
                             }}
                           />
                         </div>
@@ -436,6 +448,23 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
             </tbody>
           </table>
         </div>
+
+        <DeleteLoiModal
+          isOpen={deleteModal.open}
+          onCancel={() => setDeleteModal({ open: false, id: null })}
+          onConfirm={async () => {
+            if (!deleteModal.id) return;
+
+            try {
+              await dispatch(deleteLeaseAsync(deleteModal.id)).unwrap();
+              await dispatch(getDashboardStatsAsync());
+            } finally {
+              setDeleteModal({ open: false, id: null });
+            }
+          }}
+          title="Delete this LOI?"
+          message="This will permanently remove the LOI and cannot be undone."
+        />
       </div>
     </div>
   );

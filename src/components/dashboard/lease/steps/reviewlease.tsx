@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// components/steps/ReviewSubmitStep.tsx
 import React, { useRef, useState, useEffect } from "react";
 import { CheckCircle2, Download as DownloadIcon, ChevronRight } from "lucide-react";
 import ls from "localstorage-slim";
@@ -11,7 +10,8 @@ import Toast from "@/components/Toast";
 import { LoadingOverlay } from "../../../loaders/overlayloader";
 
 import type { FormValues } from "@/types/loi";
-import { getLoiIdFromSession, setLoiIdInSession } from "@/utils/loisesion";
+import { getLeaseIdFromSession, setLeaseIdInSession } from "@/utils/leasesession";
+import { normalizeLease } from "@/utils/normalizeLease";
 
 interface ReviewSubmitStepProps {
   values: FormValues;
@@ -28,28 +28,24 @@ const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
   </div>
 );
 
-export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values }) => {
-  // flags
+export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode, leaseId }) => {
   const [isDownloadingLoi, setIsDownloadingLoi] = useState(false);
   const downloadingRef = useRef(false);
 
-  // 🆔 Persisted LOI id (download-only flow)
-  const [savedLoiId, setSavedLoiId] = useState<string | null>(null);
+  const [savedLeaseId, setSavedLeaseId] = useState<string | null>(null);
 
-  // Avoid state updates after unmount
   const isMountedRef = useRef(true);
+
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
     };
   }, []);
 
-  // hydrate saved id on mount (SSR-safe)
   useEffect(() => {
-    const existing = getLoiIdFromSession();
+    const existing = getLeaseIdFromSession();
     if (existing) {
-      setSavedLoiId(existing);
-      console.log("[LOI] restored loi_id from sessionStorage:", existing);
+      setSavedLeaseId(existing);
     }
   }, []);
 
@@ -59,24 +55,22 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values 
     setIsDownloadingLoi(true);
 
     try {
-      const token = ls.get("access_token", { decrypt: true });
+      const token = ls.get("access_token", { decrypt: true }) as string | null;
       if (!token) throw new Error("Authentication token not found");
 
-      // Use the saved LOI ID or get from session
-      const docId = savedLoiId || getLoiIdFromSession();
-      
-      if (!docId) {
-        throw new Error("LOI ID not found. Please save the LOI first.");
-      }
+      const id = savedLeaseId || getLeaseIdFromSession() || leaseId;
+
+      const clientPayload = normalizeLease(values, id);
+      console.log("client payload", clientPayload)
 
       const response = await axios.post(
-        `${Config.API_ENDPOINT}/lois/download`,
-        { doc_id: docId },
-        { 
-          headers: { 
-            "Content-Type": "application/json", 
-            Authorization: `Bearer ${token}` 
-          } 
+        `${Config.API_ENDPOINT}/leases/download`,
+        clientPayload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -85,11 +79,13 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values 
           success?: boolean;
           message?: string;
           data?: {
+            id?: string;
+            lease_id?: string;
             link?: {
-              pdf_url?: string
-            }
-          }
-        }
+              pdf_url?: string;
+            };
+          };
+        };
       };
 
       if (maybe?.data?.success === false) {
@@ -97,44 +93,36 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values 
       }
 
       const pdfUrl = maybe?.data?.data?.link?.pdf_url;
-
       if (!pdfUrl) {
         throw new Error("PDF URL not found in response");
       }
 
-      // Auto-download the PDF
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = pdfUrl;
-      link.target = '_blank';
-      link.download = `LOI_${docId}.pdf`;
+      link.target = "_blank";
+      link.download = `LOI_${leaseId}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      const msg = maybe?.data?.message || "LOI downloaded successfully";
+      const msg = maybe?.data?.message || "Lease downloaded successfully";
       if (isMountedRef.current) {
         Toast.fire({ icon: "success", title: msg });
       }
 
-      // If we got a new ID from the response, save it
-      const responseId = (maybe?.data?.data as any)?.id;
-      if (responseId && responseId !== savedLoiId) {
-        setLoiIdInSession(responseId);
-        setSavedLoiId(responseId);
-        console.log("[LOI] saved loi_id to sessionStorage:", responseId);
+      const responseId = maybe?.data?.data?.id || maybe?.data?.data?.lease_id;
+      if (responseId && responseId !== savedLeaseId) {
+        setLeaseIdInSession(responseId);
+        setSavedLeaseId(responseId);
       }
-
     } catch (err: unknown) {
-      console.error("Download LOI error:", err);
-      const errorMsg = err instanceof Error ? err.message : "Failed to download LOI";
+      const errorMsg = err instanceof Error ? err.message : "Failed to download Lease";
       if (isMountedRef.current) {
         Toast.fire({ icon: "error", title: errorMsg });
       }
-    } finally {
+    }    finally {
       downloadingRef.current = false;
-      if (isMountedRef.current) {
-        setIsDownloadingLoi(false);
-      }
+      setIsDownloadingLoi(false);
     }
   };
 
@@ -193,7 +181,7 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values 
               <div className="flex-1">
                 <h4 className="font-semibold text-green-900">Ready to Submit</h4>
                 <p className="text-sm text-green-800 mt-1">
-                  Your LOI is complete and ready to be submitted. You can
+                  Your Lease is complete and ready to be submitted. You can
                   download a PDF copy or send it directly to the landlord.
                 </p>
 
@@ -205,7 +193,7 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values 
                     className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-600 text-green-700 hover:bg-green-100 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <DownloadIcon className="w-4 h-4" />
-                    {isDownloadingLoi ? "Downloading…" : "Download"}
+                    Download
                   </button>
                 </div>
               </div>

@@ -249,7 +249,6 @@ export const LOITable: React.FC<LOITableProps> = ({
   const downloadingRef = useRef(false);
   const isMountedRef = useRef(true);
 
-
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -292,30 +291,21 @@ export const LOITable: React.FC<LOITableProps> = ({
     };
   };
 
-
   const routeFor = (id: string, userRole: string | undefined, relatedUser?: UserRole) => {
-    console.log("311", userRole)
     const me = userRole ?? "tenant";
     const other = (relatedUser ?? "tenant") as UserRole;
-
-    console.log("314", me)
-    console.log("315", other)
 
     if (me === "tenant" && other === "tenant") {
       return `/dashboard/pages/loi/view/${id}`;
     }
 
     if (me === "landlord" && other === "tenant") {
-      console.log("running")
-      console.log("322", me)
-      console.log("323", other)
       return `/landlordDashboard/view/${id}`;
     }
 
     if (me === "landlord" && other === "landlord") {
       return `/dashboard/pages/loi/view/${id}`;
     }
-
     return `/dashboard/pages/loi/view/${id}`;
   };
 
@@ -341,7 +331,6 @@ export const LOITable: React.FC<LOITableProps> = ({
     message?: string;
     data?: {
       temp?: boolean;
-      // add any other fields your normalizeLoiResponse needs
     };
   };
 
@@ -405,7 +394,6 @@ export const LOITable: React.FC<LOITableProps> = ({
       setDownloadingId(null);
     }
   };
-
 
   const showLoading = isLoading || lois == null;
 
@@ -517,15 +505,14 @@ export const LOITable: React.FC<LOITableProps> = ({
                       <td className="px-2 py-4">
                         <span className={getStatusPill(derived)}>{capitalize(derived)}</span>
                       </td>
-                      <td className="py-2 text-sm text-gray-700 w-1/2">
+                      <td className="py-2 text-sm text-gray-700">
                         {truncateWords(row.relatedUser, 3)}
                       </td>
-                      <td className="py-4 text-sm text-gray-700 w-1/2">
+                      <td className="py-2 text-sm text-gray-700 w-1/2">
                         {row?.updated_at ? formatDate(row.updated_at) : "—"}
-
                       </td>
 
-                      <td className="px-4 py-4">
+                      <td className="px-0 py-4">
                         <div className="flex items-center gap-2">
                           <button
                             className="h-9 w-9 inline-flex items-center justify-center border-slate-200 hover:bg-slate-50"

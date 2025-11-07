@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LeaseFormValues } from "@/types/lease";
 
-export function normalizeLease(values: LeaseFormValues) {
+export function normalizeLease(values: LeaseFormValues , id ) {
+  console.log("running")
   // helpers
   const n = (v: any) =>
     v === "" || v == null ? undefined : (isNaN(Number(v)) ? undefined : Number(v));
@@ -52,8 +53,11 @@ export function normalizeLease(values: LeaseFormValues) {
   const mappedAnnualEscPct =
     values.rentEscalationType === "percent" ? n(values.rentEscalationPercent) : undefined;
 
+      const effectiveDocId = id 
+      
   return {
     submitted_status: "submitted",
+      ...(effectiveDocId ? { doc_id: effectiveDocId } : {}),
 
     // === STEP 1: BASIC INFORMATION (flat address fields required by API) ===
     BASIC_INFORMATION: {
@@ -129,6 +133,8 @@ export function normalizeLease(values: LeaseFormValues) {
 
     // === STEP 4: RENT & ECONOMICS ===
     RENT_ECONOMICS: {
+        base_rent_schedule: s(values.base_rent_schedule),
+
       rent_type: s(values.rent_type),
       monthly_rent: values.rent_type !== "Percent" ? n(values.monthly_rent) : undefined,
       percentage_lease_percent: values.rent_type === "Percent" ? n(values.percentage_lease_percent) : undefined,

@@ -23,9 +23,10 @@ import { UseHoursExclusivesSection } from '@/components/dashboard/lease/steps/ri
 import { useAppDispatch } from '@/hooks/hooks';
 import { getLeaseDetailsById, submitLeaseAsync } from '@/services/lease/asyncThunk';
 import { useRouter } from 'next/router';
-import { clearLoiIdInSession, getLoiIdFromSession } from '@/utils/loisesion';
+import {  getLoiIdFromSession } from '@/utils/loisesion';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { mapLeaseApiToForm } from '@/components/dashboard/lease/utils/leaseMappers';
+import { clearLeaseIdInSession, getLeaseIdFromSession } from '@/utils/leasesession';
 
 interface Props {
   mode?: 'edit' | 'create';
@@ -45,7 +46,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
 
   useEffect(() => {
     if (mode === "create") {
-      clearLoiIdInSession();
+      clearLeaseIdInSession();
       console.log("[LOI] reset loi_id for new Create session");
     }
   }, [mode]);
@@ -71,11 +72,10 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
       if (currentStep === steps.length) {
         setSubmitting(true);
 
-        const storedLoiId = getLoiIdFromSession();
+        const storedLoiId = getLeaseIdFromSession();
         const effectiveLoiId = storedLoiId || leaseId || undefined;
 
         const apiPayload = normalizeLease(formValues, effectiveLoiId);
-
 
         const response = await dispatch(
           submitLeaseAsync({ ...apiPayload, submit_status: "Submitted" } as any)
@@ -93,13 +93,12 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
     }
   };
 
-
   const saveAsDraft = async (formValues: LeaseFormValues) => {
     try {
       setSaving(true);
 
-      const storedLoiId = getLoiIdFromSession();
-      const effectiveLoiId = storedLoiId || loiId || undefined;
+      const storedLoiId = getLeaseIdFromSession();
+      const effectiveLoiId = storedLoiId || leaseId || undefined;
 
       const draftPayload = normalizeLease(formValues, effectiveLoiId);
       await dispatch(submitLeaseAsync({ ...draftPayload, submit_status: "Draft" })).unwrap();
@@ -114,6 +113,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
   };
 
   const renderStepContent = (values: LeaseFormValues) => {
+    console.log("values", values)
     switch (currentStep) {
       case 1: return <BasicInformationStep />;
       case 2: return <LeasePremisesStep />;
@@ -121,7 +121,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
       case 4: return <LeaseRentEconomicsStep />;
       case 5: return <LeaseOpsMaintenanceStep />;
       case 6: return <UseHoursExclusivesSection />;
-      case 7: return <LeaseReviewSubmitStep values={values} onEdit={jumpToStep} />;
+      case 7: return <LeaseReviewSubmitStep leaseId={leaseId} values={values} onEdit={jumpToStep} />;
       default: return null;
     }
   };
@@ -130,7 +130,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
     <DashboardLayout>
       <div className="w-full mx-auto">
         <Formik
-          initialValues={initialData}
+          initialValues={initialData || LEASE_INITIAL_VALUES}
           enableReinitialize
           validationSchema={LEASE_VALIDATION_SCHEMAS[currentStep as keyof typeof LEASE_VALIDATION_SCHEMAS]}
           onSubmit={handleSubmit}

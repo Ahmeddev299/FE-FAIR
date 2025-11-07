@@ -12,8 +12,10 @@ import {
   approveLoiClauseApi,
   rejectLoiClauseApi,
   updateLandlordClauseCurrentVersionAsync,
+  deleteLeaseAsync,
 } from "@/services/lease/asyncThunk";
 import Toast from "@/components/Toast";
+import { deleteLOIAsync } from "@/services/loi/asyncThunk";
 
 type LeaseItem = {
   lease_id: string | number;
@@ -65,7 +67,9 @@ const initialState: LeaseState = {
     comments: "",
     clauses: {},
   },
-  leaseList: null,
+  leaseList: {
+    my_lease:[]
+  },
   metaData: {},
   filters: {},
   loadMore: false,
@@ -101,6 +105,27 @@ export const leaseSlice = createSlice({
         state.submitSuccess = false;
         state.leaseError = (action.payload as string) ?? "Lease submission failed";
         Toast.fire({ icon: "error", title: state.leaseError });
+      })
+
+      .addCase(deleteLeaseAsync.pending, (state) => {
+        state.isLoading = true;
+        state.leaseError = "";
+      })
+      .addCase(deleteLeaseAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.deleteSuccess = true;
+
+        const id = action.payload?.id;
+        console.log("id", id)
+        if (id && state.leaseList) {
+          state.leaseList.my_lease = state.leaseList?.my_lease?.filter((r: any) => r.id !== id);
+        }
+        Toast.fire({ icon: "success", title: "Lease deleted" });
+      })
+      .addCase(deleteLeaseAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.leaseError = action.payload as string;
+        Toast.fire({ icon: "error", title: action.payload as string });
       })
 
       // Upload Lease (multipart)

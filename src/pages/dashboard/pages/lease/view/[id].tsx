@@ -84,10 +84,6 @@ export default function LeaseDetailPage() {
 
   const handleBack = () => router.push(`/dashboard/pages/lease/view${id}`);
 
-  const handleExport = () => {
-    console.log("Export lease");
-  };
-
   const handleUpload = () => {
     console.log(router.push("/dashboard/pages/uploadLeaseform"))
   };
@@ -128,13 +124,7 @@ export default function LeaseDetailPage() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <button
-                  onClick={handleExport}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Export
-                </button>
+
                 <button
                   onClick={handleUpload}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

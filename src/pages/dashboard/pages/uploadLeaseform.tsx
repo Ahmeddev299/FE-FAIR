@@ -54,27 +54,50 @@ const UploadLeaseForm: React.FC = () => {
     return null;
   }
 
-  const handleSubmit = async (
-    values: ExtendedLeaseFormValues,
-    { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
-  ) => {
-    try {
-      if (uploadedFile) {
-        const sizeErr = validateLeaseFile(uploadedFile.file);
-        if (sizeErr) {
-          Toast.fire({ icon: "error", title: sizeErr });
-          return;
-        }
-      }
-      console.log("112", values.leaseId)
+ const handleSubmit = async (
+  values: ExtendedLeaseFormValues,
+  { setSubmitting }: FormikHelpers<ExtendedLeaseFormValues>
+) => {
+  try {
+    const token = ls.get("access_token", { decrypt: true });
+    if (!token) throw new Error("Authentication token not found");
 
-      const token = ls.get("access_token", { decrypt: true });
-      if (!token) throw new Error("Authentication token not found");
-      console.log("token", token)
+    if (uploadedFile?.file) {
+      const sizeErr = validateLeaseFile(uploadedFile.file);
+      if (sizeErr) {
+        Toast.fire({ icon: "error", title: sizeErr });
+        return;
+      }
+
+      const form = new FormData();
+      form.append("file", uploadedFile.file);
+
+      const response = await axios.post(
+        `${Config.API_ENDPOINT}/leases/submit_by_file`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const leaseId = response.data.data.id;
+      if (leaseId) {
+        router.push(`/dashboard/pages/lease/edit/${leaseId}`);
+      } else {
+        Toast.fire({ icon: "error", title: "Upload succeeded but lease ID missing." });
+      }
+
+    } else {
+      if (!values.leaseId) {
+        Toast.fire({ icon: "error", title: "Please select a LOI to submit Lease." });
+        return;
+      }
 
       const response = await axios.post(
         `${Config.API_ENDPOINT}/leases/submit_by_loi/${values.leaseId}`,
-        {}, // or the actual body if the endpoint expects one
+        {},
         {
           headers: {
             "Content-Type": "application/json",
@@ -83,17 +106,20 @@ const UploadLeaseForm: React.FC = () => {
         }
       );
 
-      const payload = response.data;
-      console.log("payload", payload);
-
-      router.push(`/dashboard/pages/lease/edit/${response.data.data.lease_id}`);
-    } catch (err) {
-      console.error("Upload error", err);
-      Toast.fire({ icon: "error", title: "Upload failed. Try again." });
-    } finally {
-      setSubmitting(false);
+      const leaseId = response?.data?.data?.lease_id;
+      if (leaseId) {
+        router.push(`/dashboard/pages/lease/edit/${leaseId}`);
+      } else {
+        Toast.fire({ icon: "error", title: "Submission succeeded but lease ID missing." });
+      }
     }
-  };
+  } catch (err) {
+    console.error("Upload error", err);
+    Toast.fire({ icon: "error", title: "Upload failed. Try again." });
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <DashboardLayout>

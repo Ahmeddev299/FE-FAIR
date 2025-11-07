@@ -133,13 +133,13 @@ export interface LeaseFormValues {
   commencement_date_certain: string;
   rent_commencement_offset_days: number | string;
 
-  rent_type: string; 
+  rent_type: string;
   monthly_rent: number | string;
   security_deposit: number | string;
   prepaid_rent: number | string;
   percentage_lease_percent: number | string;
-
-  schedule_basis: string; 
+  base_rent_schedule: string,
+  schedule_basis: string;
   base_rent_schedule_rows: Array<{
     period: string;
     monthly_rent: number | string;
@@ -156,7 +156,7 @@ export interface LeaseFormValues {
   est_cam_per_sf: number | string;
   est_taxes_per_sf: number | string;
   est_insurance_per_sf: number | string;
-  nnn_est_annual: number | string; 
+  nnn_est_annual: number | string;
 
   insurance_party_cgl: string;
   insurance_limit_cgl: string;
@@ -180,7 +180,7 @@ export interface LeaseFormValues {
   service_hours: string;
   vent_hood: boolean;
   grease_trap: boolean;
-  utilities: string[]; 
+  utilities: string[];
   utility_responsibility: string;
 
   permitted_use: string;

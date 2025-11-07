@@ -157,6 +157,30 @@ export const getLeaseDetailsById = createAsyncThunk(
   }
 );
 
+export const deleteLeaseAsync = createAsyncThunk<
+  { id: string },
+  string,
+  { rejectValue: string }
+>("lease/delete", async (leaseId, { rejectWithValue }) => {
+  try {
+    const token: string = `${ls.get("access_token", { decrypt: true })}`;
+    HttpService.setToken(token);
+    const response = await leaseBaseService.deleteLease(leaseId);
+
+    if (response?.success === false) {
+      return rejectWithValue(response?.message || "Failed to delete LOI");
+    }
+    return { id: leaseId };
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.message ||
+      err?.message ||
+      "Delete failed";
+    return rejectWithValue(msg);
+  }
+});
+
 export const submitLeaseAsync = createAsyncThunk(
   "lease/submitLease",
   async (payload: LeaseFormValues, { rejectWithValue }) => {
@@ -213,7 +237,7 @@ export const updateClauseCurrentVersionAsync = createAsyncThunk(
       if (!res?.success || res?.status === 400) {
         return rejectWithValue(res?.message ?? "Failed to save clause");
       }
-      
+
       return { clause_key, details };
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
@@ -239,7 +263,7 @@ export const updateLandlordClauseCurrentVersionAsync = createAsyncThunk(
       if (!res?.success || res?.status === 400) {
         return rejectWithValue(res?.message ?? "Failed to save clause");
       }
-      
+
       return { clause_key, details };
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || "Failed to save clause");
@@ -298,8 +322,8 @@ export const rejectLoiClauseApi = createAsyncThunk(
 );
 
 export const acceptClauseSuggestionAsync = createAsyncThunk<
-  { clauseId: string; clause_key: string; details: string },  
-  AcceptSuggestionArgs                                        
+  { clauseId: string; clause_key: string; details: string },
+  AcceptSuggestionArgs
 >(
   "lease/acceptClauseSuggestion",
   async ({ clauseId, clause_key, details }, { rejectWithValue }) => {
@@ -317,7 +341,7 @@ export const acceptClauseSuggestionAsync = createAsyncThunk<
       if (!res?.success || res?.status === 400) {
         return rejectWithValue(res?.message ?? "Failed to accept AI suggestion");
       }
-      return { clauseId, clause_key, details };    
+      return { clauseId, clause_key, details };
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || "Failed to accept AI suggestion");
     }
