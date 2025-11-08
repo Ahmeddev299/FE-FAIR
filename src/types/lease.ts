@@ -254,6 +254,7 @@ export const LEASE_INITIAL_VALUES: LeaseFormValues = {
   outdoor_size: "",
   exclusive_parking_spaces: false,
   reserved_spaces: "",
+  base_rent_schedule:"",
 
   initial_term_years: "",
   delivery_condition: "",

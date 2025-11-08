@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/steps/BasicInformationStep.tsx
 import React from 'react';
-import { Field, ErrorMessage, useFormikContext } from 'formik';
+import { Field, ErrorMessage } from 'formik';
 import { Info } from 'lucide-react';
 
 const US_STATES = [
@@ -12,7 +14,6 @@ const US_STATES = [
 ];
 
 export const BasicInformationStep: React.FC = () => {
-  const { values } = useFormikContext<any>();
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/ClauseReviewPanel.tsx
 import React from "react";
-import { FileText } from "lucide-react";
 import { ClauseHeader } from "./clauseHeader";
 import { ClauseContent } from "./clauseContent";
 import { ClauseActions } from "./clauseActions";

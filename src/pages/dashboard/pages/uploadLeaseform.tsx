@@ -1,4 +1,7 @@
 
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
 import React, { useState } from 'react';
@@ -8,7 +11,7 @@ import { DashboardLayout } from '@/components/layouts';
 import Config from "@/config/index";
 import ls from "localstorage-slim";
 
-import { LeaseFormValues, FileData } from '@/types/loi';
+import {  FileData } from '@/types/loi';
 
 import { PageHeader } from '@/components/uploadLeaseForm/PageHeader';
 import { FileUpload } from '@/components/uploadLeaseForm/FileUpload';
@@ -20,6 +23,7 @@ import { SubmitButton } from '@/components/buttons/submitButton';
 import Toast from '@/components/Toast';
 import axios from 'axios';
 import { Plus } from 'lucide-react';
+import { LeaseFormValues } from '@/types/lease';
 
 type ExtendedLeaseFormValues = LeaseFormValues & {
   leaseId?: string;
@@ -33,7 +37,7 @@ const UploadLeaseForm: React.FC = () => {
 
   const goCreate = () => router.push("/dashboard/pages/createLeaseform");
 
-  const initialValues: ExtendedLeaseFormValues = {
+  const initialValues: any = {
     title: '',
     startDate: '',
     endDate: '',
@@ -139,7 +143,7 @@ const UploadLeaseForm: React.FC = () => {
           initialValues={initialValues}
           onSubmit={handleSubmit}
         >
-          {({ setFieldValue, errors, touched, isSubmitting }: FormikProps<ExtendedLeaseFormValues>) => (
+          {({ setFieldValue, isSubmitting }: FormikProps<ExtendedLeaseFormValues>) => (
             <Form>
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <div className="xl:col-span-2 space-y-6">
@@ -147,8 +151,7 @@ const UploadLeaseForm: React.FC = () => {
                     uploadedFile={uploadedFile}
                     setUploadedFile={setUploadedFile}
                     setFieldValue={setFieldValue}
-                    errors={errors}
-                    touched={touched}
+           
                   />
 
                   {uploadedFile && (

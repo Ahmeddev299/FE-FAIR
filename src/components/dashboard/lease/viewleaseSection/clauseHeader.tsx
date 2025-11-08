@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/ClauseHeader.tsx
 import React from "react";
 import { calculateAiScore, getRiskColor } from "../utils/viewleaseSectionHelpers/clauseHelpers";

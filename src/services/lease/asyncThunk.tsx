@@ -4,7 +4,7 @@ import { leaseBaseService } from "./endpoint";
 import { HttpService } from "../index";
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
-import { LeaseFormValues } from "@/types/loi";
+import { LeaseFormValues } from "@/constants/formData";
 
 type UploadLeaseResponse = {
   Lease: { _id: string; name: string; lease_title: string; startDate?: string; endDate?: string; property_address?: string; };
@@ -181,6 +181,29 @@ export const deleteLeaseAsync = createAsyncThunk<
   }
 });
 
+//   export const submitLOIAsync = createAsyncThunk(
+//   "/loi/submit",
+//   async (data: LOIApiPayload, { rejectWithValue }) => {
+//     try {
+//       const token: string = `${ls.get("access_token", { decrypt: true })}`;
+//       HttpService.setToken(token);
+
+//       const res = await loiBaseService.submitLOI(data);
+
+//       if (res?.success === false && res?.status === 400) {
+//         return rejectWithValue(res?.message ?? "Bad Request");
+//       }
+
+//       return res;
+//     } catch (error: any) {
+//       if (error.response?.data?.message) return rejectWithValue(error.response.data.message);
+//       if (error.response?.message) return rejectWithValue(error.response.message);
+//       if (error.message) return rejectWithValue(error.message);
+//       return rejectWithValue("An unexpected error occurred while submitting LOI");
+//     }
+//   }
+// );
+
 export const submitLeaseAsync = createAsyncThunk(
   "lease/submitLease",
   async (payload: LeaseFormValues, { rejectWithValue }) => {
@@ -201,12 +224,12 @@ export const submitLeaseAsync = createAsyncThunk(
 
 export const getallUserLeasesAsync = createAsyncThunk(
   "lease/listForClauses",
-  async ({ page = 1, limit = 5 }: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
+  async ({  }: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
       const token = `${ls.get("access_token", { decrypt: true })}`;
       HttpService.setToken(token);
 
-      const response = await leaseBaseService.getUserLeases({ page, limit });
+      const response = await leaseBaseService.getUserLeases( );
 
       if (!response?.success || response?.status === 400) {
         return rejectWithValue(response?.message ?? "Failed to fetch leases");

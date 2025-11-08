@@ -14,7 +14,7 @@ export const LeaseRentEconomicsStep: React.FC = () => {
   const isModGross = values.lease_structure === "Modified Gross";
   const isNNN = values.lease_structure === "Triple Net";
   const isGross = values.lease_structure === "Gross";
-  const showPassThroughBlock = isModGross || isNNN;
+  // const showPassThroughBlock = isModGross || isNNN;
 
   const clearIfGross = () => {
     if (values.lease_structure === "Gross") {

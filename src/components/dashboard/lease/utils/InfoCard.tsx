@@ -1,6 +1,5 @@
-// ============================================
-// 4. InfoCard.tsx - Info Card Component
-// ============================================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 interface InfoCardProps {
   icon: any;
   label: string;

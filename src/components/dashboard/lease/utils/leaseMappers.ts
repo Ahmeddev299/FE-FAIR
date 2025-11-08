@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // utils/leaseMappers.ts
 import { LeaseFormValues } from "@/types/lease";
 import { LEASE_INITIAL_VALUES } from "@/types/lease";

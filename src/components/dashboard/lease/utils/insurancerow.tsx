@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/dashboard/lease/utils/insurancerow.tsx
 import React from "react";
 import { Field } from "formik";

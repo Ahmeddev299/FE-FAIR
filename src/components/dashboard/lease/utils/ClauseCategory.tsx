@@ -1,4 +1,3 @@
-
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { ClauseCard } from "./ClauseCard";
@@ -6,11 +5,12 @@ import { Clause } from "@/types/lease";
 
 interface ClauseCategoryProps {
   category: string;
-  clauses: Clause[];
+  clauses: Clause[]; // ✅ Strongly type this
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
   onComment: (id: string, text: string) => void;
   acceptingId: string | null;
+  onOpenDetails: (clause: Clause) => void;
 }
 
 export const ClauseCategory: React.FC<ClauseCategoryProps> = ({
@@ -29,6 +29,7 @@ export const ClauseCategory: React.FC<ClauseCategoryProps> = ({
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        type="button"
       >
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-gray-900">{category}</h3>
@@ -45,7 +46,7 @@ export const ClauseCategory: React.FC<ClauseCategoryProps> = ({
 
       {isExpanded && (
         <div className="p-5 pt-0 space-y-4">
-          {clauses.map(clause => (
+          {clauses.map((clause) => ( // ✅ inference: clause is Clause
             <ClauseCard
               key={clause.id}
               clause={clause}
@@ -53,7 +54,7 @@ export const ClauseCategory: React.FC<ClauseCategoryProps> = ({
               onReject={onReject}
               onComment={onComment}
               accepting={acceptingId === clause.id}
-              onOpenDetails = {onOpenDetails}
+              onOpenDetails={onOpenDetails}
             />
           ))}
         </div>

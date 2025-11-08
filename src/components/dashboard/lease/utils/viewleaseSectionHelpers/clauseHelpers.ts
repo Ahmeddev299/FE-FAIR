@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // utils/clauseHelpers.ts
 
 export const bulletKeyFromClause = (clause: any) => {

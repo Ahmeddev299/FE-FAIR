@@ -386,16 +386,17 @@ export interface FileData {
   file: File;
 }
 
-export interface LeaseFormValues {
-  title: string;
-  startDate: string;
-  endDate: string;
-  propertyAddress: string;
-  notes: string;
-  document: string;
-  leaseId?: string;     
-  leaseTitle?: string;  
-}
+// export interface LeaseFormValues {
+//   title: string;
+//   startDate: string;
+//   endDate: string;
+//   propertyAddress: string;
+//   notes: string;
+//   document: string;
+//   leaseId?: string;     p
+//   leaseTitle?: string; 
+  
+// }
 
 export type SetFieldValue = (field: string, value: File | null) => void;
 
@@ -512,13 +513,14 @@ export type UIClause = {
 
 export type UILeaseBrief = {
   id: string;
-  title: string;
+  title?: string;  // Make optional
   type: 'Lease' | 'LOI' | 'Notice' | 'Termination';
   documentId?: string;       
   status?: string;          
   tags?: string[];          
   sizeLabel?: string;
-  updatedAt?: string   
+  updatedAt?: string;
+  documentName?: string;
 };
 
 export type UILeaseFull = {

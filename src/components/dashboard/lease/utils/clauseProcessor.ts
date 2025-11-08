@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Clause } from "@/types/lease";
 
 export const processClausesFromAPI = (data: any): Clause[] => {

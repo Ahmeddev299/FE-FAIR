@@ -1,17 +1,19 @@
 // components/ClauseSection.tsx
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Clause } from "@/components/landlord/loi/types";
 import { ClauseCategory } from "@/components/dashboard/lease/utils/ClauseCategory";
+import { Clause } from "@/types/lease";
 
+// ✅ Fixed Props interface
 type Props = {
     title: string;
     clauses: Clause[];
-    defaultCount?: number; // show N by default
-    acceptingId?: string | null;
+    defaultCount?: number;
+    acceptingId?: string | null;  // Changed from optional to explicitly allow null
     onAccept: (id: string) => void;
     onReject: (id: string) => void;
     onComment: (id: string, text: string) => void;
+    onOpenDetails: (clause: Clause) => void;  // ✅ Added missing prop
 };
 
 export const ClauseSection: React.FC<Props> = ({
@@ -19,7 +21,7 @@ export const ClauseSection: React.FC<Props> = ({
     clauses,
     defaultCount = 4,
     onOpenDetails,
-    acceptingId,
+    acceptingId = null,  // ✅ Provide default value
     onAccept,
     onReject,
     onComment,
@@ -28,8 +30,6 @@ export const ClauseSection: React.FC<Props> = ({
     if (!clauses?.length) return null;
 
     const visible = showAll ? clauses : clauses.slice(0, defaultCount);
-
-    
 
     return (
         <section className="space-y-3">
@@ -45,7 +45,15 @@ export const ClauseSection: React.FC<Props> = ({
                         onClick={() => setShowAll(v => !v)}
                         className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
                     >
-                        {showAll ? <>Show less <ChevronUp className="w-4 h-4" /></> : <>Show all <ChevronDown className="w-4 h-4" /></>}
+                        {showAll ? (
+                            <>
+                                Show less <ChevronUp className="w-4 h-4" />
+                            </>
+                        ) : (
+                            <>
+                                Show all <ChevronDown className="w-4 h-4" />
+                            </>
+                        )}
                     </button>
                 )}
             </div>
@@ -57,9 +65,7 @@ export const ClauseSection: React.FC<Props> = ({
                 onReject={onReject}
                 onComment={onComment}
                 acceptingId={acceptingId}
-                onOpenDetails={onOpenDetails}   // <-- yeh bhi
-            // If your ClauseCategory supports it, you can auto-expand cards on "showAll":
-            // forceExpanded={showAll}
+                onOpenDetails={onOpenDetails}
             />
         </section>
     );

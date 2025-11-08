@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // utils/maintenanceHelpers.ts or components/lease/MaintenanceRow.tsx
 
 import React from "react";
-import { useFormikContext, Field } from "formik";
+import { useFormikContext } from "formik";
 
 export const MAINTENANCE_CATEGORIES = [
   { key: "maintenance_structural", label: "Structural Repairs (foundation, roof, exterior walls)" },

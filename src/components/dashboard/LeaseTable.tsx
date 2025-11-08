@@ -25,7 +25,8 @@ type Lease = {
   title?: string;
   property_address?: string;
   propertyAddress?: string;
-  status?: string;
+  relatedUser?:string;
+    status?: string;
   clauses?: Record<string, ClauseBlock>;
   updatedAt?: string;
   lastUpdate?: string;
@@ -44,6 +45,7 @@ interface LeaseTableProps {
   onClearError?: () => void;
   onDelete?: (id: string) => void;
   onSendForSign?: (id: string) => void;
+
 }
 
 const getRowId = (row: Lease) => row._id || row.id;
@@ -199,14 +201,13 @@ const RowActionMenu: React.FC<{
 export const LeaseTable: React.FC<LeaseTableProps> = ({
   leases,
   isLoading,
-  error,
   onViewAll,
   onAddNew,
-  onClearError,
 }) => {
   const dispatch = useAppDispatch()
   const router = useRouter();
-  const [openId, setOpenId] = React.useState<string | null>(null);
+  // const [openId, setOpenId] = React.useState<string | null>(null);
+  // console.log(setOpenId)
   const [menuState, setMenuState] = useState<{ id: string | null; x: number; y: number }>({
     id: null, x: 0, y: 0
   });
@@ -387,7 +388,7 @@ export const LeaseTable: React.FC<LeaseTableProps> = ({
                   const addr = getAddress(row);
                   const derived = deriveLeaseStatus(row);
                   const updated = getUpdated(row);
-                  const isOpen = openId === id;
+                  // const isOpen = openId === id;
                   const rowId = row._id || row.id;
 
                   return (

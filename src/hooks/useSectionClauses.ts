@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 // hooks/useSectionClauses.ts
 import {  useMemo, useEffect } from "react";
 import { NextRouter } from "next/router";

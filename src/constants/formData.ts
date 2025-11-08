@@ -575,6 +575,7 @@ export interface LeaseFormValues {
 
   // Final Admin
   confidentiality_required: boolean;
+  submit_status:string;
 }
 
 // === INITIAL VALUES ===
@@ -695,4 +696,6 @@ export const LEASE_INITIAL_VALUES: LeaseFormValues = {
   estoppel_delivery_days: "",
   exhibits: [],
   confidentiality_required: false,
+    submit_status:""
+
 };

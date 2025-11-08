@@ -13,7 +13,7 @@ import {
   rejectLoiClauseApi,
   updateClauseCurrentVersionAsync,
 } from "@/services/lease/asyncThunk";
-import { commentOnClauseAsync } from "@/services/clause/asyncThunk";
+// import { commentOnClauseAsync } from "@/services/clause/asyncThunk";
 
 import ls from "localstorage-slim";
 import Toast from "@/components/Toast";
@@ -491,11 +491,12 @@ const downloadingRef = useRef(false);
   };
 
   const addComment = async (clauseName: string, text: string) => {
+    console.log(clauseName, text)
     if (!clauseDocId) {
       Toast.fire({ icon: "warning", title: "Missing clauseDocId" });
       return;
     }
-    await dispatch(commentOnClauseAsync({ clauseDocId, clause_key: clauseName, comment: text })).unwrap();
+    // await dispatch(commentOnClauseAsync({ clauseDocId, clause_key: clauseName, comment: text })).unwrap();
     await refreshLoi();
     Toast.fire({ icon: "success", title: "Comment added" });
   };

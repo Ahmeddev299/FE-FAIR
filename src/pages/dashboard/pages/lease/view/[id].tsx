@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // pages/lease/[id].tsx - DYNAMIC CLAUSE CATEGORIES
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/router";
-import { FileText, ChevronRight, Download, Upload, Search } from "lucide-react";
+import { FileText, ChevronRight, Upload, Search } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { selectLease } from "@/redux/slices/leaseSlice";
@@ -96,7 +98,7 @@ export default function LeaseDetailPage() {
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Lease Not Found</h2>
             <p className="text-gray-600 mb-6">
-              The lease you're looking for doesn't exist or you don't have access to it.
+              The lease you are looking for does not exist or you do not have access to it.
             </p>
             <button
               onClick={handleBack}

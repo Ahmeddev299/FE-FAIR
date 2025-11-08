@@ -2,6 +2,7 @@
 
 import { Field, FieldArray, useFormikContext } from "formik";
 import { Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { useCallback } from "react";
 
 function nextExhibitTitle(currentCount: number) {
@@ -116,10 +117,12 @@ export function ExhibitsRepeater() {
                     {/* Preview for images only */}
                     {ex.previewUrl && ex.file?.type.startsWith("image/") && (
                       <div className="mt-3">
-                        <img
+                        <Image
+                        width={50}
+                        height={50}
                           src={ex.previewUrl}
                           alt="Exhibit preview"
-                          className="w-full max-h-48 object-contain border rounded-md"
+                          className="object-contain border rounded-md"
                         />
                       </div>
                     )}

@@ -56,23 +56,25 @@ function parsePdfUrl(file_url?: string | { pdf_url?: string }): string | undefin
 function buildClauses(raw?: RawLease["template_data"]): UIClause[] {
   const out: UIClause[] = [];
   const groups = raw?.clauses?.data ?? {};
-  let i = 0;
+  // let i = 0;
 
   for (const [category, clauses] of Object.entries(groups)) {
-    for (const [key, text] of Object.entries(clauses)) {
-      const name = `${category} #${key}`; // stable key used by accept/reject flow
-      out.push({
-        id: i++,
-        name,
-        status: defaultStatus,
-        risk: defaultRisk,
-        currentVersion: text ?? "",
-        aiSuggestion: undefined,
-        commentsUnresolved: 0,
-        tags: [category],
-      });
-    }
+  for (const [key, text] of Object.entries(clauses)) {
+    const name = `${category} #${key}`;               // label
+    const id = `${category}:${key}`;                  // stable string id
+    out.push({
+      id,                                            // <-- string, not number
+      name,
+      status: defaultStatus,
+      risk: defaultRisk,
+      currentVersion: text ?? "",
+      aiSuggestion: undefined,
+      commentsUnresolved: 0,
+      // tags: [category],
+    });
   }
+}
+
   return out;
 }
 

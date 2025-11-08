@@ -125,8 +125,6 @@ function FilterSelect({
   );
 }
 
-/* ---------- component ---------- */
-
 export default function LeasesTable({
   leases,
   isLoading = false,
@@ -147,6 +145,7 @@ export default function LeasesTable({
     for (const l of leases) (l.tags ?? []).forEach((t) => s.add(t));
     return Array.from(s).sort();
   }, [leases]);
+  console.log("148",leases)
 
   const hasActiveFilters =
     typeFilter !== "__all" || dateFilter !== "__all" || tagFilter !== "__all";
@@ -262,9 +261,8 @@ export default function LeasesTable({
             <th className="px-6 py-3">Type</th>
             <th className="px-6 py-3">Document ID</th>
             <th className="px-6 py-3">Status</th>
-        <th className="px-6 py-3 text-right">Actions</th>
+            <th className="px-6 py-3 text-right">Actions</th>
           </tr>
-
 
           <tbody>
             {showLoading &&
@@ -292,7 +290,7 @@ export default function LeasesTable({
               ))}
 
             {rows.map((l) => (
-              console.log("1",l),
+              console.log("1", l),
 
               <tr key={l.id} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
                 <td className="px-6 py-4">
@@ -300,7 +298,7 @@ export default function LeasesTable({
                     onClick={() => onRowClick(l.id)}
                     className="text-gray-900 font-medium hover:underline"
                   >
-                    {l.documentName}
+                    {l.documentName || l.title}
                   </button>
                 </td>
                 <td className="px-6 py-4">
@@ -316,13 +314,13 @@ export default function LeasesTable({
                     <span className="text-gray-500">—</span>
                   )}
                 </td>
-               
-                 <td className="px-5 py-3 text-right">
-                    <KebabMenu
-                      onView={() => onRowClick(l.id)}
-                      disabled={isLoading}
-                    />
-                  </td>
+
+                <td className="px-5 py-3 text-right">
+                  <KebabMenu
+                    onView={() => onRowClick(l.id)}
+                    disabled={isLoading}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
@@ -15,15 +16,16 @@ import {
   deleteLeaseAsync,
 } from "@/services/lease/asyncThunk";
 import Toast from "@/components/Toast";
-import { deleteLOIAsync } from "@/services/loi/asyncThunk";
 
 type LeaseItem = {
   lease_id: string | number;
   lease_title: string;
+  id?: string | number; // Add id for delete functionality
 };
 
+// ✅ FIX: Update LeaseList to match actual usage
 type LeaseList = {
-  data: LeaseItem[];
+  my_lease: LeaseItem[];  // Changed from 'data' to 'my_lease'
   meta?: Record<string, any>;
 };
 
@@ -68,7 +70,7 @@ const initialState: LeaseState = {
     clauses: {},
   },
   leaseList: {
-    my_lease:[]
+    my_lease: []  // ✅ Now matches the type
   },
   metaData: {},
   filters: {},
@@ -107,6 +109,7 @@ export const leaseSlice = createSlice({
         Toast.fire({ icon: "error", title: state.leaseError });
       })
 
+      // ✅ Delete Lease - now uses my_lease
       .addCase(deleteLeaseAsync.pending, (state) => {
         state.isLoading = true;
         state.leaseError = "";
@@ -118,7 +121,7 @@ export const leaseSlice = createSlice({
         const id = action.payload?.id;
         console.log("id", id)
         if (id && state.leaseList) {
-          state.leaseList.my_lease = state.leaseList?.my_lease?.filter((r: any) => r.id !== id);
+          state.leaseList.my_lease = state.leaseList.my_lease.filter((r: any) => r.id !== id);
         }
         Toast.fire({ icon: "success", title: "Lease deleted" });
       })
@@ -144,6 +147,7 @@ export const leaseSlice = createSlice({
         Toast.fire({ icon: "error", title: state.leaseError });
       })
 
+      // ✅ Get User Leases - updated to use my_lease
       .addCase(getUserLeasesAsync.pending, (state) => {
         state.isLoading = true;
         state.leaseError = "";
@@ -151,11 +155,11 @@ export const leaseSlice = createSlice({
       .addCase(getUserLeasesAsync.fulfilled, (state, action) => {
         state.isLoading = false;
         const payload = action.payload as any;
-        const data: LeaseItem[] = Array.isArray(payload)
+        const my_lease: LeaseItem[] = Array.isArray(payload)
           ? payload
-          : payload?.leases ?? payload?.data ?? [];
+          : payload?.leases ?? payload?.my_lease ?? payload?.data ?? [];
         const meta = payload?.meta ?? {};
-        state.leaseList = { data, meta };
+        state.leaseList = { my_lease, meta };
         state.metaData = meta;
       })
       .addCase(getUserLeasesAsync.rejected, (state, action) => {
@@ -163,6 +167,7 @@ export const leaseSlice = createSlice({
         state.leaseError = (action.payload as string) ?? "Failed to fetch leases";
       })
 
+      // ✅ Get All User Leases - updated to use my_lease
       .addCase(getallUserLeasesAsync.pending, (state) => {
         state.isLoading = true;
         state.leaseError = "";
@@ -171,11 +176,11 @@ export const leaseSlice = createSlice({
         state.isLoading = false;
         state.hasFetched = true;
         const payload = action.payload as any;
-        const data: LeaseItem[] = Array.isArray(payload)
+        const my_lease: LeaseItem[] = Array.isArray(payload)
           ? payload
-          : payload?.leases ?? payload?.data ?? [];
+          : payload?.leases ?? payload?.my_lease ?? payload?.data ?? [];
         const meta = payload?.meta ?? {};
-        state.leaseList = { data, meta };
+        state.leaseList = { my_lease, meta };
         Toast.fire({ icon: "success", title: "Lease fetched successfully!" });
       })
       .addCase(getallUserLeasesAsync.rejected, (state, action) => {

@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // pages/SectionClausesPage.tsx
 import React, { useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
-import { ArrowLeft, ChevronLeft, DownloadIcon } from "lucide-react";
+import {  ChevronLeft, DownloadIcon } from "lucide-react";
 import axios from "axios";
 import { DashboardLayout } from "@/components/layouts";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -29,7 +31,7 @@ export default function SectionClausesPage() {
   const downloadingRef = useRef(false);
   const isMountedRef = useRef(true);
 
-  const { id, section, displayClauses: originalClauses, title } = useSectionClauses(
+  const { id, section, displayClauses: originalClauses } = useSectionClauses(
     router,
     dispatch,
     currentLease
@@ -187,7 +189,7 @@ export default function SectionClausesPage() {
     );
   }
 
-  const handleBack = () => router.push(`/dashboard/pages/lease/view/${id}`);
+  // const handleBack = () => router.push(`/dashboard/pages/lease/view/${id}`);
 
   return (
     <DashboardLayout>

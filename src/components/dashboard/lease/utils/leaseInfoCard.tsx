@@ -1,6 +1,5 @@
-// ============================================
-// 9. LeaseInfoCards.tsx - Lease Info Cards Grid
-// ============================================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Building2, User, FileText, Calendar, DollarSign } from "lucide-react";
 import { InfoCard } from "./InfoCard";
 

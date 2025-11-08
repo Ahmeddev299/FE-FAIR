@@ -1,5 +1,6 @@
 // utils/tenantGrouping.ts
-import { Clause } from "@/components/landlord/loi/types";
+
+import { Clause } from "@/types/lease";
 
 export const filterClauses = (clauses: Clause[], status: string, query: string) => {
   const q = query.trim().toLowerCase();

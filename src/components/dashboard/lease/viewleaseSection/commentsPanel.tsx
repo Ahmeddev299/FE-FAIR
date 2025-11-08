@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/CommentsPanel.tsx
 import React from "react";
 import { CommentItem } from "./commentItem";

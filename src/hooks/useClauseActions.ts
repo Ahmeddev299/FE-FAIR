@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // hooks/useClauseActions.ts
 import { useState, useCallback } from "react";
 import { useAppDispatch } from "@/hooks/hooks";

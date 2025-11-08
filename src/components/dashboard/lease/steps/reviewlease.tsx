@@ -9,12 +9,15 @@ import Config from "@/config/index";
 import Toast from "@/components/Toast";
 import { LoadingOverlay } from "../../../loaders/overlayloader";
 
-import type { FormValues } from "@/types/loi";
+// ✅ FIX: Import LeaseFormValues instead of FormValues
+import type { LeaseFormValues } from "@/types/lease";
 import { getLeaseIdFromSession, setLeaseIdInSession } from "@/utils/leasesession";
 import { normalizeLease } from "@/utils/normalizeLease";
 
+// ✅ FIX: Update interface to use LeaseFormValues and make leaseId optional
 interface ReviewSubmitStepProps {
-  values: FormValues;
+  leaseId?: string;  // Made optional since it can be undefined
+  values: LeaseFormValues;  // Changed from FormValues
   goToStep?: (step: number) => void;
   onDownload?: () => void;
   onEdit: (step: number) => void;
@@ -28,7 +31,7 @@ const Row = ({ label, value }: { label: string; value?: React.ReactNode }) => (
   </div>
 );
 
-export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, mode, leaseId }) => {
+export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values, leaseId }) => {
   const [isDownloadingLoi, setIsDownloadingLoi] = useState(false);
   const downloadingRef = useRef(false);
 
@@ -61,7 +64,6 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
       const id = savedLeaseId || getLeaseIdFromSession() || leaseId;
 
       const clientPayload = normalizeLease(values, id);
-      console.log("client payload", clientPayload)
 
       const response = await axios.post(
         `${Config.API_ENDPOINT}/leases/download`,
@@ -100,7 +102,7 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
       const link = document.createElement("a");
       link.href = pdfUrl;
       link.target = "_blank";
-      link.download = `LOI_${leaseId}.pdf`;
+      link.download = `LOI_${leaseId || 'document'}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -120,7 +122,7 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
       if (isMountedRef.current) {
         Toast.fire({ icon: "error", title: errorMsg });
       }
-    }    finally {
+    } finally {
       downloadingRef.current = false;
       setIsDownloadingLoi(false);
     }
@@ -130,7 +132,7 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
     <div className="relative">
       <h3 className="text-lg font-semibold mb-1">Review & Submit</h3>
       <p className="text-sm text-gray-600">
-        Review all the information below and submit your Letter of Intent.
+        Review all the information below and submit your Lease.
       </p>
 
       <LoadingOverlay visible={isDownloadingLoi} size="default" fullscreen />
@@ -142,10 +144,21 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
               <h4 className="font-semibold">Basic Information</h4>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-              <Row label="LOI Title" value={values.title} />
-              <Row label="Property Address" value={values.propertyAddress} />
+              <Row label="Title" value={values.title} />
+              <Row label="Lease Type" value={values.lease_type} />
               <Row label="Landlord" value={values.landlordName} />
               <Row label="Tenant" value={values.tenantName} />
+            </div>
+          </div>
+
+          <div className="border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <h4 className="font-semibold">Property & Premises</h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <Row label="Property Address" value={values.premisses_property_address_S1} />
+              <Row label="Rentable SF" value={values.rentable_sf} />
+              <Row label="Property Size" value={values.property_size} />
             </div>
           </div>
 
@@ -154,22 +167,10 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
               <h4 className="font-semibold">Lease Terms</h4>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-              <Row label="Monthly Rent" value={values.rentAmount ? `$${values.rentAmount}` : undefined} />
-              <Row label="Security Deposit" value={values.securityDeposit ? `$${values.securityDeposit}` : undefined} />
-              <Row label="Lease Duration" value={values.leaseDuration && `${values.leaseDuration} months`} />
-              <Row label="Start Date" value={values.startDate} />
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <h4 className="font-semibold">Property Details</h4>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-              <Row label="Property Size" value={values.propertySize && `${values.propertySize} sq ft`} />
-              <Row label="Property Type" value={values.propertyType} />
-              <Row label="Intended Use" value={values.intendedUse} />
-              <Row label="Parking Spaces" value={values.parkingSpaces} />
+              <Row label="Initial Term" value={values.initial_term_years ? `${values.initial_term_years} years` : undefined} />
+              <Row label="Monthly Rent" value={values.monthly_rent ? `$${values.monthly_rent}` : undefined} />
+              <Row label="Security Deposit" value={values.security_deposit ? `$${values.security_deposit}` : undefined} />
+              <Row label="Lease Structure" value={values.lease_structure} />
             </div>
           </div>
         </div>
@@ -205,11 +206,11 @@ export const LeaseReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({ values,
             <ul className="space-y-2 text-sm text-gray-700">
               <li className="flex items-start gap-2">
                 <ChevronRight className="w-4 h-4 mt-0.5 text-gray-400" />
-                LOI will be sent to the landlord for review.
+                Lease will be sent to the landlord for review.
               </li>
               <li className="flex items-start gap-2">
                 <ChevronRight className="w-4 h-4 mt-0.5 text-gray-400" />
-                You'll receive notifications about the status.
+                You will receive notifications about the status.
               </li>
               <li className="flex items-start gap-2">
                 <ChevronRight className="w-4 h-4 mt-0.5 text-gray-400" />

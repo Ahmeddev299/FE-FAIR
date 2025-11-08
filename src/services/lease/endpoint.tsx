@@ -39,9 +39,9 @@ class LeaseBaseService extends HttpService {
     return this.get(`/leases/${encodeURIComponent(leaseId)}`);
   }
 
-  getUserLeases(params?: { page?: number; limit?: number }): Promise<any> {
-    const page = params?.page ?? 1;
-    const limit = params?.limit ?? 5;
+  getUserLeases(  ): Promise<any> {
+    // const page = params?.page ?? 1;
+    // const limit = params?.limit ?? 5;
     return this.get(`/leases`);
   }
 

@@ -16,7 +16,6 @@ const setBearer = () => {
   if (token) HttpService.setToken(token);
 };
 
-
 export const submitLOIAsync = createAsyncThunk(
   "/loi/submit",
   async (data: LOIApiPayload, { rejectWithValue }) => {

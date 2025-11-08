@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // pages/.../CreateLeaseForm.tsx
 import React, { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
@@ -8,7 +10,6 @@ import { useFormStepper } from '../../../hooks/useLeaseFormStepper';
 import { LEASE_VALIDATION_SCHEMAS } from '@/validations/leaseValidation';
 
 // Shared UI
-import { FormHeader } from '../../../components/FormHeader';
 import { StepperNavigation } from '../../../components/StepperNavigation';
 import { FormNavigation } from '../../../components/FormNavigation';
 import { LEASE_INITIAL_VALUES, LeaseFormValues } from '@/types/lease';
@@ -23,7 +24,6 @@ import { UseHoursExclusivesSection } from '@/components/dashboard/lease/steps/ri
 import { useAppDispatch } from '@/hooks/hooks';
 import { getLeaseDetailsById, submitLeaseAsync } from '@/services/lease/asyncThunk';
 import { useRouter } from 'next/router';
-import {  getLoiIdFromSession } from '@/utils/loisesion';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { mapLeaseApiToForm } from '@/components/dashboard/lease/utils/leaseMappers';
 import { clearLeaseIdInSession, getLeaseIdFromSession } from '@/utils/leasesession';
@@ -35,9 +35,9 @@ interface Props {
 
 const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
   const { currentStep, nextStep, prevStep, isStepComplete, steps, jumpToStep } = useFormStepper();
-  const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  console.log("last saved", lastSaved)
   const [initialData, setInitialData] = useState<LeaseFormValues | null>(null);
   console.log("initialDayta", initialData)
 
@@ -56,7 +56,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
       (async () => {
         try {
           const resultAction = await dispatch(getLeaseDetailsById(leaseId));
-          const payload = unwrapResult(resultAction);   // your JSON shown above
+          const payload = unwrapResult(resultAction);
           setInitialData(mapLeaseApiToForm(payload));
         } catch (err) {
           console.error("Error fetching LOI details", err);
@@ -77,7 +77,7 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
 
         const apiPayload = normalizeLease(formValues, effectiveLoiId);
 
-        const response = await dispatch(
+        await dispatch(
           submitLeaseAsync({ ...apiPayload, submit_status: "Submitted" } as any)
         ).unwrap();;
 
@@ -93,24 +93,24 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
     }
   };
 
-  const saveAsDraft = async (formValues: LeaseFormValues) => {
-    try {
-      setSaving(true);
+  // const saveAsDraft = async (formValues: LeaseFormValues) => {
+  //   try {
+  //     setSaving(true);
 
-      const storedLoiId = getLeaseIdFromSession();
-      const effectiveLoiId = storedLoiId || leaseId || undefined;
+  //     const storedLoiId = getLeaseIdFromSession();
+  //     const effectiveLoiId = storedLoiId || leaseId || undefined;
 
-      const draftPayload = normalizeLease(formValues, effectiveLoiId);
-      await dispatch(submitLeaseAsync({ ...draftPayload, submit_status: "Draft" })).unwrap();
+  //     const draftPayload = normalizeLease(formValues, effectiveLoiId);
+  //     await dispatch(submitLeaseAsync({ ...draftPayload, submit_status: "Draft" })).unwrap();
 
-      router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });
-      setLastSaved(new Date().toLocaleTimeString());
-    } catch (error) {
-      console.error("Failed to save draft:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
+  //     router.push({ pathname: "/dashboard/pages/start", query: { success: "loi_submitted" } });
+  //     setLastSaved(new Date().toLocaleTimeString());
+  //   } catch (error) {
+  //     console.error("Failed to save draft:", error);
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
 
   const renderStepContent = (values: LeaseFormValues) => {
     console.log("values", values)
@@ -135,15 +135,15 @@ const CreateLeaseForm: React.FC<Props> = ({ mode = 'create', leaseId }) => {
           validationSchema={LEASE_VALIDATION_SCHEMAS[currentStep as keyof typeof LEASE_VALIDATION_SCHEMAS]}
           onSubmit={handleSubmit}
         >
-          {({ values, isValid, validateForm, errors, touched }) => (
+          {({ values, isValid, validateForm, touched }) => (
             <Form>
-              <FormHeader
+              {/* <FormHeader
                 mode={mode}
-                onSaveDraft={() => saveAsDraft()}
+                onSaveDraft={() => saveAsDraft(values)}
                 isLoading={saving}
                 lastSaved={lastSaved}
                 aiEnabled={false}
-              />
+              /> */}
 
               <StepperNavigation
                 steps={steps}

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // components/ClauseActions.tsx
 import React from "react";
 import { FileText } from "lucide-react";

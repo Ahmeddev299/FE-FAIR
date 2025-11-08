@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LeaseFormValues } from "@/types/lease";
 
-export function normalizeLease(values: LeaseFormValues , id ) {
+export function normalizeLease(values: LeaseFormValues , id?:string ) {
   console.log("running")
   // helpers
   const n = (v: any) =>
@@ -48,8 +48,8 @@ export function normalizeLease(values: LeaseFormValues , id ) {
 
   // ----- Map your RIGHTS_OPTIONS escalation to API's RENT_ECONOMICS.annual_* -----
   // If you keep using rentEscalationType ("percent" | "fmv"), map to Fixed/None.
-  const mappedAnnualEscType =
-    values.rentEscalationType === "percent" ? "Fixed" : "None";
+  // const mappedAnnualEscType =
+  //   values.rentEscalationType === "percent" ? "Fixed" : "None";
   const mappedAnnualEscPct =
     values.rentEscalationType === "percent" ? n(values.rentEscalationPercent) : undefined;
 

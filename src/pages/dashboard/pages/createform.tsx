@@ -42,9 +42,6 @@ const CreateLoiForm: React.FC<Props> = ({ mode = 'create', loiId }) => {
   useEffect(() => {
     if (mode === "create") {
       clearLoiIdInSession();
-      // (optional) if you also saved to localstorage-slim earlier, cleaaar that too:
-      // ls.remove("loi_id");
-      console.log("[LOI] reset loi_id for new Create session");
     }
   }, [mode]);
 
@@ -73,7 +70,6 @@ const handleSubmit = async (formValues: FormValues) => {
 
       const apiPayload = transformToApiPayload(formValues, effectiveLoiId);
       
-
       await dispatch(submitLOIAsync(apiPayload)).unwrap();
 
       setLastSaved(new Date().toLocaleTimeString());
@@ -87,7 +83,6 @@ const handleSubmit = async (formValues: FormValues) => {
     setSubmitting(false);
   }
 };
-
 
  const saveAsDraft = async (formValues: FormValues) => {
   try {

@@ -1,36 +1,34 @@
 // components/dashboard/lease/steps/LeaseOpsMaintenance.tsx
-import { LeaseFormValues } from "@/types/lease";
-import { Field, ErrorMessage, useFormikContext } from "formik";
-import { DollarSign, Shield, Wrench, Zap } from "lucide-react";
+import { Field } from "formik";
+import { Wrench, Zap } from "lucide-react";
 import { MAINTENANCE_CATEGORIES, MaintenanceRow } from "../utils/maintenance";
 import { INSURANCE_CATEGORIES } from "../utils/insurance";
 import { InsuranceRow } from "../utils/insurancerow";
 
 export const LeaseOpsMaintenanceStep: React.FC = () => {
-    const { values, setFieldValue, setFieldTouched } = useFormikContext<LeaseFormValues>();
+    // const { values, setFieldValue, } = useFormikContext<LeaseFormValues>();
 
-    const isModGross = values.lease_structure === "Modified Gross";
-    const isNNN = values.lease_structure === "Triple Net";
-    const showPassThroughBlock = isModGross || isNNN;
+    // const isModGross = values.lease_structure === "Modified Gross";
+    // const isNNN = values.lease_structure === "Triple Net";
 
-    const rentable = Number(values.rentable_sf || 0);
-    const totalSize = Number(values.property_size || 0);
-    const proRata = totalSize > 0 && rentable > 0 ? (rentable / totalSize) * 100 : null;
+    // const rentable = Number(values.rentable_sf || 0);
+    // const totalSize = Number(values.property_size || 0);
+    // const proRata = totalSize > 0 && rentable > 0 ? (rentable / totalSize) * 100 : null;
 
-    const clearIfGross = () => {
-        if (values.lease_structure === "Gross") {
-            [
-                "pass_throughs",
-                "cam_include_exclude",
-                "management_fee_cap_percent",
-                "capital_amortization_rules",
-                "est_cam_per_sf",
-                "est_taxes_per_sf",
-                "est_insurance_per_sf",
-                "nnn_est_annual",
-            ].forEach((k) => setFieldValue(k, ""));
-        }
-    };
+    // const clearIfGross = () => {
+    //     if (values.lease_structure === "Gross") {
+    //         [
+    //             "pass_throughs",
+    //             "cam_include_exclude",
+    //             "management_fee_cap_percent",
+    //             "capital_amortization_rules",
+    //             "est_cam_per_sf",
+    //             "est_taxes_per_sf",
+    //             "est_insurance_per_sf",
+    //             "nnn_est_annual",
+    //         ].forEach((k) => setFieldValue(k, ""));
+    //     }
+    // };
 
     return (
         <>
@@ -78,9 +76,14 @@ export const LeaseOpsMaintenanceStep: React.FC = () => {
                         <div className="col-span-2 text-center">Tenant</div>
                     </div>
 
-                    <div className="rounded-lg border border-gray-200">
+                    {/* <div className="rounded-lg border border-gray-200">
                         {MAINTENANCE_CATEGORIES.map(({ key: rowKey, label }) => (
                             <MaintenanceRow rowKey={rowKey} label={label} />
+                        ))}a
+                    </div> */}
+                    <div className="rounded-lg border border-gray-200">
+                        {MAINTENANCE_CATEGORIES.map(({ key: rowKey, label }) => (
+                            <MaintenanceRow key={rowKey} rowKey={rowKey} label={label} />
                         ))}
                     </div>
 
