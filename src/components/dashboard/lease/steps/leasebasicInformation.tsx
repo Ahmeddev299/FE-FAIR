@@ -39,7 +39,6 @@ export const BasicInformationStep: React.FC = () => {
           <ErrorMessage name="title" component="div" className="text-red-500 text-sm mt-1" />
         </div>
 
-        {/* Lease Type */}
         <div>
           <label className="block text-sm font-medium mb-2">Lease Type *</label>
           <Field
